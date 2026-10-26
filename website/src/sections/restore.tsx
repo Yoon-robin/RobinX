@@ -1,16 +1,12 @@
-import { CircleCheck, CircleDashed, CircleX } from "lucide-react"
-
-import { m, useReducedMotion } from "motion/react"
-
-import { easeOutQuint, Reveal } from "@/components/motion"
 import { cn } from "@/lib/utils"
 
 type Level = "가능" | "백업이 있는 동안" | "안 됨"
 
-const levelStyle: Record<Level, { icon: typeof CircleCheck; tone: string }> = {
-  가능: { icon: CircleCheck, tone: "text-sure" },
-  "백업이 있는 동안": { icon: CircleDashed, tone: "text-review" },
-  "안 됨": { icon: CircleX, tone: "text-muted-foreground" },
+/** 되돌릴 수 있는지는 색만이 아니라 [ ] 안의 글자로도 나타낸다 */
+const levelTone: Record<Level, string> = {
+  가능: "text-foreground",
+  "백업이 있는 동안": "text-review",
+  "안 됨": "text-muted-foreground",
 }
 
 /** 작업별로 무엇을 되돌릴 수 있는지. 사이트에서 가장 정확해야 하는 부분이라 앱의 동작과 똑같이 쓴다. */
@@ -45,68 +41,62 @@ const rows: { task: string; level: Level; note: string }[] = [
 ]
 
 /**
- * 작업 × 되돌리기 × 조건의 표. 줄 사이는 선 대신 여백으로 나눈다. 큰 화면에서는 세 칸 표, 좁은 화면에서는 줄마다 쌓는다 (옆으로 밀지 않는다).
- * 되돌릴 수 있는지는 색과 함께 아이콘·글자로 나타낸다.
+ * 작업 × 되돌리기 × 조건의 표. 줄 사이는 가는 선으로 나눈다. 큰 화면에서는 세 칸 표, 좁은 화면에서는 줄마다 쌓는다 (옆으로 밀지 않는다).
  */
 export function Restore() {
-  const reduce = useReducedMotion()
   return (
-    <section id="restore" className="py-20 sm:py-28 lg:py-32">
+    <section id="restore" className="py-20 sm:py-24">
       <div className="frame">
-        <Reveal heading className="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <h2 className="section-title lg:col-span-7">되돌릴 수 있는 것, 없는 것</h2>
-          <p className="max-w-[34ch] text-lead leading-snug text-pretty text-muted-foreground lg:col-span-5">
+        <div className="grid gap-5 lg:grid-cols-12 lg:items-end lg:gap-8">
+          <h2 className="section-title prompt lg:col-span-7">되돌릴 수 있는 것, 없는 것</h2>
+          <p className="max-w-[40ch] text-lead leading-relaxed text-pretty text-muted-foreground lg:col-span-5">
             백업은 직접 지우거나, 보관 기간(처음 설정은 30일)이 지난 뒤 앱을 켤 때 지워져요. 그 뒤로는 되돌릴 수 없어요.
           </p>
-        </Reveal>
-
-        <div className="mt-12 sm:mt-14">
-          <table className="w-full text-left">
-            <caption className="sr-only">작업마다 되돌릴 수 있는지와 조건</caption>
-            <thead className="hidden text-fine text-muted-foreground md:table-header-group">
-              <tr>
-                <th scope="col" className="pb-3 font-medium">
-                  작업
-                </th>
-                <th scope="col" className="pb-3 font-medium">
-                  되돌리기
-                </th>
-                <th scope="col" className="pb-3 font-medium">
-                  조건
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => {
-                const { icon: Icon, tone } = levelStyle[r.level]
-                return (
-                  <m.tr
-                    key={r.task}
-                    initial={reduce ? false : { opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    transition={{ duration: 0.5, delay: 0.06 * i, ease: easeOutQuint }}
-                    className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 rounded-xl py-4 transition-colors hover:bg-white/[0.025] md:table-row md:py-0"
-                  >
-                    <th
-                      scope="row"
-                      className="text-lead leading-snug font-semibold tracking-tight md:w-[32%] md:py-4 md:pr-6 md:align-top lg:w-[26%]"
-                    >
-                      {r.task}
-                    </th>
-                    <td className={cn("md:w-[20%] md:py-4 md:pr-6 md:align-top", tone)}>
-                      <span className="inline-flex items-center gap-1.5 pt-1 text-body font-semibold whitespace-nowrap">
-                        <Icon className="size-4 shrink-0" aria-hidden />
-                        {r.level}
-                      </span>
-                    </td>
-                    <td className="col-span-2 text-body text-muted-foreground md:py-4 md:align-top">{r.note}</td>
-                  </m.tr>
-                )
-              })}
-            </tbody>
-          </table>
         </div>
+
+        <table
+          className="mt-12 w-full border-t border-white/15 text-left sm:mt-14" // taste-skill-ignore: 표의 줄
+        >
+          <caption className="sr-only">작업마다 되돌릴 수 있는지와 조건</caption>
+          <thead className="hidden text-fine text-muted-foreground md:table-header-group">
+            <tr
+              className="border-b border-white/15" // taste-skill-ignore: 표의 줄
+            >
+              <th scope="col" className="py-3 font-normal">
+                작업
+              </th>
+              <th scope="col" className="py-3 font-normal">
+                되돌리기
+              </th>
+              <th scope="col" className="py-3 font-normal">
+                조건
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr
+                key={r.task}
+                className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-b border-white/10 py-4 md:table-row md:py-0" // taste-skill-ignore: 표의 줄
+              >
+                <th
+                  scope="row"
+                  className="text-lead leading-snug font-bold md:w-[30%] md:py-5 md:pr-6 md:align-top lg:w-[26%]"
+                >
+                  {r.task}
+                </th>
+                <td className={cn("md:w-[24%] md:py-5 md:pr-6 md:align-top", levelTone[r.level])}>
+                  <span className="inline-block pt-0.5 text-body font-semibold whitespace-nowrap">
+                    <span className="text-muted-foreground">[</span>
+                    {r.level}
+                    <span className="text-muted-foreground">]</span>
+                  </span>
+                </td>
+                <td className="col-span-2 text-body text-muted-foreground md:py-5 md:align-top">{r.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   )

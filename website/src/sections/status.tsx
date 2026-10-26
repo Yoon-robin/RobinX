@@ -1,5 +1,7 @@
+import type { ReactNode } from "react"
+
 import { RELEASE, REPO_URL } from "@/lib/site"
-import { Reveal } from "@/components/motion"
+import { TermWindow } from "@/components/term"
 
 /**
  * 어디까지 만들었고 어디까지 확인했는지 있는 그대로. 버전과 날짜는 빌드할 때 GitHub 릴리스에서 가져온다
@@ -36,35 +38,50 @@ const released = RELEASE.publishedAt.toLocaleDateString("ko-KR", {
   timeZone: "Asia/Seoul",
 })
 
+/** 터미널의 "이름 값" 줄 (앱 시작 화면과 같은 모양) */
+function Kv({ k, children }: { k: string; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[6.5rem_1fr] gap-x-3 sm:grid-cols-[8rem_1fr]">
+      <dt className="text-muted-foreground">{k}</dt>
+      <dd className="min-w-0">{children}</dd>
+    </div>
+  )
+}
+
 export function Status() {
   return (
-    <section id="status" className="border-y bg-white/[0.02] py-20 sm:py-24 lg:py-28">
+    <section id="status" className="bg-white/[0.02] py-20 sm:py-24">
       <div className="frame">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
-          <Reveal heading outerClassName="lg:col-span-5">
-            <h2 className="section-title">어디까지 됐는지</h2>
-            <p className="mt-5 max-w-[34ch] text-lead leading-snug text-muted-foreground">
+          <div className="lg:col-span-5">
+            <h2 className="section-title prompt">어디까지 됐는지</h2>
+            <p className="mt-5 max-w-[40ch] text-lead leading-relaxed text-muted-foreground">
               지금까지는 직접 만든 테스트 앱으로 시험했어요. 실제 프로그램으로 하는 검증은 진행 중이에요.
             </p>
-          </Reveal>
+          </div>
 
-          {/* 최신 릴리스: 흰 판 하나에 버전·날짜·확인 방법 */}
-          <Reveal delay={0.06} className="window p-7 sm:p-8 lg:col-span-7">
-            <p className="text-section leading-none font-bold tracking-tight tabular-nums">v{RELEASE.version}</p>
-            <p className="mt-3 text-body text-muted-foreground">
-              최신 미리보기 · {released} 공개 · {RELEASE.file} · {RELEASE.sizeMb} MB
-            </p>
-            {RELEASE.sha256 && (
-              <p className="mt-4 text-fine text-muted-foreground">
-                SHA-256 <code className="break-all text-foreground">{RELEASE.sha256}</code>
-              </p>
-            )}
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-body font-medium">
+          {/* 최신 릴리스: 버전·날짜·파일·확인 방법 */}
+          <TermWindow title="최신 릴리스" className="lg:col-span-7" bodyClassName="p-5 text-fine sm:p-7 sm:text-body">
+            <dl className="flex flex-col gap-1.5">
+              <Kv k="버전">
+                <span className="font-bold">v{RELEASE.version}</span> (미리보기)
+              </Kv>
+              <Kv k="공개">{released}</Kv>
+              <Kv k="파일">
+                <span className="[overflow-wrap:anywhere]">{RELEASE.file}</span> · {RELEASE.sizeMb} MB
+              </Kv>
+              {RELEASE.sha256 && (
+                <Kv k="SHA-256">
+                  <code className="break-all">{RELEASE.sha256}</code>
+                </Kv>
+              )}
+            </dl>
+            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-medium">
               <a
                 href={RELEASE.pageUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-stage underline-offset-4 hover:underline"
+                className="underline decoration-white/40 underline-offset-4 hover:decoration-white"
               >
                 릴리스 노트
               </a>
@@ -72,24 +89,29 @@ export function Status() {
                 href={`${REPO_URL}/commits/main`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-stage underline-offset-4 hover:underline"
+                className="underline decoration-white/40 underline-offset-4 hover:decoration-white"
               >
                 변경 기록
               </a>
             </div>
-          </Reveal>
+          </TermWindow>
         </div>
 
         <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
-          {blocks.map((g, i) => (
-            <Reveal key={g.title} delay={0.04 * i}>
-              <h3 className="text-lead font-semibold">{g.title}</h3>
-              <ul className="mt-4 flex list-disc flex-col gap-2.5 pl-5 text-body text-pretty marker:text-muted-foreground">
+          {blocks.map((g) => (
+            <div key={g.title}>
+              <h3 className="text-lead font-bold">{g.title}</h3>
+              <ul className="mt-4 flex flex-col gap-2.5 text-body text-pretty">
                 {g.items.map((t) => (
-                  <li key={t}>{t}</li>
+                  <li key={t} className="grid grid-cols-[1.5ch_1fr] gap-x-2">
+                    <span aria-hidden className="text-muted-foreground">
+                      -
+                    </span>
+                    {t}
+                  </li>
                 ))}
               </ul>
-            </Reveal>
+            </div>
           ))}
         </div>
       </div>

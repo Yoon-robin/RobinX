@@ -3,14 +3,14 @@ import { useReducedMotion } from "motion/react"
 import { Pause, Play } from "lucide-react"
 
 import { demo } from "@/lib/site"
-import { Reveal } from "@/components/motion"
+import { TermWindow } from "@/components/term"
 
 const steps = ["남은 흔적 찾기", "찾은 항목 확인", "백업하고 정리"]
 
 /**
  * 앱에서 남은 흔적을 찾아 정리하는 짧은 녹화. 가짜 응답으로 찍어 실제 PC의 목록은 나오지 않는다
  * (scripts/ui-mock/record-demo.mjs).
- * - 재생·일시정지 단추는 재생 중에도 늘 보인다 (브라우저 기본 단추는 재생하면 숨어서 따로 둔다).
+ * - 재생·일시정지 단추는 창 위 막대에 늘 보인다 (브라우저 기본 단추는 재생하면 숨어서 따로 둔다).
  * - 화면에 보일 때만 재생하고, 벗어나면 멈춘다. 움직임 줄이기를 켠 사람에게는 저절로 재생하지 않는다.
  * - 글자가 중요한 앱 화면이라 잘리지 않게 전체를 보여 준다 (object-contain).
  * - 좁은 화면에서는 창 전체를 줄이면 글자가 4~5px이 되어, 대화창 부분만 찍은 영상을 쓴다.
@@ -90,17 +90,30 @@ export function Walkthrough() {
   }
 
   return (
-    <section id="walkthrough" className="border-y bg-white/[0.02] py-20 sm:py-24 lg:py-28">
+    <section id="walkthrough" className="bg-white/[0.02] py-20 sm:py-24">
       <div className="frame">
-        <Reveal heading className="mx-auto max-w-3xl text-center">
-          <h2 className="section-title">정리하는 모습</h2>
-          <p className="mx-auto mt-5 max-w-[34ch] text-lead leading-snug text-balance text-muted-foreground">
+        <div className="max-w-3xl">
+          <h2 className="section-title prompt">정리하는 모습</h2>
+          <p className="mt-5 max-w-[46ch] text-lead leading-relaxed text-muted-foreground">
             방금 지운 프로그램의 남은 흔적을 찾고, 미리 골라 둔 것만 백업한 다음 정리해요.
           </p>
-        </Reveal>
+        </div>
 
-        <Reveal className="mx-auto mt-12 max-w-[68rem] sm:mt-14">
-          <div className="relative">
+        <figure className="mt-12 sm:mt-14">
+          <TermWindow
+            title="RobinX · 남은 흔적 정리"
+            actions={
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label={playing ? "시연 영상 일시정지" : "시연 영상 재생"}
+                className="-my-1 inline-flex h-7 items-center gap-1.5 rounded-sm px-2 text-fine text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {playing ? <Pause className="size-3.5" aria-hidden /> : <Play className="size-3.5" aria-hidden />}
+                {playing ? "일시정지" : "재생"}
+              </button>
+            }
+          >
             <video
               // 폭이 바뀌어 다른 영상으로 갈아 끼울 때 처음부터 다시 읽게 한다
               key={narrow ? "narrow" : "wide"}
@@ -116,38 +129,29 @@ export function Walkthrough() {
               onClick={toggle}
               aria-label="RobinX 시연: 남은 흔적 찾기, 찾은 항목 확인, 백업하고 정리, 정리 결과 화면"
               className={
-                "window w-full cursor-pointer object-contain p-2 sm:p-3 " +
-                (narrow ? "aspect-[784/736]" : "aspect-[16/10]")
+                "block w-full cursor-pointer object-contain " + (narrow ? "aspect-[784/736]" : "aspect-[16/10]")
               }
             />
-            <button
-              type="button"
-              onClick={toggle}
-              aria-label={playing ? "시연 영상 일시정지" : "시연 영상 재생"}
-              className="absolute right-4 bottom-4 inline-flex size-11 items-center justify-center rounded-full border border-white/15 bg-background/85 text-foreground transition-colors hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:right-6 sm:bottom-6"
-            >
-              {playing ? <Pause className="size-4" /> : <Play className="size-4 translate-x-px" />}
-            </button>
-          </div>
-          <ol className="mt-6 flex flex-col items-center justify-center gap-x-3 gap-y-2 text-body font-medium sm:flex-row sm:flex-wrap">
+          </TermWindow>
+          <ol className="mt-5 flex flex-col gap-x-4 gap-y-1.5 text-body sm:flex-row sm:flex-wrap">
             {steps.map((s, i) => (
-              <li key={s} className="flex items-center gap-3">
+              <li key={s} className="flex items-center gap-4">
                 {i > 0 && (
                   <span aria-hidden className="hidden text-muted-foreground sm:inline">
                     →
                   </span>
                 )}
                 <span>
-                  <span className="mr-1.5 text-stage tabular-nums">{i + 1}</span>
+                  <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
                   {s}
                 </span>
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-center text-fine text-muted-foreground">
+          <figcaption className="mt-2 text-fine text-muted-foreground">
             소리 없는 실제 앱 화면이에요. 화면 속 프로그램(Fixture Notes)과 경로, 크기는 시험용 예시예요.
-          </p>
-        </Reveal>
+          </figcaption>
+        </figure>
       </div>
     </section>
   )

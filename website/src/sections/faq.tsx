@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 
 import { REPO_URL } from "@/lib/site"
-import { Reveal } from "@/components/motion"
 
 type Faq = { q: string; a: ReactNode }
 
@@ -56,7 +55,7 @@ function List({ items }: { items: Faq[] }) {
     <dl className="grid gap-x-12 gap-y-10 sm:grid-cols-2">
       {items.map((f) => (
         <div key={f.q}>
-          <dt className="text-lead leading-snug font-semibold tracking-tight">{f.q}</dt>
+          <dt className="text-lead leading-snug font-bold">{f.q}</dt>
           <dd className="mt-3 text-body leading-relaxed text-pretty text-muted-foreground">{f.a}</dd>
         </div>
       ))}
@@ -64,49 +63,37 @@ function List({ items }: { items: Faq[] }) {
   )
 }
 
+const issueLink =
+  "text-body underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+
 /**
  * 질문과 답은 모두 펼쳐 둔다 (눌러야 보이면 찾기 어렵다). 받기 전에 궁금한 네 가지를 먼저, 나머지는 아래에.
  */
 export function Faq() {
   return (
-    <section id="faq" className="frame grid gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:gap-8 lg:py-32">
+    <section id="faq" className="frame grid gap-12 py-20 sm:py-24 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-4">
-        <div className="lg:sticky lg:top-24">
-          <Reveal heading>
-            <h2 className="section-title">
-              자주 묻는
-              <br />
-              질문
-            </h2>
-          </Reveal>
-          <Reveal>
-            <a
-              href={`${REPO_URL}/issues`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-8 hidden text-body font-medium text-stage underline-offset-4 hover:underline lg:inline-block"
-            >
-              다른 질문은 GitHub에 남겨 주세요
-            </a>
-          </Reveal>
+        <div>
+          <h2 className="section-title prompt">자주 묻는 질문</h2>
+          <a
+            href={`${REPO_URL}/issues`}
+            target="_blank"
+            rel="noreferrer"
+            className={`mt-8 hidden lg:inline-block ${issueLink}`}
+          >
+            다른 질문은 GitHub에 남겨 주세요
+          </a>
         </div>
       </div>
 
       <div className="flex flex-col gap-14 lg:col-span-8">
-        <Reveal>
-          <List items={core} />
-        </Reveal>
-        <Reveal>
-          <h3 className="mb-8 text-lead font-semibold">그 밖의 질문</h3>
+        <List items={core} />
+        <div className="pt-4">
+          <h3 className="mb-8 text-lead font-bold text-muted-foreground">그 밖의 질문</h3>
           <List items={more} />
-        </Reveal>
+        </div>
         {/* 좁은 화면에서는 질문을 다 본 뒤에 나온다 */}
-        <a
-          href={`${REPO_URL}/issues`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-body font-medium text-stage underline-offset-4 hover:underline lg:hidden"
-        >
+        <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" className={`lg:hidden ${issueLink}`}>
           다른 질문은 GitHub에 남겨 주세요
         </a>
       </div>

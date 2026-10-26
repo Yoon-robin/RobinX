@@ -10,35 +10,43 @@ if (!process.env.CHROMIUM_PATH && process.platform === "win32") {
 const site = join(dirname(fileURLToPath(import.meta.url)), "..")
 const { launch } = await import(pathToFileURL(join(site, "..", "scripts", "ui-mock", "mock.mjs")).href)
 
-const data = (file, type) => `data:${type};base64,${readFileSync(join(site, "public", file)).toString("base64")}`
-const logo = data("logo.svg", "image/svg+xml")
-const shot = data("shots/leftovers.png", "image/png")
+const data = (path, type) => `data:${type};base64,${readFileSync(path).toString("base64")}`
+const logo = data(join(site, "public", "logo.svg"), "image/svg+xml")
+const shot = data(join(site, "public", "shots", "leftovers@2x.webp"), "image/webp")
 // 빈 페이지에서는 file:// 글꼴을 읽지 못하므로 data URI로 넣는다
-const font = `data:font/woff2;base64,${readFileSync(
+const pretendard = data(
   join(site, "node_modules", "pretendard", "dist", "web", "variable", "woff2", "PretendardVariable.woff2"),
-).toString("base64")}`
+  "font/woff2",
+)
+const cascadia = data(
+  join(site, "node_modules", "@fontsource-variable", "cascadia-code", "files", "cascadia-code-latin-wght-normal.woff2"),
+  "font/woff2",
+)
 
-// 사이트와 같은 어두운 구성: 남색 바탕 위 파란 빛, 제목(강조 단어는 밝은 파랑), 오른쪽은 창 틀 안의 "남은 흔적" 화면.
+// 사이트와 같은 흑백 터미널: 검정 바탕, 왼쪽은 프롬프트처럼 > 로 시작하고 커서로 끝나는 제목, 오른쪽은 창 틀 안의 "남은 흔적" 화면.
 const html = `<!doctype html><html><head><style>
-@font-face { font-family: P; src: url("${font}") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: C; src: url("${cascadia}") format("woff2"); font-weight: 200 700; }
+@font-face { font-family: P; src: url("${pretendard}") format("woff2"); font-weight: 100 900; }
 * { margin: 0; box-sizing: border-box; }
-body { width: 1200px; height: 630px; overflow: hidden; font-family: P, sans-serif; color: #f3f5fa; background: radial-gradient(60% 70% at 25% 0%, rgba(59,110,230,.38), transparent 70%), #0b1020; word-break: keep-all; }
-.wrap { position: absolute; left: 72px; top: 0; bottom: 0; width: 520px; display: flex; flex-direction: column; justify-content: center; }
-.brand { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
-.brand img { width: 48px; height: 48px; }
-h1 em { font-style: normal; color: #7cc8f2; }
-h1 { margin-top: 44px; font-size: 88px; line-height: 1.04; font-weight: 700; letter-spacing: -0.035em; }
-p { margin-top: 32px; font-size: 27px; line-height: 1.45; color: #b6bdcc; }
-.stage { position: absolute; left: 640px; top: 72px; right: 0; bottom: 0; background: #151b2b; border: 1px solid rgba(255,255,255,.12); border-right: 0; border-bottom: 0; border-top-left-radius: 28px; overflow: hidden; box-shadow: 0 0 120px rgba(59,110,230,.35); }
-.crop { position: absolute; left: 48px; top: 48px; width: 640px; height: 600px; overflow: hidden; border-top-left-radius: 14px; }
-.crop img { position: absolute; width: 1036px; left: -208px; top: -39px; }
+body { width: 1200px; height: 630px; overflow: hidden; font-family: C, P, monospace; color: #ededed; background: #070707; word-break: keep-all; font-variant-ligatures: none; }
+.wrap { position: absolute; left: 72px; top: 0; bottom: 0; width: 540px; display: flex; flex-direction: column; justify-content: center; }
+.brand { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 700; }
+.brand img { width: 44px; height: 44px; }
+h1 { margin-top: 44px; font-size: 76px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
+h1 .p { color: #8f8f8f; font-weight: 400; }
+h1 .c { display: inline-block; width: 0.5em; height: 0.95em; margin-left: 0.15em; vertical-align: -0.08em; background: #ededed; }
+p { margin-top: 30px; font-size: 25px; line-height: 1.55; color: #a8a8a8; }
+.stage { position: absolute; left: 650px; top: 80px; right: 0; bottom: 0; background: #0b0b0b; border: 1px solid rgba(255,255,255,.18); border-right: 0; border-bottom: 0; border-top-left-radius: 4px; overflow: hidden; }
+.bar { height: 38px; border-bottom: 1px solid rgba(255,255,255,.1); padding-left: 18px; display: flex; align-items: center; font-size: 15px; color: #8f8f8f; }
+.crop { position: absolute; left: 0; top: 38px; right: 0; bottom: 0; overflow: hidden; }
+.crop img { position: absolute; width: 1000px; left: -196px; top: -64px; }
 </style></head><body>
 <div class="wrap">
   <div class="brand"><img src="${logo}">RobinX</div>
-  <h1><em>남은 흔적</em>까지<br>정리해요.</h1>
+  <h1><span class="p">&gt; </span>남은 흔적까지<br>정리해요<span class="c"></span></h1>
   <p>지운 뒤 남은 파일과 레지스트리를 찾아<br>백업하고 정리하는 무료 Windows 앱</p>
 </div>
-<div class="stage"><div class="crop"><img src="${shot}"></div></div>
+<div class="stage"><div class="bar">RobinX</div><div class="crop"><img src="${shot}"></div></div>
 </body></html>`
 
 const browser = await launch()

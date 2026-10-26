@@ -77,7 +77,8 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
         {item.page === "leftovers" && unscanned > 0 && (
           <SidebarMenuBadge
             aria-label={`흔적을 찾지 않은 프로그램 ${unscanned}개`}
-            className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground tabular-nums"
+            // 선택된 메뉴에서도 글자색을 지킨다 (기본은 선택 시 글자를 흰색으로 바꿔 흑백 터미널 모양에서 흰 바탕에 묻혔다)
+            className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground tabular-nums peer-hover/menu-button:text-primary-foreground peer-data-active/menu-button:text-primary-foreground"
           >
             {unscanned}
           </SidebarMenuBadge>

@@ -165,6 +165,13 @@ async function prepare(page, scheme, overrides) {
   })
   await page.addInitScript(init)
   await page.goto(process.env.UI_MOCK_URL ?? "http://127.0.0.1:1420/")
+  // 시작 화면(터미널 부팅)은 몇 초 걸리므로 키를 눌러 건너뛴다. 키는 창이 열린 뒤에만 받는다.
+  // 시작 화면을 찍을 때는 UI_MOCK_KEEP_BOOT=1
+  if (!process.env.UI_MOCK_KEEP_BOOT) {
+    await page.waitForFunction(() => window.__bootOpened === true, null, { timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
+    await page.keyboard.press("Shift")
+  }
   await page.waitForTimeout(1200)
   return page
 }
