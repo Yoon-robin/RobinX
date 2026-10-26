@@ -76,7 +76,12 @@
       .tty::before, .tty::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
       .tty::before { background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px); }
       .tty::after { background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55)); }
-      .tty-body { position: relative; z-index: 1; width: min(38rem, calc(100% - 4rem)); margin: 0 auto; padding-top: 20vh; }
+      /* 줄이 창보다 길어지면 위쪽이 밀려 올라간다 (터미널처럼). 넘치지 않을 때는 위에서부터 그대로 쌓인다. */
+      .tty-body {
+        position: relative; z-index: 1; width: min(40rem, calc(100% - 4rem)); margin: 0 auto; padding-top: clamp(1.5rem, 11vh, 7rem);
+        display: flex; flex-direction: column; justify-content: flex-end; max-height: calc(100vh - 3.5rem); overflow: hidden;
+      }
+      .tty-body > * { flex-shrink: 0; }
       .tty-logo {
         width: max-content; margin: 0 0 1.25rem; font: inherit; font-size: 13px; line-height: 1.05; white-space: pre;
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.22));
@@ -91,6 +96,9 @@
       .tty-dim { color: #6f6f6f; }
       .tty-prompt { color: #ffffff; font-weight: 700; }
       .tty-tag { color: #6f6f6f; }
+      .tty-key { display: inline-block; width: 8em; padding-left: 2ch; color: #8a8a8a; }
+      .tty-bar { color: #e6e6e6; }
+      .tty-strong { color: #ffffff; font-weight: 700; }
       .tty-tag b { display: inline-block; width: 6ch; text-align: center; font-weight: 700; }
       .tty-ok { color: #ffffff; }
       .tty-run { color: #bdbdbd; }
@@ -116,7 +124,7 @@
       <div class="tty-body" data-tauri-drag-region>
         <pre class="tty-logo" aria-hidden="true"><span style="--i:0">████████              ██        ██            ██      ██</span><span style="--i:1">██      ██    ████    ██████        ██████      ██  ██</span><span style="--i:2">████████    ██    ██  ██    ██  ██  ██    ██      ██</span><span style="--i:3">██    ██    ██    ██  ██    ██  ██  ██    ██    ██  ██</span><span style="--i:4">██      ██    ████    ██████    ██  ██    ██  ██      ██</span></pre>
         <div class="tty-line tty-dim">RobinX %VITE_APP_VERSION% · Windows x64</div>
-        <div class="tty-line"><span class="tty-prompt">C:\&gt;</span> <span class="tty-cursor"></span></div>
+        <div class="tty-line"> <span class="tty-cursor"></span></div>
       </div>
     </div>
     <div id="root"></div>

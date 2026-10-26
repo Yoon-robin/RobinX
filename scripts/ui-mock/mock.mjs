@@ -100,6 +100,23 @@ function defaultHandlers() {
     get_settings: sample.settings,
     backup_usage: { count: 3, bytes: 52_428_800, expired: 0 },
     disk_usage: { drive: "C:\\", total: 512e9, free: 128e9 },
+    // 시작 화면의 PC 정보도 가짜로 (사이트 그림에 실제 사용자 이름이 나오지 않게)
+    boot_info: {
+      user: "user",
+      computer: "DESKTOP-DEMO",
+      home: String.raw`C:\Users\user`,
+      os: "Windows 11 Pro 25H2",
+      build: "26200.6899",
+      cpu: "AMD Ryzen 7 7700 8-Core Processor",
+      threads: 16,
+      memoryTotal: 34_359_738_368,
+      memoryFree: 19_000_000_000,
+      uptimeSecs: 11_520,
+      systemDrive: "C:",
+      diskTotal: 512e9,
+      diskFree: 128e9,
+      admin: false,
+    },
   }
 }
 

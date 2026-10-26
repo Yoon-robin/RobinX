@@ -2,6 +2,7 @@
 //!
 //! 프론트엔드는 경로가 아니라 앱 ID만 넘긴다. 경로는 항상 엔진이 읽어 둔 목록에서 찾는다.
 
+mod boot;
 mod removed;
 mod settings;
 #[cfg(windows)]
@@ -1212,6 +1213,12 @@ struct DriveInfo {
     system: bool,
 }
 
+/// 시작 화면에 보여 줄 이 PC 정보 (읽기 전용, 화면에만 쓴다)
+#[tauri::command(async)]
+fn boot_info() -> boot::BootInfo {
+    boot::read()
+}
+
 /// 고정 디스크 목록 (읽기 전용). 이동식·네트워크·광학 드라이브는 뺀다.
 #[tauri::command]
 async fn list_drives() -> Vec<DriveInfo> {
@@ -1668,6 +1675,7 @@ pub fn run() {
             open_task_scheduler,
             open_project_page,
             list_drives,
+            boot_info,
             startup_prune_result,
             stop_waiting_uninstall,
             recently_removed,

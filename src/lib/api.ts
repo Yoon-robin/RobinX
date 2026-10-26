@@ -57,7 +57,26 @@ export type UninstallOutcome =
   | { kind: "cannotRun"; reason: string; command: string | null }
   | { kind: "failed"; message: string }
 
+/** 시작 화면에 보여 줄 이 PC 정보 (src-tauri/src/boot.rs). 못 읽은 값은 null. */
+export interface BootInfo {
+  user: string | null
+  computer: string | null
+  home: string | null
+  os: string | null
+  build: string | null
+  cpu: string | null
+  threads: number | null
+  memoryTotal: number | null
+  memoryFree: number | null
+  uptimeSecs: number | null
+  systemDrive: string | null
+  diskTotal: number | null
+  diskFree: number | null
+  admin: boolean
+}
+
 export const api = {
+  bootInfo: () => invoke<BootInfo>("boot_info"),
   listInstalledApps: () => invoke<InstalledApplication[]>("list_installed_apps"),
   getAppIcon: (id: string) => invoke<string | null>("get_app_icon", { id }),
   /** 제거할 때 실제로 실행할 명령 (Rust의 실행 계획과 같다) */
