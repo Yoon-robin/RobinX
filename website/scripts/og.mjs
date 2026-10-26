@@ -31,7 +31,7 @@ const html = `<!doctype html><html><head><style>
 body { width: 1200px; height: 630px; overflow: hidden; font-family: C, P, monospace; color: #ededed; background: #070707; word-break: keep-all; font-variant-ligatures: none; }
 .wrap { position: absolute; left: 72px; top: 0; bottom: 0; width: 540px; display: flex; flex-direction: column; justify-content: center; }
 .brand { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 700; }
-.brand img { width: 44px; height: 44px; }
+.brand img { width: 48px; height: 48px; }
 h1 { margin-top: 44px; font-size: 76px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
 h1 .p { color: #8f8f8f; font-weight: 400; }
 h1 .c { display: inline-block; width: 0.5em; height: 0.95em; margin-left: 0.15em; vertical-align: -0.08em; background: #ededed; }

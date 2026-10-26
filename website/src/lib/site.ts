@@ -19,7 +19,8 @@ export const RELEASE = {
   publishedAt: new Date(release.publishedAt as string),
 }
 
-export const LOGO = `${import.meta.env.BASE_URL}logo.png`
+/** 픽셀 R 로고. PNG를 줄이면 칸 모서리가 흐려져서 SVG를 쓴다 */
+export const LOGO = `${import.meta.env.BASE_URL}logo.svg`
 export const shot = (name: string) => `${import.meta.env.BASE_URL}shots/${name}.webp`
 /** 고해상도 화면(배율 2 근처)에는 2배로 찍은 그림을 준다 (website/scripts/capture.mjs) */
 export const shotSrcSet = (name: string) => `${shot(name)} 1x, ${import.meta.env.BASE_URL}shots/${name}@2x.webp 2x`
