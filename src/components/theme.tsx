@@ -9,7 +9,8 @@ import { EASE_OUT_QUINT } from "@/components/motion"
 
 type Theme = "dark" | "light" | "system"
 type Resolved = "dark" | "light"
-/** 화면 모양: 기본 또는 터미널(고정폭 글꼴, 각진 모서리, 초록 형광색). 밝기 테마와 따로 고른다. */
+/** 화면 모양: 기본 또는 터미널(고정폭 글꼴, 각진 모서리, 흑백). 밝기 테마와 따로 고른다.
+ * 처음에는 터미널이다. 사용자가 "일반"을 고르면 그 선택을 저장해 그대로 둔다. */
 export type Look = "default" | "terminal"
 
 const STORAGE_KEY = "robin.theme"
@@ -25,7 +26,7 @@ const ThemeContext = createContext<{
   theme: "dark",
   resolvedTheme: "dark",
   setTheme: () => {},
-  look: "default",
+  look: "terminal",
   setLook: () => {},
 })
 
@@ -42,9 +43,9 @@ function loadTheme(): Theme {
 
 function loadLook(): Look {
   try {
-    return localStorage.getItem(LOOK_KEY) === "terminal" ? "terminal" : "default"
+    return localStorage.getItem(LOOK_KEY) === "default" ? "default" : "terminal"
   } catch {
-    return "default"
+    return "terminal"
   }
 }
 

@@ -14,7 +14,8 @@
           document.documentElement.classList.replace("dark", "light")
           document.documentElement.style.colorScheme = "light"
         }
-        if (localStorage.getItem("robin.look") === "terminal") document.documentElement.classList.add("terminal")
+        // 모양은 처음에 터미널이다 (설정에서 "기본"을 고른 경우만 뺀다)
+        if (localStorage.getItem("robin.look") !== "default") document.documentElement.classList.add("terminal")
       } catch {}
       // 창 열림: 창이 실제로 보인 다음에 시작 화면 판을 키운다. 먼저 시작하면 창이 뜰 때 이미 다 커져 있다.
       // 다 커지면 .booting을 떼고 바탕을 칠한다 (main.tsx는 이 신호를 기다렸다가 시작 화면을 넘긴다).
@@ -67,7 +68,7 @@
          자리·모양이 같다. 그래서 넘겨줄 때 바뀌는 게 보이지 않는다. 테마와 관계없이 늘 어둡다. */
       .tty {
         position: fixed; inset: 0; z-index: 200; overflow: hidden;
-        background: #0a0c10; color: #d5dbe3;
+        background: #0b0b0b; color: #d9d9d9;
         font: 13px/1.65 "Cascadia Mono", "Cascadia Code", Consolas, "D2Coding", "Malgun Gothic", monospace;
         font-variant-ligatures: none;
       }
@@ -78,25 +79,25 @@
       .tty-body { position: relative; z-index: 1; width: min(38rem, calc(100% - 4rem)); margin: 0 auto; padding-top: 20vh; }
       .tty-logo {
         width: max-content; margin: 0 0 1.25rem; font: inherit; font-size: 13px; line-height: 1.05; white-space: pre;
-        filter: drop-shadow(0 0 10px rgba(60, 200, 240, 0.35));
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.22));
       }
-      /* 색은 줄마다 칠한다: 움직이는 자식은 부모의 background-clip: text에서 빠져 안 보일 수 있다.
+      /* 흰색에서 회색으로. 색은 줄마다 칠한다: 움직이는 자식은 부모의 background-clip: text에서 빠져 안 보일 수 있다.
          줄은 모두 로고 폭만큼 넓어서 그라데이션이 줄끼리 이어진다. */
       .tty-logo span {
         display: block; color: transparent;
-        background: linear-gradient(90deg, #3cf0ef, #3aa0f5 55%, #9b5cf6); -webkit-background-clip: text; background-clip: text;
+        background: linear-gradient(180deg, #ffffff, #9a9a9a); -webkit-background-clip: text; background-clip: text;
       }
       .tty-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.65em; }
-      .tty-dim { color: #6e7784; }
-      .tty-prompt { color: #50ddd5; }
-      .tty-tag { color: #6e7784; }
+      .tty-dim { color: #6f6f6f; }
+      .tty-prompt { color: #ffffff; font-weight: 700; }
+      .tty-tag { color: #6f6f6f; }
       .tty-tag b { display: inline-block; width: 6ch; text-align: center; font-weight: 700; }
-      .tty-ok { color: #4ade80; }
-      .tty-run { color: #50ddd5; }
+      .tty-ok { color: #ffffff; }
+      .tty-run { color: #bdbdbd; }
       .tty-new { color: #fbbf24; }
       .tty-warn { color: #f87171; }
-      .tty-cursor { display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: #50ddd5; animation: tty-blink 1s steps(1) infinite; }
-      .tty-hint { position: absolute; z-index: 1; left: 0; right: 0; bottom: 1.75rem; text-align: center; font-size: 12px; color: #4b525c; animation: tty-fade 0.4s 0.9s both; }
+      .tty-cursor { display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: #e6e6e6; animation: tty-blink 1s steps(1) infinite; }
+      .tty-hint { position: absolute; z-index: 1; left: 0; right: 0; bottom: 1.75rem; text-align: center; font-size: 12px; color: #4d4d4d; animation: tty-fade 0.4s 0.9s both; }
       @keyframes tty-fade { from { opacity: 0; } }
       @keyframes tty-blink { 50% { opacity: 0; } }
       /* 창이 열리는 동안 로고가 한 줄씩 켜진다 (창 열림 0.52초 안에 끝난다) */

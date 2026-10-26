@@ -133,70 +133,75 @@
 }
 
 /* ── 터미널 모양 (설정 › 화면 › 모양) ─────────────────────────
- * 고정폭 글꼴, 각진 모서리, 초록 형광색. 시작 화면(index.html .tty)과 같은 느낌을 앱 전체에 준다.
+ * 고정폭 글꼴, 각진 모서리, 흑백. 시작 화면(index.html .tty)과 같은 느낌을 앱 전체에 준다.
+ * 강조색도 색을 넣지 않고 흰색(밝은 테마에서는 검은색)으로 쓴다. 경고·성공 같은 상태 색만 그대로 둔다.
  * 한글은 고정폭 글꼴에 없어서 Pretendard로 그린다.
  */
 .terminal {
   --font-term: "Cascadia Mono", "Cascadia Code", Consolas, "D2Coding", "Pretendard Variable", Pretendard, monospace;
   --radius: 0.2rem;
-  --background: oklch(0.975 0.008 120);
-  --foreground: oklch(0.24 0.04 155);
-  --card: oklch(0.99 0.005 120);
-  --card-foreground: oklch(0.24 0.04 155);
-  --popover: oklch(0.99 0.005 120);
-  --popover-foreground: oklch(0.24 0.04 155);
-  /* 흰 바탕 글자·흰 글자 단추 모두 4.5:1 이상 */
-  --primary: oklch(0.48 0.12 152);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.945 0.012 130);
-  --secondary-foreground: oklch(0.26 0.04 155);
-  --muted: oklch(0.945 0.012 130);
-  --muted-foreground: oklch(0.47 0.04 155);
-  --accent: oklch(0.93 0.02 140);
-  --accent-foreground: oklch(0.24 0.04 155);
-  --border: oklch(0.45 0.1 152 / 18%);
-  --input: oklch(0.45 0.1 152 / 28%);
-  --control: oklch(0.35 0.08 152 / 55%);
-  --ring: oklch(0.48 0.12 152);
-  --chart-1: oklch(0.62 0.14 152);
-  --sidebar: oklch(0.95 0.012 125);
-  --sidebar-foreground: oklch(0.26 0.04 155);
-  --sidebar-primary: oklch(0.48 0.12 152);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.45 0.1 152 / 10%);
-  --sidebar-accent-foreground: oklch(0.2 0.04 155);
-  --sidebar-border: oklch(0.45 0.1 152 / 16%);
-  --sidebar-ring: oklch(0.48 0.12 152);
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.15 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.93 0 0);
+  --accent-foreground: oklch(0.15 0 0);
+  --border: oklch(0 0 0 / 14%);
+  --input: oklch(0 0 0 / 22%);
+  --control: oklch(0 0 0 / 50%);
+  --ring: oklch(0.15 0 0);
+  --chart-1: oklch(0.35 0 0);
+  /* 크기 막대·아이콘 칸의 보라·초록도 회색으로 (노랑·빨강은 경고 뜻이라 둔다) */
+  --chart-2: oklch(0.5 0 0);
+  --chart-5: oklch(0.6 0 0);
+  --sidebar: oklch(0.96 0 0);
+  --sidebar-foreground: oklch(0.2 0 0);
+  --sidebar-primary: oklch(0.15 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0 0 0 / 8%);
+  --sidebar-accent-foreground: oklch(0.12 0 0);
+  --sidebar-border: oklch(0 0 0 / 12%);
+  --sidebar-ring: oklch(0.15 0 0);
 }
 
 .terminal.dark {
-  --background: oklch(0.155 0.008 165);
-  --foreground: oklch(0.92 0.035 150);
-  --card: oklch(0.185 0.01 165);
-  --card-foreground: oklch(0.92 0.035 150);
-  --popover: oklch(0.2 0.012 165);
-  --popover-foreground: oklch(0.92 0.035 150);
-  --primary: oklch(0.85 0.19 150);
-  --primary-foreground: oklch(0.17 0.03 155);
-  --secondary: oklch(0.23 0.014 165);
-  --secondary-foreground: oklch(0.9 0.035 150);
-  --muted: oklch(0.23 0.014 165);
-  --muted-foreground: oklch(0.72 0.05 152);
-  --accent: oklch(0.25 0.02 160);
-  --accent-foreground: oklch(0.94 0.035 150);
-  --border: oklch(0.85 0.19 150 / 16%);
-  --input: oklch(0.85 0.19 150 / 24%);
-  --control: oklch(0.85 0.19 150 / 45%);
-  --ring: oklch(0.85 0.19 150);
-  --chart-1: oklch(0.85 0.19 150);
-  --sidebar: oklch(0.135 0.007 165);
-  --sidebar-foreground: oklch(0.88 0.035 150);
-  --sidebar-primary: oklch(0.85 0.19 150);
-  --sidebar-primary-foreground: oklch(0.17 0.03 155);
-  --sidebar-accent: oklch(0.85 0.19 150 / 11%);
-  --sidebar-accent-foreground: oklch(0.95 0.035 150);
-  --sidebar-border: oklch(0.85 0.19 150 / 12%);
-  --sidebar-ring: oklch(0.85 0.19 150);
+  --background: oklch(0.13 0 0);
+  --foreground: oklch(0.93 0 0);
+  --card: oklch(0.165 0 0);
+  --card-foreground: oklch(0.93 0 0);
+  --popover: oklch(0.185 0 0);
+  --popover-foreground: oklch(0.93 0 0);
+  --primary: oklch(0.96 0 0);
+  --primary-foreground: oklch(0.13 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.92 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.96 0 0);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 22%);
+  --control: oklch(1 0 0 / 45%);
+  --ring: oklch(0.96 0 0);
+  --chart-1: oklch(0.85 0 0);
+  --chart-2: oklch(0.72 0 0);
+  --chart-5: oklch(0.6 0 0);
+  --sidebar: oklch(0.11 0 0);
+  --sidebar-foreground: oklch(0.88 0 0);
+  --sidebar-primary: oklch(0.96 0 0);
+  --sidebar-primary-foreground: oklch(0.13 0 0);
+  --sidebar-accent: oklch(1 0 0 / 10%);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(1 0 0 / 11%);
+  --sidebar-ring: oklch(0.96 0 0);
 }
 
 @layer base {

@@ -258,7 +258,7 @@ export function SettingsPage() {
                 value={look}
                 onChange={setLook}
                 options={[
-                  { value: "default", label: "기본", icon: LayoutGrid },
+                  { value: "default", label: "일반", icon: LayoutGrid },
                   { value: "terminal", label: "터미널", icon: SquareTerminal },
                 ]}
               />

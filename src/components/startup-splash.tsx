@@ -228,7 +228,7 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
           {!reduce && (
             <motion.div
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-20 bg-[#d8f6ff] opacity-0"
+              className="pointer-events-none absolute inset-0 z-20 bg-white opacity-0"
               variants={FLASH}
             />
           )}
