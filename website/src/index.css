@@ -141,19 +141,30 @@
     color: var(--muted-foreground);
     font-weight: 400;
   }
-  /* 깜빡이는 네모 커서 (앱 시작 화면과 같은 박자). 움직임 줄이기면 깜빡이지 않는다 */
-  .cursor::after {
-    content: "";
+  /*
+   * 치는 글자를 따라가는 네모 커서 (components/typed.tsx). 앱 시작 화면과 같은 박자로 깜빡인다.
+   * 폭이 0이라 옮겨 다녀도 글자가 밀리지 않고, 치는 동안과 움직임 줄이기에서는 깜빡이지 않는다.
+   */
+  .caret {
+    position: relative;
     display: inline-block;
-    width: 0.5em;
+    width: 0;
     height: 0.95em;
-    margin-left: 0.2em;
     vertical-align: -0.08em;
+  }
+  .caret::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0.2em;
+    width: 0.5em;
     background: currentColor;
     animation: blink 1.1s steps(1) infinite;
   }
+  .caret[data-typing]::after {
+    animation: none;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .cursor::after {
+    .caret::after {
       animation: none;
     }
   }
@@ -168,5 +179,25 @@
 @keyframes blink {
   50% {
     opacity: 0;
+  }
+}
+
+/* FAQ 답이 열리고 닫힐 때 높이가 부드럽게 바뀐다. ::details-content를 모르는 브라우저에서는 바로 열린다 */
+:root {
+  interpolate-size: allow-keywords;
+}
+.faq::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    content-visibility 0.35s allow-discrete;
+}
+.faq[open]::details-content {
+  block-size: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq::details-content {
+    transition: none;
   }
 }

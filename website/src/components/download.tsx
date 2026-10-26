@@ -36,7 +36,7 @@ export function LineButton({ href, children, external }: { href: string; childre
 /** 받기 전에 알아야 할 것: 버전, 크기, 지원 환경, 미리보기·서명 상태. 릴리스 페이지에서 SHA-256을 확인할 수 있다. */
 export function DownloadFacts({ className }: { className?: string }) {
   return (
-    <p className={cn("text-fine text-muted-foreground", className)}>
+    <p className={cn("max-w-[60ch] text-fine text-muted-foreground", className)}>
       <span className="block">
         v{RELEASE.version} · {RELEASE.sizeMb} MB · Windows 10/11 (x64)
       </span>

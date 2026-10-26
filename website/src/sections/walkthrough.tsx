@@ -4,8 +4,7 @@ import { Pause, Play } from "lucide-react"
 
 import { demo } from "@/lib/site"
 import { TermWindow } from "@/components/term"
-
-const steps = ["남은 흔적 찾기", "찾은 항목 확인", "백업하고 정리"]
+import { Typed } from "@/components/typed"
 
 /**
  * 앱에서 남은 흔적을 찾아 정리하는 짧은 녹화. 가짜 응답으로 찍어 실제 PC의 목록은 나오지 않는다
@@ -92,14 +91,9 @@ export function Walkthrough() {
   return (
     <section id="walkthrough" className="bg-white/[0.02] py-20 sm:py-24">
       <div className="frame">
-        <div className="max-w-3xl">
-          <h2 className="section-title prompt">정리하는 모습</h2>
-          <p className="mt-5 max-w-[46ch] text-lead leading-relaxed text-muted-foreground">
-            방금 지운 프로그램의 남은 흔적을 찾고, 미리 골라 둔 것만 백업한 다음 정리해요.
-          </p>
-        </div>
+        <Typed lines={["실제 화면"]} className="section-title" />
 
-        <figure className="mt-12 sm:mt-14">
+        <figure className="mt-10 sm:mt-12">
           <TermWindow
             title="RobinX · 남은 흔적 정리"
             actions={
@@ -133,23 +127,8 @@ export function Walkthrough() {
               }
             />
           </TermWindow>
-          <ol className="mt-5 flex flex-col gap-x-4 gap-y-1.5 text-body sm:flex-row sm:flex-wrap">
-            {steps.map((s, i) => (
-              <li key={s} className="flex items-center gap-4">
-                {i > 0 && (
-                  <span aria-hidden className="hidden text-muted-foreground sm:inline">
-                    →
-                  </span>
-                )}
-                <span>
-                  <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
-                  {s}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <figcaption className="mt-2 text-fine text-muted-foreground">
-            소리 없는 실제 앱 화면이에요. 화면 속 프로그램(Fixture Notes)과 경로, 크기는 시험용 예시예요.
+          <figcaption className="mt-3 max-w-[60ch] text-fine text-muted-foreground">
+            소리 없는 녹화예요. 화면 속 Fixture Notes는 시험용 앱이에요.
           </figcaption>
         </figure>
       </div>

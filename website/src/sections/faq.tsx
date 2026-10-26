@@ -1,101 +1,77 @@
 import type { ReactNode } from "react"
 
 import { REPO_URL } from "@/lib/site"
+import { Typed } from "@/components/typed"
 
 type Faq = { q: string; a: ReactNode }
 
-/** 받기 전에 가장 많이 궁금한 것 (안전·되돌리기·받기·인터넷) */
-const core: Faq[] = [
+/** 받기 전에 궁금한 것부터 (받기·되돌리기·내 파일·인터넷) */
+const faqs: Faq[] = [
   {
     q: "어디서 받고, 어떻게 확인하나요?",
     a: (
       <>
-        GitHub 공식 릴리스에서 받으세요. 이 사이트의 다운로드 단추도 그 파일로 연결돼요. 아직 코드 서명 인증서가 없어서
-        처음 실행할 때 Windows 경고 창이 뜰 수 있어요. 실행하기 전에 받은 파일의 값(PowerShell{" "}
-        <span className="whitespace-nowrap">Get-FileHash</span>)이 릴리스 페이지의 SHA-256과 같은지 보고, 다르면
-        실행하지 마세요.
+        GitHub 릴리스에서 받아요. 실행하기 전에 <span className="whitespace-nowrap">Get-FileHash</span> 값이 릴리스
+        페이지의 SHA-256과 같은지 보고, 다르면 실행하지 마세요.
       </>
     ),
   },
   {
     q: "지운 건 다 되돌릴 수 있나요?",
-    a: "아니요. 남은 흔적은 지우기 전에 백업하므로, 백업이 남아 있는 동안 되돌릴 수 있어요. 프로그램 자체의 제거와 임시 파일·휴지통 정리는 되돌릴 수 없어요.",
+    a: "남은 흔적은 백업이 있는 동안 되돌릴 수 있어요. 프로그램 제거와 임시 파일·휴지통 정리는 되돌릴 수 없어요.",
   },
   {
     q: "내 파일이 지워지지는 않나요?",
-    a: "바탕 화면·문서·다운로드 안의 파일은 미리 고르지 않고, 그 폴더 자체는 목록에 넣지 않아요. 고른 항목도 백업한 뒤에 정리해요.",
+    a: "문서·다운로드·바탕 화면 안의 것은 미리 고르지 않아요. 고른 것도 백업한 뒤에 정리해요.",
   },
   {
     q: "인터넷으로 무엇이 나가나요?",
-    a: "저절로 하는 건 새 버전이 있는지 확인하는 것뿐이에요(설정에서 끌 수 있어요). 프로그램 메뉴의 '웹에서 검색'을 직접 누르면 그 프로그램 이름과 게시자로 기본 브라우저에서 Google 검색을 열어요. 설치된 프로그램 목록이나 정리 기록은 어디로도 보내지 않아요.",
+    a: "저절로 하는 건 새 버전 확인뿐이에요(설정에서 끌 수 있어요). 프로그램 목록과 정리 기록은 어디로도 보내지 않아요.",
   },
-]
-
-const more: Faq[] = [
   {
     q: "정리하면 공간이 바로 늘어나나요?",
-    a: "임시 파일은 바로 늘어나요. 남은 흔적은 백업으로 옮겨 두기 때문에, 백업을 지우거나 보관 기간이 지나 지워질 때 공간이 생겨요.",
+    a: "임시 파일은 바로 늘어나요. 남은 흔적은 백업으로 옮기므로, 백업이 지워질 때 늘어나요.",
   },
-  {
-    q: "백업은 어디에 있나요?",
-    a: "이 PC 안, 내 계정의 RobinX 폴더(%LOCALAPPDATA%\\RobinX\\backups)에만 있어요.",
-  },
+  { q: "백업은 어디에 있나요?", a: String.raw`이 PC 안에만 있어요. %LOCALAPPDATA%\RobinX\backups` },
   {
     q: "관리자 권한이 필요한가요?",
-    a: "평소에는 필요 없어요. 모든 사용자용으로 설치된 프로그램이나 시작 항목을 다룰 때, Windows 임시 파일·업데이트 파일처럼 시스템 쪽 항목을 정리할 때만 Windows가 권한을 허용할지 물어요.",
+    a: "평소에는 필요 없어요. 모든 사용자용 프로그램이나 시스템 항목을 다룰 때만 Windows가 물어요.",
   },
-  {
-    q: "소스 코드를 볼 수 있나요?",
-    a: "네, GitHub에 공개돼 있어요(Apache 2.0). 무엇을 어떻게 지우는지 직접 확인할 수 있어요.",
-  },
+  { q: "소스 코드를 볼 수 있나요?", a: "네, GitHub에 공개돼 있어요 (Apache 2.0)." },
 ]
 
-function List({ items }: { items: Faq[] }) {
-  return (
-    <dl className="grid gap-x-12 gap-y-10 sm:grid-cols-2">
-      {items.map((f) => (
-        <div key={f.q}>
-          <dt className="text-lead leading-snug font-bold">{f.q}</dt>
-          <dd className="mt-3 text-body leading-relaxed text-pretty text-muted-foreground">{f.a}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-const issueLink =
-  "text-body underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-
-/**
- * 질문과 답은 모두 펼쳐 둔다 (눌러야 보이면 찾기 어렵다). 받기 전에 궁금한 네 가지를 먼저, 나머지는 아래에.
- */
+/** 질문만 보여 주고 누르면 답이 열린다. 여는 움직임은 index.css의 details 규칙 (지원하는 브라우저에서만). */
 export function Faq() {
   return (
-    <section id="faq" className="frame grid gap-12 py-20 sm:py-24 lg:grid-cols-12 lg:gap-8">
-      <div className="lg:col-span-4">
-        <div>
-          <h2 className="section-title prompt">자주 묻는 질문</h2>
-          <a
-            href={`${REPO_URL}/issues`}
-            target="_blank"
-            rel="noreferrer"
-            className={`mt-8 hidden lg:inline-block ${issueLink}`}
-          >
-            다른 질문은 GitHub에 남겨 주세요
-          </a>
-        </div>
+    <section id="faq" className="frame py-20 sm:py-28">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+        <Typed lines={["자주 묻는 질문"]} className="section-title" />
+        <a
+          href={`${REPO_URL}/issues`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-fine text-muted-foreground underline decoration-white/30 underline-offset-4 hover:text-foreground hover:decoration-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          다른 질문은 GitHub에
+        </a>
       </div>
 
-      <div className="flex flex-col gap-14 lg:col-span-8">
-        <List items={core} />
-        <div className="pt-4">
-          <h3 className="mb-8 text-lead font-bold text-muted-foreground">그 밖의 질문</h3>
-          <List items={more} />
-        </div>
-        {/* 좁은 화면에서는 질문을 다 본 뒤에 나온다 */}
-        <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" className={`lg:hidden ${issueLink}`}>
-          다른 질문은 GitHub에 남겨 주세요
-        </a>
+      {/* 질문 글자가 제목 글자와 같은 줄에서 시작하도록 칸 안쪽 여백만큼 당긴다 */}
+      <div className="-mx-4 mt-8 flex max-w-4xl flex-col sm:mt-10">
+        {faqs.map((f) => (
+          <details key={f.q} className="faq group rounded-sm open:bg-white/[0.03]">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-sm px-4 py-3 text-body font-semibold transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-lead [&::-webkit-details-marker]:hidden">
+              <span aria-hidden className="w-[3ch] shrink-0 font-normal text-muted-foreground">
+                <span className="group-open:hidden">[+]</span>
+                <span className="hidden group-open:inline">[-]</span>
+              </span>
+              {f.q}
+            </summary>
+            <div className="max-w-[calc(64ch+1rem+3ch+0.75rem)] px-4 pb-5 pl-[calc(1rem+3ch+0.75rem)] text-body leading-relaxed text-pretty text-muted-foreground">
+              {f.a}
+            </div>
+          </details>
+        ))}
       </div>
     </section>
   )
