@@ -105,15 +105,17 @@
       .tty-new { color: #fbbf24; }
       .tty-warn { color: #f87171; }
       .tty-cursor { display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: #e6e6e6; animation: tty-blink 1s steps(1) infinite; }
-      .tty-hint { position: absolute; z-index: 1; left: 0; right: 0; bottom: 1.75rem; text-align: center; font-size: 12px; color: #4d4d4d; animation: tty-fade 0.4s 0.9s both; }
-      @keyframes tty-fade { from { opacity: 0; } }
+      /* 업데이트 y/n 질문의 y·n (마우스로도 고를 수 있게) */
+      .tty-key-button { font: inherit; color: #e6e6e6; background: none; border: 0; padding: 0 0.1em; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+      .tty-key-button:hover { color: #ffffff; }
+      .tty-key-button:focus-visible { outline: 1px solid #e6e6e6; outline-offset: 1px; }
       @keyframes tty-blink { 50% { opacity: 0; } }
       /* 창이 열리는 동안 로고가 한 줄씩 켜진다 (창 열림 0.52초 안에 끝난다) */
       #boot .tty-logo span { animation: tty-row 0.24s ease-out both; animation-delay: calc(var(--i) * 45ms + 60ms); }
       @keyframes tty-row { from { opacity: 0; transform: translateX(-6px); } }
       @media (prefers-reduced-motion: reduce) {
         html.booting #boot { animation: none; opacity: 1; }
-        #boot .tty-logo span, .tty-cursor, .tty-hint { animation: none; }
+        #boot .tty-logo span, .tty-cursor { animation: none; }
       }
     </style>
   </head>

@@ -14,8 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
  * 자동 업데이트 (Tauri updater).
  * - GitHub Releases의 latest.json을 읽어 새 버전이 있는지 본다. 업데이트 파일은 서명을 확인한 뒤에만 설치한다
  *   (공개 키는 tauri.conf.json, 비밀 키는 배포하는 사람의 PC에만 있다).
- * - 앱 코드를 읽자마자(시작 화면이 보이는 동안) 확인을 시작하고, 새 버전이 있으면 시작 화면이 걷히자마자 업데이트 창을
- *   띄운다. 나중에로 닫아도 사이드바에 계속 남는다.
+ * - 켤 때는 시작 화면이 점검 순서에 이르러 확인한다(GitHub에 묻고 받는 과정이 화면에 그대로 보인다).
+ *   새 버전이 있으면 시작 화면이 걷히자마자 업데이트 창을 띄운다. 나중에로 닫아도 사이드바에 계속 남는다.
  *   켜 둔 채로 오래 쓰면 몇 시간마다 다시 확인한다 (이때는 작업을 가리지 않게 사이드바에만 알린다).
  * - 설치는 사용자가 "지금 업데이트"를 누를 때만 한다. 설치하면 앱이 닫혔다 다시 열리므로, 정리 도중에 저절로 닫히면 안 된다.
  */
@@ -29,7 +29,8 @@ const POPUP_GRACE_MS = 4000
 /** 받는 중 이 시간 동안 아무것도 오지 않으면 멈춘 것으로 본다 */
 const STALL_MS = 60_000
 
-type CheckResult = { kind: "latest" } | { kind: "available"; update: Update } | { kind: "error"; message: string }
+export type CheckResult =
+  { kind: "latest" } | { kind: "available"; update: Update } | { kind: "error"; message: string }
 
 const UpdatesContext = createContext<{
   version: string | null
@@ -68,7 +69,11 @@ function readNumber(key: string) {
   }
 }
 
+/** 받는 중 한동안 아무것도 오지 않아 멈춘 것으로 본 경우 */
+class StallError extends Error {}
+
 function friendlyError(e: unknown) {
+  if (e instanceof StallError) return e.message
   const text = String(e)
   // 아직 릴리스가 없거나 latest.json이 없으면 GitHub가 404를 준다
   if (/404|not found|Could not fetch a valid release JSON/i.test(text)) return "아직 배포된 업데이트 정보가 없어요"
@@ -76,6 +81,55 @@ function friendlyError(e: unknown) {
   if (/signature/i.test(text)) return "업데이트 파일의 서명이 맞지 않아 설치하지 않았어요"
   // 그 밖의 원문(대개 영어)은 무엇이 실패했는지 먼저 말하고 괄호 안에 둔다
   return `업데이트 중 문제가 생겼어요 (${text})`
+}
+
+export type DownloadProgress = { done: number; total: number | null }
+
+/**
+ * 업데이트를 받아 설치하고 앱을 다시 연다 (업데이트 창과 시작 화면이 같이 쓴다).
+ * 네트워크가 멈추면 받기가 끝나지 않으므로, 한동안 아무것도 오지 않으면 멈춘 것으로 보고 실패한다.
+ * `current()`가 false면(받는 중에 취소) 다 받아도 설치하지 않는다. 실패하면 사용자에게 보여 줄 문장으로 던진다.
+ */
+export async function downloadAndInstall(
+  update: Update,
+  on: { progress: (p: DownloadProgress) => void; installing: () => void },
+  current: () => boolean = () => true,
+) {
+  let done = 0
+  let total: number | null = null
+  let lastTick = Date.now()
+  let watchdog: ReturnType<typeof setInterval> | undefined
+  const stalled = new Promise<never>((_, reject) => {
+    watchdog = setInterval(() => {
+      if (Date.now() - lastTick > STALL_MS)
+        reject(
+          new StallError("업데이트를 받는 중에 1분 넘게 응답이 없어요. 인터넷 연결을 확인하고 다시 시도해 주세요."),
+        )
+    }, 2000)
+  })
+  try {
+    try {
+      await Promise.race([
+        update.download((event) => {
+          if (!current()) return
+          lastTick = Date.now()
+          if (event.event === "Started") total = event.data.contentLength ?? null
+          else if (event.event === "Progress") done += event.data.chunkLength
+          on.progress({ done, total })
+        }),
+        stalled,
+      ])
+    } finally {
+      clearInterval(watchdog)
+    }
+    if (!current()) return
+    on.installing()
+    await update.install()
+    // Windows는 설치 프로그램이 앱을 닫고 설치한다. 그렇지 않은 경우를 위해 다시 시작한다.
+    await relaunch()
+  } catch (e) {
+    throw new Error(friendlyError(e))
+  }
 }
 
 async function runCheck(): Promise<CheckResult> {
@@ -87,20 +141,24 @@ async function runCheck(): Promise<CheckResult> {
   }
 }
 
-// 켤 때 확인은 화면을 그리기 전에 바로 시작한다. 시작 화면이 보이는 동안 받아 오므로 기다리는 시간이 거의 없다.
+// 켤 때 확인. 시작 화면이 시작하고, 시작 화면이 걷힌 뒤 UpdatesProvider가 같은 결과를 받는다 (두 번 묻지 않는다).
 let startupCheck: Promise<CheckResult> | null = null
+// 시작 화면에서 y/n으로 이미 답했는지. 답했으면 걷힌 뒤 업데이트 창을 또 띄우지 않고 사이드바에만 남긴다.
+let startupAnswered = false
 
-// 시작 화면이 보여 줄 켤 때 확인 결과. 위의 startupCheck는 받은 뒤 비우므로 따로 둔다.
-let bootCheck: Promise<CheckResult> | null = null
-
-/** 앱 모드로 켜질 때 main.tsx가 화면을 그리기 전에 부른다 (설치·제거 화면에서는 확인하지 않는다). */
-export function beginStartupUpdateCheck() {
-  if (!startupCheck && readBool(AUTO_KEY, true)) bootCheck = startupCheck = runCheck()
+/** 시작 화면이 새 버전을 물어 사용자가 답했을 때 부른다 */
+export function markStartupUpdateAnswered() {
+  startupAnswered = true
 }
 
-/** 켤 때 업데이트 확인 (자동 확인을 꺼 뒀으면 `null`). 결과를 읽기만 하고 쓰지 않는다. */
-export function startupUpdateCheck() {
-  return bootCheck
+/**
+ * 켤 때 업데이트 확인을 지금 시작한다. 시작 화면(StartupSplash)이 점검 순서에 이르면 부른다.
+ * 자동 확인을 꺼 뒀으면 확인하지 않고 `null`.
+ */
+export function beginStartupUpdateCheck() {
+  if (!readBool(AUTO_KEY, true)) return null
+  startupCheck ??= runCheck()
+  return startupCheck
 }
 
 /** `ready`: 시작 화면이 걷혔는지. 그 전에 새 버전을 찾으면 창은 걷힌 뒤에 띄운다. */
@@ -169,11 +227,11 @@ export function UpdatesProvider({ ready, children }: { ready: boolean; children:
     [applyResult],
   )
 
-  // 켤 때 확인 결과를 받고(새 버전이면 창을 띄운다), 그 뒤로는 몇 시간마다 사이드바에만 알린다.
-  // 켤 때 확인은 모듈을 읽을 때 한 번만 시작하므로 개발 모드에서 효과가 두 번 돌아도 한 번만 확인한다.
-  // 설정에서 자동 확인을 나중에 켜면 그때 새로 확인한다.
+  // 시작 화면이 걷히면 켤 때 확인 결과를 받고(새 버전이면 창을 띄운다), 그 뒤로는 몇 시간마다 사이드바에만 알린다.
+  // 켤 때 확인은 시작 화면이 이미 시작했다. 시작 화면이 그 순서에 이르기 전에 걷혔으면 여기서 시작한다.
+  // 같은 약속을 쓰므로 개발 모드에서 효과가 두 번 돌아도 한 번만 확인한다. 설정에서 자동 확인을 나중에 켜면 그때 새로 확인한다.
   useEffect(() => {
-    if (!autoCheck) return
+    if (!autoCheck || !ready) return
     let alive = true
     startupCheck ??= runCheck()
     const first = startupCheck
@@ -181,14 +239,14 @@ export function UpdatesProvider({ ready, children }: { ready: boolean; children:
       // 받은 결과는 한 번만 쓴다: 확인 중에 자동 확인을 껐다가 나중에 켜면 옛 결과 대신 새로 확인한다
       if (startupCheck === first) startupCheck = null
       const late = readyAt.current != null && Date.now() - readyAt.current > POPUP_GRACE_MS
-      if (alive) applyResult(result, false, !late)
+      if (alive) applyResult(result, false, !late && !startupAnswered)
     })
     const again = setInterval(() => void checkNow(false, false), RECHECK_MS)
     return () => {
       alive = false
       clearInterval(again)
     }
-  }, [autoCheck, applyResult, checkNow])
+  }, [autoCheck, ready, applyResult, checkNow])
 
   // 시작 화면이 걷힌 뒤에 창을 띄운다
   useEffect(() => {
@@ -243,43 +301,22 @@ function UpdateDialog({ update, open, onClose }: { update: Update | null; open: 
   const install = async () => {
     if (!update) return
     const mine = ++attempt.current
+    const current = () => attempt.current === mine
     setError(null)
-    let done = 0
-    let total: number | null = null
     setStage({ step: "downloading", done: 0, total: null })
-    // 네트워크가 멈추면 받기가 끝나지 않는다. 한동안 아무것도 오지 않으면 멈춘 것으로 보고 다시 시도하게 한다.
-    let lastTick = Date.now()
-    const watchdog = setInterval(() => {
-      if (attempt.current !== mine) return clearInterval(watchdog)
-      if (Date.now() - lastTick > STALL_MS) {
-        clearInterval(watchdog)
-        attempt.current++
-        setError("업데이트를 받는 중에 1분 넘게 응답이 없어요. 인터넷 연결을 확인하고 다시 시도해 주세요.")
-        setStage({ step: "ready" })
-      }
-    }, 2000)
     try {
-      await update.download((event) => {
-        if (attempt.current !== mine) return
-        lastTick = Date.now()
-        if (event.event === "Started") {
-          total = event.data.contentLength ?? null
-          setStage({ step: "downloading", done: 0, total })
-        } else if (event.event === "Progress") {
-          done += event.data.chunkLength
-          setStage({ step: "downloading", done, total })
-        }
-      })
-      clearInterval(watchdog)
-      if (attempt.current !== mine) return
-      setStage({ step: "installing" })
-      await update.install()
-      // Windows는 설치 프로그램이 앱을 닫고 설치한다. 그렇지 않은 경우를 위해 다시 시작한다.
-      await relaunch()
+      await downloadAndInstall(
+        update,
+        {
+          progress: (p) => setStage({ step: "downloading", ...p }),
+          installing: () => setStage({ step: "installing" }),
+        },
+        current,
+      )
     } catch (e) {
-      clearInterval(watchdog)
-      if (attempt.current !== mine) return
-      setError(friendlyError(e))
+      // 멈춰서 실패했으면 다시 시도하게 한다. 취소한 시도의 실패는 버린다.
+      if (!current()) return
+      setError((e as Error).message)
       setStage({ step: "ready" })
     }
   }

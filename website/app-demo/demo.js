@@ -128,6 +128,11 @@ const handlers = {
   disk_usage: () => ({ drive: "C:\\", total: 1_000e9, free: 214e9 }),
   list_drives: () => [{ letter: "C", label: "Windows", total: 1_000e9, free: 214e9, system: true }],
   get_settings: () => ({ backupRetentionDays: 30, retentionChoices: [30, 90, 180], exclusions: [] }),
+  // 시작 화면의 업데이트 확인: 서버에 묻는 시간만큼 기다렸다가 "새 버전 없음"
+  "plugin:updater|check": async () => {
+    await sleep(700)
+    return null
+  },
 }
 
 window.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener() {} }

@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react"
 
 import { api, scanApi, settingsApi, startupApi, storeApi, type BootInfo } from "@/lib/api"
 import { formatBytes } from "@/lib/format"
 import { WindowControls } from "@/components/window-controls"
-import { startupUpdateCheck } from "@/features/updates/updates"
+import {
+  beginStartupUpdateCheck,
+  downloadAndInstall,
+  markStartupUpdateAnswered,
+  type CheckResult,
+} from "@/features/updates/updates"
 
 /** index.html의 #boot와 같은 로고 (한 글자를 바꾸면 두 곳 다 바꾼다) */
 const LOGO = [
@@ -16,9 +21,12 @@ const LOGO = [
   "██      ██    ████    ██████    ██  ██    ██  ██      ██",
 ]
 const COMMAND = "robinx"
+const VERSION = import.meta.env.VITE_APP_VERSION
 
-/** 이보다 오래 걸리면 시작 화면을 걷고 목록 화면(스켈레톤)으로 넘어간다 */
-const MAX_MS = 12000
+/** 무언가 멈춰 이보다 오래 걸리면 시작 화면을 걷고 목록 화면(스켈레톤)으로 넘어간다 */
+const MAX_MS = 20000
+/** 업데이트 서버의 답을 이만큼 기다린다. 늦으면 시작 화면은 넘어가고 답은 뒤에서 받는다 */
+const UPDATE_WAIT_MS = 8000
 /** 점검 한 줄을 적어도 이만큼은 보여 준다 (빨리 끝나도 돌아가는 표시가 보이게) */
 const CHECK_MIN_MS = 260
 /** 진행 막대 칸 수 */
@@ -33,6 +41,10 @@ type Line =
   | { kind: "blank" }
   | { kind: "prompt"; prompt: string; command: string }
   | ({ kind: "check" } & CheckLine)
+  /** y/n 질문. 답하기 전에는 `answer`가 빈 문자열 */
+  | { kind: "ask"; text: string; answer: string }
+  /** 업데이트 받기 진행 막대 */
+  | { kind: "download"; done: number; total: number | null }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -84,6 +96,20 @@ function useBootOpened() {
   return opened
 }
 
+/** 업데이트 받기 막대. 전체 크기를 모르면 받은 크기만 */
+function DownloadBar({ done, total }: { done: number; total: number | null }) {
+  const ratio = total ? Math.min(1, done / total) : 0
+  const filled = Math.round(ratio * BAR)
+  return (
+    // 위 줄의 글자와 같은 칸에서 시작한다 ([ 태그 ] 다음)
+    <span className="tty-dim pl-[9ch]">
+      [<span className="tty-bar">{"█".repeat(filled)}</span>
+      {"░".repeat(BAR - filled)}]{" "}
+      {total ? `${Math.round(ratio * 100)}% · ${formatBytes(done)} / ${formatBytes(total)}` : formatBytes(done)}
+    </span>
+  )
+}
+
 function Spinner() {
   const frames = "|/-\\"
   const [i, setI] = useState(0)
@@ -116,8 +142,9 @@ function within<T>(p: Promise<T>, ms: number): Promise<T | null | undefined> {
 /**
  * 앱을 처음 열 때 보이는 터미널 부팅 화면. index.html의 시작 화면(로고·버전·커서)을 같은 자리·모양으로
  * 이어받아, 이 PC 정보(사용자, Windows, 프로세서, 메모리, 디스크)를 적고 `robinx`를 친 뒤,
- * 앱이 켜면서 실제로 읽는 것(설치 목록, Store 앱, 시작 프로그램, 백업, 제거 기록, 업데이트)을 한 줄씩 점검한다.
- * 다 적으면 브라운관이 꺼지듯 걷히고 앱 화면이 자리 잡는다(`onDone`). 아무 키나 누르면 바로 건너뛴다.
+ * 앱이 켜면서 실제로 읽는 것(설치 목록, Store 앱, 시작 프로그램, 백업, 제거 기록)을 한 줄씩 점검하고,
+ * 이 순서에 이르러 GitHub에 업데이트를 실제로 묻는다. 새 버전이 있으면 y/n으로 묻고, y면 여기서 받아 설치한다(앱이 다시 열린다).
+ * 다 적으면 브라운관이 꺼지듯 걷히고 앱 화면이 자리 잡는다(`onDone`). 건너뛸 수 없다 (사용자 요청).
  * PC 정보는 화면에만 쓰고 어디에도 보내지 않는다.
  */
 export function StartupSplash({ onDone }: { onDone?: () => void }) {
@@ -127,8 +154,16 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
   const [lines, setLines] = useState<Line[]>([])
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [done, setDone] = useState(false)
-  const [skipped, setSkipped] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
+  // y/n을 기다리거나 업데이트를 받는 동안은 멈춘 것이 아니므로 시간 제한을 세지 않는다
+  const [holding, setHolding] = useState(false)
+  // 지금 기다리는 y/n 답 (묻는 중이 아니면 null)
+  const answerRef = useRef<((yes: boolean) => void) | null>(null)
+  const answer = (yes: boolean) => {
+    const resolve = answerRef.current
+    answerRef.current = null
+    resolve?.(yes)
+  }
 
   // 읽을 것은 화면을 그리기 전에 모두 시작한다. 프로그램·시작 프로그램 화면과 같은 캐시라 두 번 읽지 않는다.
   const [jobs] = useState(() => {
@@ -147,8 +182,24 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
   })
 
   useEffect(() => {
+    if (holding) return
     const t = setTimeout(() => setTimedOut(true), MAX_MS)
     return () => clearTimeout(t)
+  }, [holding])
+
+  // y/n 답. 한글 입력 상태에서도 받게 글자 대신 키 자리(KeyY·KeyN)로 본다.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!answerRef.current || e.repeat) return
+      const key = e.key.toLowerCase()
+      const yes = e.code === "KeyY" || key === "y"
+      const no = e.code === "KeyN" || key === "n"
+      if (!yes && !no) return
+      e.preventDefault()
+      answer(yes)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
   }, [])
 
   useEffect(() => {
@@ -157,6 +208,9 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
     const wait = (ms: number) => sleep(reduce ? 0 : ms)
     const push = (line: Line) => alive && setLines((l) => [...l, line])
     const updateLast = (f: (line: Line) => Line) => alive && setLines((l) => [...l.slice(0, -1), f(l[l.length - 1])])
+
+    // 업데이트 확인 결과 (다음 줄의 비교와 끝의 y/n 질문이 쓴다)
+    const updateCheck: { result: CheckResult | null } = { result: null }
 
     // 실제로 읽는 것만 적는다. null이면 그 줄을 지운다(읽지 못한 것).
     const checks: [string, () => Promise<CheckLine | null>][] = [
@@ -211,19 +265,93 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
         },
       ],
       [
-        "업데이트 확인 중",
+        // 이때 처음으로 GitHub에 묻는다. 기다리는 시간이 실제 서버 응답 시간이다.
+        "업데이트 정보 받는 중 (GitHub)",
         async () => {
-          const check = startupUpdateCheck()
-          if (!check) return { tag: "SKIP", tone: "dim", text: "업데이트 자동 확인 꺼짐" }
-          const result = await within(check, 900)
-          if (!result) return { tag: "..", tone: "dim", text: "업데이트 아직 확인 중" }
-          if (result.kind === "latest") return { tag: "OK", tone: "ok", text: "최신 버전" }
-          if (result.kind === "available")
-            return { tag: "NEW", tone: "new", text: `새 버전 ${result.update.version} 있음` }
-          return { tag: "SKIP", tone: "dim", text: `업데이트 확인 못 함: ${result.message}` }
+          const t0 = performance.now()
+          const check = beginStartupUpdateCheck()
+          if (!check) return { tag: "SKIP", tone: "dim", text: "업데이트 자동 확인 꺼짐 (설정에서 켤 수 있음)" }
+          const result = await within(check, UPDATE_WAIT_MS)
+          if (result === null)
+            return { tag: "..", tone: "dim", text: "업데이트 서버 응답 늦음 · 새 버전이 있으면 사이드바에 표시" }
+          if (!result || result.kind === "error")
+            return { tag: "FAIL", tone: "warn", text: `업데이트 확인 못 함: ${result?.message ?? "알 수 없는 오류"}` }
+          updateCheck.result = result
+          return { tag: "OK", tone: "ok", text: `업데이트 정보 받음 (${took(performance.now() - t0)})` }
+        },
+      ],
+      [
+        `지금 버전(v${VERSION})과 비교하는 중`,
+        async () => {
+          const result = updateCheck.result
+          if (!result) return null
+          return result.kind === "available"
+            ? {
+                tag: "NEW",
+                tone: "new",
+                text: `새 버전 v${result.update.version} 있음 (지금 v${result.update.currentVersion})`,
+              }
+            : { tag: "OK", tone: "ok", text: `최신 버전 사용 중 (v${VERSION})` }
         },
       ],
     ]
+
+    /** 새 버전을 y/n으로 묻는다. y면 받아 설치하고(앱이 닫혔다 다시 열린다) 끝까지 돌아오지 않는다. */
+    const offerUpdate = async () => {
+      const result = updateCheck.result
+      if (result?.kind !== "available" || !alive) return
+      setHolding(true)
+      push({ kind: "ask", text: "지금 업데이트할까요?", answer: "" })
+      const yes = await new Promise<boolean>((resolve) => (answerRef.current = resolve))
+      if (!alive) return
+      markStartupUpdateAnswered()
+      updateLast((l) => (l.kind === "ask" ? { ...l, answer: yes ? "y" : "n" } : l))
+      await wait(240)
+      if (!yes) {
+        push({ kind: "check", tag: "SKIP", tone: "dim", text: "업데이트 나중에 · 사이드바에서 언제든 할 수 있음" })
+        setHolding(false)
+        return
+      }
+      push({ kind: "check", tag: "run", tone: "run", text: `v${result.update.version} 받는 중` })
+      push({ kind: "download", done: 0, total: null })
+      const t0 = performance.now()
+      let got = 0
+      try {
+        await downloadAndInstall(
+          result.update,
+          {
+            progress: (p) => {
+              got = p.done
+              updateLast((l) => (l.kind === "download" ? { ...l, ...p } : l))
+            },
+            installing: () =>
+              alive &&
+              setLines((l) => [
+                ...l.slice(0, -2),
+                {
+                  kind: "check",
+                  tag: "OK",
+                  tone: "ok",
+                  text: `받음 (${formatBytes(got)}, ${took(performance.now() - t0)})`,
+                },
+                { kind: "check", tag: "run", tone: "run", text: "설치하는 중 · 곧 다시 열려요" },
+              ]),
+          },
+          () => alive,
+        )
+      } catch (e) {
+        // 받지 못했으면 앱으로 넘어간다. 새 버전은 사이드바에 남아 다시 시도할 수 있다.
+        if (!alive) return
+        setLines((l) => [
+          ...l.filter((x) => x.kind !== "download" && !(x.kind === "check" && x.tag === "run")),
+          { kind: "check", tag: "FAIL", tone: "warn", text: `업데이트 못 함: ${(e as Error).message}` },
+        ])
+        setHolding(false)
+        return
+      }
+      // 설치가 시작되면 설치 프로그램이 앱을 닫는다. 그때까지 이 화면에 머문다.
+      await new Promise(() => {})
+    }
 
     void (async () => {
       await wait(260)
@@ -277,6 +405,10 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
         await wait(90)
       }
 
+      // 4. 새 버전이 있으면 y/n
+      await offerUpdate()
+      if (!alive) return
+
       await wait(200)
       push({ kind: "check", tag: "OK", tone: "ok", text: "준비 완료" })
       await wait(700)
@@ -289,20 +421,12 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
 
   // 한 번 걷히면 다시 덮지 않는다
   const [finished, setFinished] = useState(false)
-  const visible = !finished && !done && !skipped && !timedOut
+  const visible = !finished && !done && !timedOut
   useEffect(() => {
     if (visible) return
     setFinished(true)
     onDone?.()
   }, [visible, onDone])
-
-  // 아무 키나 누르면 건너뛴다. 마우스는 창을 끌 때 쓰므로 건너뛰지 않는다.
-  useEffect(() => {
-    if (!visible || !opened) return
-    const skip = () => setSkipped(true)
-    window.addEventListener("keydown", skip)
-    return () => window.removeEventListener("keydown", skip)
-  }, [visible, opened])
 
   const cursor = (
     <>
@@ -360,7 +484,33 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
                     <span className={line.tone === "dim" ? "tty-dim" : undefined}>{line.text}</span>
                   </>
                 )}
-                {i === last && line.kind !== "blank" && line.kind !== "rule" && cursor}
+                {line.kind === "ask" && (
+                  <>
+                    <span className="tty-tag">
+                      [<b className="tty-new">?</b>]
+                    </span>{" "}
+                    <span className="tty-strong">{line.text}</span>{" "}
+                    {line.answer ? (
+                      <span className="tty-dim">(y/n)</span>
+                    ) : (
+                      // 마우스로도 고를 수 있게
+                      <span className="tty-dim">
+                        (
+                        <button type="button" className="tty-key-button" onClick={() => answer(true)}>
+                          y
+                        </button>
+                        /
+                        <button type="button" className="tty-key-button" onClick={() => answer(false)}>
+                          n
+                        </button>
+                        )
+                      </span>
+                    )}{" "}
+                    {line.answer}
+                  </>
+                )}
+                {line.kind === "download" && <DownloadBar done={line.done} total={line.total} />}
+                {i === last && line.kind !== "blank" && line.kind !== "rule" && line.kind !== "download" && cursor}
               </div>
             ))}
             {progress && progress.done < progress.total && (
@@ -370,7 +520,6 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
               </div>
             )}
           </div>
-          {opened && <div className="tty-hint">아무 키나 누르면 건너뛰어요</div>}
           {!reduce && (
             <motion.div
               aria-hidden

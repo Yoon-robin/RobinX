@@ -2,11 +2,10 @@
 // 사이트(website/src/components/app-demo.tsx)와는 postMessage로 주고받는다:
 //   보냄 robin-demo:focus { rect }  — 지금 볼 곳 (사이트가 그쪽으로 확대해 따라간다). rect가 없으면 창 전체
 //   받음 robin-demo:visible { visible } — 창이 화면에 보이는지 (안 보이면 다음 동작을 미룬다)
-// 처음에는 앱의 시작 화면을 그대로 보여 주고, 한 바퀴 돈 뒤 다시 불러올 때(#again)는 시작 화면을 건너뛴다.
+// 앱의 시작 화면은 건너뛸 수 없으므로(앱과 같다) 한 바퀴 돌고 다시 불러올 때마다 시작 화면부터 보여 준다.
 // 움직임 줄이기면 커서·확대 없이 남은 흔적 찾기 결과 화면에서 멈춘다.
 
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
-const again = location.hash === "#again"
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 // ── 사이트와 주고받기 ─────────────────────────────────────────────
@@ -155,11 +154,7 @@ async function bootFinished() {
   const splash = () =>
     document.getElementById("boot") ?? document.querySelector('[aria-label="RobinX를 준비하는 중이에요"]')
   await until(() => document.querySelector("[data-sidebar=sidebar]"), 20000)
-  while (splash()) {
-    // 다시 볼 때는 앱처럼 아무 키나 눌러 건너뛴다 (창이 다 열린 뒤에만 듣는다)
-    if (again && window.__bootOpened) dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" }))
-    await sleep(120)
-  }
+  while (splash()) await sleep(120)
   await sleep(reduce ? 0 : 500)
 }
 
@@ -235,11 +230,10 @@ async function tour() {
   await moveTo(undo)
   await wait(2600)
 
-  // 처음부터 (시작 화면은 건너뛴다)
+  // 처음부터 (시작 화면부터 다시)
   cursor.style.opacity = "0"
   focus(null)
   await wait(600)
-  location.hash = "again"
   location.reload()
 }
 
