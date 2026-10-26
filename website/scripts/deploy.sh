@@ -7,7 +7,9 @@ cd "$(dirname "$0")/.."
 # 내려받기 단추·버전·SHA-256을 최신 릴리스에 맞춘다 (가져오지 못하면 저장소의 값을 쓴다)
 node scripts/release-info.mjs
 
-# 첫 화면의 실제 앱 시연: 앱 화면 코드를 가짜 응답과 함께 빌드해 public/app에 둔다 (app-demo/vite.config.mjs)
+# 첫 화면의 실제 앱 시연: 앱 화면 코드를 가짜 응답과 함께 빌드해 public/app에 둔다 (app-demo/vite.config.mjs).
+# 이전 빌드의 파일이 같이 올라가지 않게 먼저 비운다
+rm -rf public/app
 pnpm --dir .. exec vite build --config website/app-demo/vite.config.mjs
 
 # 폴더 자체는 다른 프로그램이 열고 있을 수 있어 안의 내용만 지운다
