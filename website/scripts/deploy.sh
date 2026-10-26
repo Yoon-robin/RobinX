@@ -7,6 +7,9 @@ cd "$(dirname "$0")/.."
 # 내려받기 단추·버전·SHA-256을 최신 릴리스에 맞춘다 (가져오지 못하면 저장소의 값을 쓴다)
 node scripts/release-info.mjs
 
+# 첫 화면의 실제 앱 시연: 앱 화면 코드를 가짜 응답과 함께 빌드해 public/app에 둔다 (app-demo/vite.config.mjs)
+pnpm --dir .. exec vite build --config website/app-demo/vite.config.mjs
+
 # 폴더 자체는 다른 프로그램이 열고 있을 수 있어 안의 내용만 지운다
 [ -d dist ] && find dist -mindepth 1 -delete
 # Git Bash가 /RobinX/ 를 Windows 경로로 바꾸지 않게 한다
