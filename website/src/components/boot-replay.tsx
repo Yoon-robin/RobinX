@@ -1,16 +1,34 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, m, useInView, useReducedMotion } from "motion/react"
-import { RotateCcw } from "lucide-react"
+import { Pause, Play, RotateCcw } from "lucide-react"
 
-import { RELEASE, shot, shotSrcSet } from "@/lib/site"
+import { RELEASE, demo } from "@/lib/site"
 import { TermWindow } from "@/components/term"
 
 /**
  * 앱을 켤 때 나오는 터미널 시작 화면(src/components/startup-splash.tsx)을 그대로 다시 보여 주고,
- * 다 적으면 브라운관이 꺼지듯 걷힌 뒤 앱 화면이 나온다. PC 정보와 숫자는 예시다
- * (앱 화면 그림과 같은 가짜 응답: scripts/ui-mock/mock.mjs의 boot_info, website/scripts/capture.mjs).
- * 화면에 들어오면 한 번 재생하고, 끝나면 "다시 보기"로 다시 볼 수 있다. 움직임 줄이기면 앱 화면만 보여 준다.
+ * 다 적으면 브라운관이 꺼지듯 걷힌 뒤 앱 창이 열리며 남은 흔적을 정리하는 녹화가 이어서 돈다.
+ * PC 정보와 숫자는 예시다 (앱 화면 그림과 같은 가짜 응답: scripts/ui-mock/mock.mjs의 boot_info),
+ * 녹화는 시험용 앱 Fixture Notes로 찍었다 (scripts/ui-mock/record-demo.mjs).
+ * - 화면에 들어오면 한 번 재생하고, 끝나면 "다시 보기"로 다시 볼 수 있다.
+ * - 녹화의 재생·일시정지 단추는 창 위 막대에 늘 있다. 화면에서 벗어나면 멈추고, 사용자가 멈춘 것은 다시 틀지 않는다.
+ * - 움직임 줄이기면 시작 화면 없이 녹화의 첫 장면만 보여 주고 저절로 재생하지 않는다.
+ * - 좁은 화면에서는 창 전체를 줄이면 글자가 4~5px이 되어, 대화창 부분만 찍은 녹화를 쓴다.
  */
+const NARROW_QUERY = "(max-width: 639px)"
+// 2배로 찍은 영상은 3배 무거워서, 고해상도 화면에만 준다 (휴대폰용 영상은 늘 2배)
+const wideVideo = () => demo(devicePixelRatio >= 1.5 ? "leftovers@2x.webm" : "leftovers.webm")
+
+function useNarrow() {
+  const [narrow, setNarrow] = useState(() => matchMedia(NARROW_QUERY).matches)
+  useEffect(() => {
+    const mq = matchMedia(NARROW_QUERY)
+    const onChange = () => setNarrow(mq.matches)
+    mq.addEventListener("change", onChange)
+    return () => mq.removeEventListener("change", onChange)
+  }, [])
+  return narrow
+}
 
 /** 앱의 로고와 같은 글자 (index.html의 #boot) */
 const LOGO = [
@@ -95,6 +113,8 @@ function Logo() {
 }
 
 const toneClass = { ok: "text-white", new: "text-review", run: "text-white/70" }
+const barButton =
+  "-my-1 inline-flex h-7 items-center gap-1.5 rounded-sm px-2 text-fine text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 
 export function BootReplay() {
   const reduce = useReducedMotion()
@@ -159,6 +179,55 @@ export function BootReplay() {
   }, [reduce, inView, run])
 
   const showApp = reduce || phase === "app"
+
+  // 앱 녹화: 재생 상태를 단추에 맞추고, 화면에서 벗어나면 멈췄다가 돌아오면 다시 튼다
+  const narrow = useNarrow()
+  // 녹화는 시작 화면이 다 걷힌 뒤에야 붙으므로, 붙는 순간을 알 수 있게 요소를 상태로 받는다
+  const [el, setEl] = useState<HTMLVideoElement | null>(null)
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!el) return
+    const sync = () => setPlaying(!el.paused)
+    sync()
+    // 사용자가 직접 멈췄으면 다시 보일 때도 저절로 틀지 않는다
+    let pausedByUser = false
+    const onPause = () => {
+      if (el.dataset.auto !== "1") pausedByUser = true
+      delete el.dataset.auto
+      sync()
+    }
+    const onPlay = () => {
+      pausedByUser = false
+      sync()
+    }
+    el.addEventListener("pause", onPause)
+    el.addEventListener("play", onPlay)
+    const io = reduce
+      ? null
+      : new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              if (!pausedByUser) el.play().catch(() => {})
+            } else if (!el.paused) {
+              el.dataset.auto = "1"
+              el.pause()
+            }
+          },
+          { threshold: 0.4 },
+        )
+    io?.observe(el)
+    return () => {
+      io?.disconnect()
+      el.removeEventListener("pause", onPause)
+      el.removeEventListener("play", onPlay)
+    }
+  }, [el, reduce])
+  const toggle = () => {
+    if (!el) return
+    if (el.paused) el.play().catch(() => {})
+    else el.pause()
+  }
+
   const last = lines.length - 1
   const filled = progress == null ? 0 : Math.round((progress / CHECKS.length) * BAR)
   const cursor = (
@@ -169,48 +238,69 @@ export function BootReplay() {
     <TermWindow
       title={showApp ? "RobinX" : `${PROMPT}${COMMAND}`}
       actions={
-        showApp &&
-        !reduce && (
-          <button
-            type="button"
-            onClick={() => {
-              // 처음 상태(로고와 커서)로 돌려놓고 다시 재생한다
-              setLines([])
-              setProgress(null)
-              setPhase("boot")
-              setRun((n) => n + 1)
-            }}
-            className="-my-1 inline-flex h-7 items-center gap-1.5 rounded-sm px-2 text-fine text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <RotateCcw className="size-3.5" aria-hidden />
-            {/* 좁은 화면에서는 막대가 좁아 짧게 */}
-            <span className="sm:hidden">다시 보기</span>
-            <span className="hidden sm:inline">시작 화면 다시 보기</span>
-          </button>
+        showApp && (
+          <>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={playing ? "녹화 일시정지" : "녹화 재생"}
+              className={barButton}
+            >
+              {playing ? <Pause className="size-3.5" aria-hidden /> : <Play className="size-3.5" aria-hidden />}
+              <span className="hidden sm:inline">{playing ? "일시정지" : "재생"}</span>
+            </button>
+            {!reduce && (
+              <button
+                type="button"
+                onClick={() => {
+                  // 처음 상태(로고와 커서)로 돌려놓고 다시 재생한다
+                  setLines([])
+                  setProgress(null)
+                  setPhase("boot")
+                  setRun((n) => n + 1)
+                }}
+                className={barButton}
+              >
+                <RotateCcw className="size-3.5" aria-hidden />
+                {/* 좁은 화면에서는 막대가 좁아 짧게 */}
+                <span className="sm:hidden">다시 보기</span>
+                <span className="hidden sm:inline">시작 화면 다시 보기</span>
+              </button>
+            )}
+          </>
         )
       }
       bodyClassName="relative overflow-hidden"
     >
-      <div ref={box} className="relative aspect-[8/7] [container-type:inline-size] sm:aspect-[16/10]">
+      {/* 창 비율은 녹화와 같게: 넓은 화면 16:10, 좁은 화면은 대화창만 찍은 784×736 */}
+      <div ref={box} className="relative aspect-[784/736] [container-type:inline-size] sm:aspect-[16/10]">
         <AnimatePresence initial={false} mode="wait">
           {showApp ? (
             <m.div
               key="app"
               className="absolute inset-0"
-              initial={{ opacity: 0, scale: 0.985 }}
+              // 앱 창이 열리듯 조금 작게 시작해 제자리로
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.15 } }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* 좁은 화면에서는 창 전체가 너무 작아 글자가 안 보이므로 "남은 흔적" 창 부분만 잘라 크게 보여 준다 */}
-              <img
-                src={shot("leftovers")}
-                srcSet={shotSrcSet("leftovers")}
-                alt="RobinX의 남은 흔적 창: 설치 정보와 연결된 흔적 3개는 미리 골라 두었고, 직접 확인이 필요한 항목 4개는 고르지 않은 상태예요. 보호 규칙으로 3개를 뺐어요."
-                width={1280}
-                height={800}
-                fetchPriority="high"
-                className="block w-full max-sm:mt-[-12.5%] max-sm:ml-[-33.3%] max-sm:w-[166.7%] max-sm:max-w-none"
+              <video
+                // 폭이 바뀌어 다른 영상으로 갈아 끼울 때 처음부터 다시 읽게 한다
+                key={narrow ? "narrow" : "wide"}
+                ref={setEl}
+                src={narrow ? demo("leftovers-narrow.webm") : wideVideo()}
+                poster={demo(narrow ? "leftovers-narrow-poster.jpg" : "leftovers-poster.jpg")}
+                width={narrow ? 784 : 1280}
+                height={narrow ? 736 : 800}
+                muted
+                loop
+                playsInline
+                autoPlay={!reduce}
+                preload={reduce ? "metadata" : "auto"}
+                onClick={toggle}
+                aria-label="RobinX 녹화: 남은 흔적을 찾아 고르고, 백업한 뒤 정리하는 장면"
+                className="block size-full cursor-pointer object-cover"
               />
             </m.div>
           ) : (

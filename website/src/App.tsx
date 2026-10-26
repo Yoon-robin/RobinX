@@ -3,7 +3,6 @@ import { LazyMotion, MotionConfig, domAnimation } from "motion/react"
 import { Nav } from "@/sections/nav"
 import { Hero } from "@/sections/hero"
 import { Story } from "@/sections/story"
-import { Walkthrough } from "@/sections/walkthrough"
 import { Features } from "@/sections/features"
 import { Status } from "@/sections/status"
 import { Faq } from "@/sections/faq"
@@ -27,7 +26,6 @@ export default function App() {
           <Hero />
           <Story />
           <Features />
-          <Walkthrough />
           <Status />
           <Faq />
           <Cta />

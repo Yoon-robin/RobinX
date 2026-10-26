@@ -8,7 +8,7 @@ import { Typed } from "@/components/typed"
 
 /**
  * 첫 화면: 터미널에 치듯 나오는 제목, 오른쪽에 한 줄과 받기, 그 아래 큰 터미널 창.
- * 창은 앱을 켤 때 나오는 시작 화면을 다시 보여 준 뒤 앱 화면("남은 흔적" 창)으로 넘어간다.
+ * 창은 앱을 켤 때 나오는 시작 화면을 다시 보여 준 뒤 앱 창이 열리며 남은 흔적을 정리하는 녹화가 돈다.
  * 그림과 PC 정보는 가짜 응답으로 만든 예시라 실제 PC의 이름이나 프로그램은 나오지 않는다.
  */
 export function Hero() {
@@ -41,7 +41,7 @@ export function Hero() {
       <figure className="frame mt-8 sm:mt-10">
         <BootReplay />
         <figcaption className="mt-3 max-w-[60ch] text-fine text-muted-foreground">
-          PC 정보와 프로그램은 예시예요.
+          소리 없는 녹화예요. PC 정보와 프로그램은 예시예요.
         </figcaption>
       </figure>
     </section>
