@@ -3,7 +3,10 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 import process from "node:process";
+import pkg from "./package.json";
 const host = process.env.TAURI_DEV_HOST;
+// 시작 화면(index.html의 %VITE_APP_VERSION%, 앱의 import.meta.env)에 보이는 버전
+process.env.VITE_APP_VERSION = pkg.version;
 
 // https://vite.dev/config/
 export default defineConfig(() => ({

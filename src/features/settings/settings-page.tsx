@@ -11,7 +11,9 @@ import {
   Loader2,
   Monitor,
   Moon,
+  LayoutGrid,
   Palette,
+  SquareTerminal,
   Sun,
   Trash2,
   TriangleAlert,
@@ -142,7 +144,7 @@ function Choice<T extends string | number | null>({
 
 export function SettingsPage() {
   const queryClient = useQueryClient()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, look, setLook } = useTheme()
   const settings = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get })
   const usage = useQuery({ queryKey: ["backup-usage"], queryFn: settingsApi.backupUsage })
   const [pendingRetention, setPendingRetention] = useState<number | null | undefined>(undefined)
@@ -233,7 +235,7 @@ export function SettingsPage() {
         <Section
           icon={Palette}
           title="화면"
-          description="밝기 테마를 고르세요. 시스템을 고르면 Windows 설정을 따라가요."
+          description="밝기 테마와 모양을 고르세요. 테마에서 시스템을 고르면 Windows 설정을 따라가요."
         >
           <div className="grid gap-4">
             <div>
@@ -246,6 +248,18 @@ export function SettingsPage() {
                   { value: "dark", label: "어둡게", icon: Moon },
                   { value: "light", label: "밝게", icon: Sun },
                   { value: "system", label: "시스템", icon: Monitor },
+                ]}
+              />
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium">모양</p>
+              <Choice
+                label="모양"
+                value={look}
+                onChange={setLook}
+                options={[
+                  { value: "default", label: "기본", icon: LayoutGrid },
+                  { value: "terminal", label: "터미널", icon: SquareTerminal },
                 ]}
               />
             </div>

@@ -9,17 +9,24 @@ import { EASE_OUT_QUINT } from "@/components/motion"
 
 type Theme = "dark" | "light" | "system"
 type Resolved = "dark" | "light"
+/** 화면 모양: 기본 또는 터미널(고정폭 글꼴, 각진 모서리, 초록 형광색). 밝기 테마와 따로 고른다. */
+export type Look = "default" | "terminal"
 
 const STORAGE_KEY = "robin.theme"
+const LOOK_KEY = "robin.look"
 
 const ThemeContext = createContext<{
   theme: Theme
   resolvedTheme: Resolved
   setTheme: (theme: Theme) => void
+  look: Look
+  setLook: (look: Look) => void
 }>({
   theme: "dark",
   resolvedTheme: "dark",
   setTheme: () => {},
+  look: "default",
+  setLook: () => {},
 })
 
 export const useTheme = () => useContext(ThemeContext)
@@ -33,6 +40,14 @@ function loadTheme(): Theme {
   }
 }
 
+function loadLook(): Look {
+  try {
+    return localStorage.getItem(LOOK_KEY) === "terminal" ? "terminal" : "default"
+  } catch {
+    return "default"
+  }
+}
+
 function systemTheme(): Resolved {
   return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
 }
@@ -41,6 +56,7 @@ function systemTheme(): Resolved {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const [system, setSystem] = useState<Resolved>(systemTheme)
+  const [look, setLookState] = useState<Look>(loadLook)
   const resolvedTheme = theme === "system" ? system : theme
 
   useEffect(() => {
@@ -64,6 +80,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.colorScheme = resolvedTheme
   }, [resolvedTheme])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("terminal", look === "terminal")
+  }, [look])
+
   const value = useMemo(
     () => ({
       theme,
@@ -76,8 +96,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           // 저장이 막혀 있어도 이번 실행 동안은 테마가 바뀐다.
         }
       },
+      look,
+      setLook: (next: Look) => {
+        setLookState(next)
+        try {
+          localStorage.setItem(LOOK_KEY, next)
+        } catch {
+          // 저장이 막혀 있어도 이번 실행 동안은 모양이 바뀐다.
+        }
+      },
     }),
-    [theme, resolvedTheme],
+    [theme, resolvedTheme, look],
   )
 
   return (

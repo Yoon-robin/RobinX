@@ -14,6 +14,7 @@
           document.documentElement.classList.replace("dark", "light")
           document.documentElement.style.colorScheme = "light"
         }
+        if (localStorage.getItem("robin.look") === "terminal") document.documentElement.classList.add("terminal")
       } catch {}
       // 창 열림: 창이 실제로 보인 다음에 시작 화면 판을 키운다. 먼저 시작하면 창이 뜰 때 이미 다 커져 있다.
       // 다 커지면 .booting을 떼고 바탕을 칠한다 (main.tsx는 이 신호를 기다렸다가 시작 화면을 넘긴다).
@@ -62,37 +63,60 @@
         60% { opacity: 1; }
         to { opacity: 1; transform: scale(1); }
       }
-      /* 앱 코드가 뜨기 전 시작 화면. React의 StartupSplash와 같은 자리·모양이라 바뀌는 게 보이지 않는다. */
-      #boot {
-        position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column;
-        align-items: center; justify-content: center; padding-top: 3rem; padding-bottom: 4rem;
-        /* 앱의 --background·--foreground·--primary·--muted와 같은 색 (index.css의 oklch 값을 sRGB로 옮김) */
-        background: #171718; overflow: hidden;
-        color: #f1f1f3; font-family: "Pretendard Variable", Pretendard, -apple-system, "Segoe UI", sans-serif;
-        transition: opacity 0.3s ease;
+      /* 터미널 부팅 화면. 앱 코드가 뜨기 전(#boot)과 React의 StartupSplash가 같은 클래스(.tty-*)를 써서
+         자리·모양이 같다. 그래서 넘겨줄 때 바뀌는 게 보이지 않는다. 테마와 관계없이 늘 어둡다. */
+      .tty {
+        position: fixed; inset: 0; z-index: 200; overflow: hidden;
+        background: #0a0c10; color: #d5dbe3;
+        font: 13px/1.65 "Cascadia Mono", "Cascadia Code", Consolas, "D2Coding", "Malgun Gothic", monospace;
+        font-variant-ligatures: none;
       }
-      .light #boot { background: #f7f7f8; color: #18181b; }
-      #boot svg { filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35)); }
-      #boot .name { margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
-      #boot .bar { margin-top: 1.5rem; width: 12rem; height: 4px; border-radius: 999px; overflow: hidden; background: #262628; }
-      .light #boot .bar { background: #f0f0f1; }
-      #boot .bar i { display: block; width: 33%; height: 100%; border-radius: 999px; background: #50ddd5; animation: boot-sweep 1.4s linear infinite; }
-      .light #boot .bar i { background: #007980; }
-      #boot .msg { margin-top: 1rem; font-size: 0.875rem; opacity: 0.6; }
-      @keyframes boot-sweep { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+      /* 주사선과 가장자리 그늘 (움직이지 않는다) */
+      .tty::before, .tty::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+      .tty::before { background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px); }
+      .tty::after { background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55)); }
+      .tty-body { position: relative; z-index: 1; width: min(38rem, calc(100% - 4rem)); margin: 0 auto; padding-top: 20vh; }
+      .tty-logo {
+        width: max-content; margin: 0 0 1.25rem; font: inherit; font-size: 13px; line-height: 1.05; white-space: pre;
+        filter: drop-shadow(0 0 10px rgba(60, 200, 240, 0.35));
+      }
+      /* 색은 줄마다 칠한다: 움직이는 자식은 부모의 background-clip: text에서 빠져 안 보일 수 있다.
+         줄은 모두 로고 폭만큼 넓어서 그라데이션이 줄끼리 이어진다. */
+      .tty-logo span {
+        display: block; color: transparent;
+        background: linear-gradient(90deg, #3cf0ef, #3aa0f5 55%, #9b5cf6); -webkit-background-clip: text; background-clip: text;
+      }
+      .tty-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.65em; }
+      .tty-dim { color: #6e7784; }
+      .tty-prompt { color: #50ddd5; }
+      .tty-tag { color: #6e7784; }
+      .tty-tag b { display: inline-block; width: 6ch; text-align: center; font-weight: 700; }
+      .tty-ok { color: #4ade80; }
+      .tty-run { color: #50ddd5; }
+      .tty-new { color: #fbbf24; }
+      .tty-warn { color: #f87171; }
+      .tty-cursor { display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: #50ddd5; animation: tty-blink 1s steps(1) infinite; }
+      .tty-hint { position: absolute; z-index: 1; left: 0; right: 0; bottom: 1.75rem; text-align: center; font-size: 12px; color: #4b525c; animation: tty-fade 0.4s 0.9s both; }
+      @keyframes tty-fade { from { opacity: 0; } }
+      @keyframes tty-blink { 50% { opacity: 0; } }
+      /* 창이 열리는 동안 로고가 한 줄씩 켜진다 (창 열림 0.52초 안에 끝난다) */
+      #boot .tty-logo span { animation: tty-row 0.24s ease-out both; animation-delay: calc(var(--i) * 45ms + 60ms); }
+      @keyframes tty-row { from { opacity: 0; transform: translateX(-6px); } }
       @media (prefers-reduced-motion: reduce) {
         html.booting #boot { animation: none; opacity: 1; }
-        #boot .bar i { animation: none; width: 100%; opacity: 0.5; }
+        #boot .tty-logo span, .tty-cursor, .tty-hint { animation: none; }
       }
     </style>
   </head>
 
   <body>
-    <div id="boot" data-tauri-drag-region role="status" aria-label="RobinX를 여는 중이에요">
-      <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"> <defs> <linearGradient id="boot-tile" x1="0" y1="0" x2="0" y2="1"> <stop offset="0" stop-color="#1b2030"/> <stop offset="1" stop-color="#0d1018"/> </linearGradient> <linearGradient id="boot-rim" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#2ee6f0"/> <stop offset="1" stop-color="#8b5cf6"/> </linearGradient> <linearGradient id="boot-ink" x1="0.1" y1="0" x2="0.9" y2="1"> <stop offset="0" stop-color="#3cf0ef"/> <stop offset="0.5" stop-color="#3aa0f5"/> <stop offset="1" stop-color="#9b5cf6"/> </linearGradient> <linearGradient id="boot-leg" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#36c8f2"/> <stop offset="1" stop-color="#a35cf7"/> </linearGradient> </defs> <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#boot-tile)"/> <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" fill="none" stroke="url(#boot-rim)" stroke-opacity="0.85"/> <!-- R의 윗부분: 비스듬히 잘린 가로 획 + 둥근 고리 --> <path fill="url(#boot-ink)" d="M13 14 H40 C47.7 14 52.5 18.8 52.5 25.5 C52.5 31.6 48.4 36 42.6 36.6 L37.6 30.8 C40.8 30.4 42.6 28.6 42.6 25.9 C42.6 23.2 40.9 21.6 38.3 21.6 H19.8 Z"/> <!-- X의 긴 획 = R의 다리 --> <path fill="url(#boot-leg)" d="M17.5 28.5 H30 L51.5 50.5 H39 Z"/> <!-- X의 짧은 획 --> <path fill="url(#boot-ink)" d="M23.5 37.5 L29.6 43.4 L24 50.5 H11.5 Z"/> </svg> 
-      <div class="name">RobinX</div>
-      <div class="bar"><i></i></div>
-      <div class="msg">여는 중이에요</div>
+    <!-- 앱 코드가 뜨기 전 첫 화면. React의 StartupSplash(components/startup-splash.tsx)가 같은 모양으로 이어받는다. -->
+    <div id="boot" class="tty" data-tauri-drag-region role="status" aria-label="RobinX를 여는 중이에요">
+      <div class="tty-body" data-tauri-drag-region>
+        <pre class="tty-logo" aria-hidden="true"><span style="--i:0">████████              ██        ██            ██      ██</span><span style="--i:1">██      ██    ████    ██████        ██████      ██  ██</span><span style="--i:2">████████    ██    ██  ██    ██  ██  ██    ██      ██</span><span style="--i:3">██    ██    ██    ██  ██    ██  ██  ██    ██    ██  ██</span><span style="--i:4">██      ██    ████    ██████    ██  ██    ██  ██      ██</span></pre>
+        <div class="tty-line tty-dim">RobinX %VITE_APP_VERSION% · Windows x64</div>
+        <div class="tty-line"><span class="tty-prompt">C:\&gt;</span> <span class="tty-cursor"></span></div>
+      </div>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
