@@ -491,7 +491,7 @@ export function ProgramsPage({ active = true }: { active?: boolean }) {
                       value={query}
                       onChange={setQuery}
                       onEnter={() => visible[0] && setSelected(visible[0])}
-                      className="max-w-64 min-w-40 flex-1"
+                      className="max-w-64 min-w-32 flex-1"
                     />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

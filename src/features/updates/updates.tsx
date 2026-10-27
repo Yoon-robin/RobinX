@@ -5,6 +5,7 @@ import { check, type Update } from "@tauri-apps/plugin-updater"
 import { Download, Loader2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
+import { isBusy } from "@/lib/busy"
 import { formatBytes } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -300,6 +301,11 @@ function UpdateDialog({ update, open, onClose }: { update: Update | null; open: 
 
   const install = async () => {
     if (!update) return
+    // 설치하면 앱이 닫혔다 다시 열린다. 정리·되돌리기·제거가 도는 중이면 일부만 끝난 채 끊기므로 끝난 뒤에 하게 한다.
+    if (isBusy()) {
+      setError("정리·되돌리기·제거가 진행 중이에요. 끝난 뒤에 업데이트해 주세요.")
+      return
+    }
     const mine = ++attempt.current
     const current = () => attempt.current === mine
     setError(null)
