@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko" class="dark booting" style="color-scheme: dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RobinX</title>
+    <!-- 브라우저가 favicon.ico를 찾다 404를 내지 않게 (창 아이콘은 exe 아이콘을 쓴다) -->
+    <link rel="icon" href="data:," />
+    <script>
+      // 저장된 테마를 바로 적용하고, 창을 곧바로 보여 준다 (앱 코드를 읽는 동안 아래 시작 화면이 보인다).
+      try {
+        const saved = localStorage.getItem("robin.theme")
+        if (saved === "light" || (saved === "system" && matchMedia("(prefers-color-scheme: light)").matches)) {
+          document.documentElement.classList.replace("dark", "light")
+          document.documentElement.style.colorScheme = "light"
+        }
+        // 모양은 처음에 터미널이다 (설정에서 "기본"을 고른 경우만 뺀다)
+        if (localStorage.getItem("robin.look") !== "default") document.documentElement.classList.add("terminal")
+      } catch {}
+      // 창 열림: 창이 실제로 보인 다음에 시작 화면 판을 키운다. 먼저 시작하면 창이 뜰 때 이미 다 커져 있다.
+      // 다 커지면 .booting을 떼고 바탕을 칠한다 (main.tsx는 이 신호를 기다렸다가 시작 화면을 넘긴다).
+      ;(() => {
+        const html = document.documentElement
+        let started = false
+        const opened = () => {
+          if (window.__bootOpened) return
+          window.__bootOpened = true
+          html.classList.remove("booting", "opening")
+          window.dispatchEvent(new Event("robin:boot-opened"))
+        }
+        const start = () => {
+          if (started) return
+          started = true
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              html.classList.add("opening")
+              setTimeout(opened, 800) // animationend가 오지 않을 때를 위한 안전장치
+            }),
+          )
+        }
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) opened()
+        addEventListener("animationend", (e) => e.animationName === "boot-open" && opened())
+        let shown = null
+        try {
+          shown = window.__TAURI_INTERNALS__?.invoke("plugin:window|show", { label: "main" })
+        } catch {}
+        if (shown) shown.then(start, start)
+        else addEventListener("DOMContentLoaded", start)
+        setTimeout(start, 2500)
+        setTimeout(opened, 4000)
+      })()
+    </script>
+    <style>html.booting,html.booting body{background:0 0!important}html.booting #root{visibility:hidden}html.booting #boot{opacity:0;will-change:transform, opacity;border-radius:12px}html.booting.opening #boot{animation:.52s cubic-bezier(.22,1,.36,1) both boot-open}@keyframes boot-open{0%{opacity:0;transform:scale(.9)}60%{opacity:1}to{opacity:1;transform:scale(1)}}.tty{z-index:200;color:#d9d9d9;font-variant-ligatures:none;background:#0b0b0b;font:13px/1.65 Cascadia Mono,Cascadia Code,Consolas,D2Coding,Malgun Gothic,monospace;position:fixed;inset:0;overflow:hidden}.tty:before,.tty:after{content:"";pointer-events:none;position:absolute;inset:0}.tty:before{background:repeating-linear-gradient(#ffffff06 0 1px,#0000 1px 3px)}.tty:after{background:radial-gradient(#0000 55%,#0000008c)}.tty-body{z-index:1;flex-direction:column;justify-content:flex-end;width:min(40rem,100% - 4rem);max-height:calc(100vh - 3.5rem);margin:0 auto;padding-top:clamp(1.5rem,11vh,7rem);display:flex;position:relative;overflow:hidden}.tty-body>*{flex-shrink:0}.tty-logo{width:max-content;font:inherit;white-space:pre;filter:drop-shadow(0 0 10px #ffffff38);margin:0 0 1.25rem;font-size:13px;line-height:1.05}.tty-logo span{color:#0000;background:linear-gradient(#fff,#9a9a9a);-webkit-background-clip:text;background-clip:text;display:block}.tty-line{white-space:nowrap;text-overflow:ellipsis;min-height:1.65em;overflow:hidden}.tty-dim{color:#6f6f6f}.tty-prompt{color:#fff;font-weight:700}.tty-tag{color:#6f6f6f}.tty-key{color:#8a8a8a;width:8em;padding-left:2ch;display:inline-block}.tty-bar{color:#e6e6e6}.tty-strong{color:#fff;font-weight:700}.tty-tag b{text-align:center;width:6ch;font-weight:700;display:inline-block}.tty-ok{color:#fff}.tty-run{color:#bdbdbd}.tty-new{color:#fbbf24}.tty-warn{color:#f87171}.tty-cursor{vertical-align:-.2em;background:#e6e6e6;width:.6em;height:1.15em;animation:1s step-end infinite tty-blink;display:inline-block}.tty-key-button{font:inherit;color:#e6e6e6;cursor:pointer;text-underline-offset:3px;background:0 0;border:0;padding:0 .1em;text-decoration:underline}.tty-key-button:hover{color:#fff}.tty-key-button:focus-visible{outline-offset:1px;outline:1px solid #e6e6e6}@keyframes tty-blink{50%{opacity:0}}#boot .tty-logo span{animation:.24s ease-out both tty-row;animation-delay:calc(var(--i) * 45ms + 60ms)}@keyframes tty-row{0%{opacity:0;transform:translate(-6px)}}@media (prefers-reduced-motion:reduce){html.booting #boot{opacity:1;animation:none}#boot .tty-logo span,.tty-cursor{animation:none}}</style>
+    <script type="module" crossorigin src="./assets/index-BpNYAwat.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bnckd9KB.css">
+  </head>
+
+  <body>
+    <!-- 앱 코드가 뜨기 전 첫 화면. React의 StartupSplash(components/startup-splash.tsx)가 같은 모양으로 이어받는다. -->
+    <div id="boot" class="tty" data-tauri-drag-region role="status" aria-label="RobinX를 여는 중이에요">
+      <div class="tty-body" data-tauri-drag-region>
+        <pre class="tty-logo" aria-hidden="true"><span style="--i:0">████████              ██        ██            ██      ██</span><span style="--i:1">██      ██    ████    ██████        ██████      ██  ██</span><span style="--i:2">████████    ██    ██  ██    ██  ██  ██    ██      ██</span><span style="--i:3">██    ██    ██    ██  ██    ██  ██  ██    ██    ██  ██</span><span style="--i:4">██      ██    ████    ██████    ██  ██    ██  ██      ██</span></pre>
+        <div class="tty-line tty-dim">RobinX 0.1.16 · Windows x64</div>
+        <div class="tty-line"> <span class="tty-cursor"></span></div>
+      </div>
+    </div>
+    <div id="root"></div>
+  </body>
+</html>
