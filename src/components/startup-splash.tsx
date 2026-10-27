@@ -274,8 +274,16 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
           const result = await within(check, UPDATE_WAIT_MS)
           if (result === null)
             return { tag: "..", tone: "dim", text: "업데이트 서버 응답 늦음 · 새 버전이 있으면 사이드바에 표시" }
-          if (!result || result.kind === "error")
-            return { tag: "FAIL", tone: "warn", text: `업데이트 확인 못 함: ${result?.message ?? "알 수 없는 오류"}` }
+          if (!result || result.kind === "error") {
+            const message = result?.message ?? "알 수 없는 오류"
+            // 인터넷이 없거나 아직 배포된 정보가 없는 것은 앱의 문제가 아니므로 빨갛게 알리지 않는다
+            const benign = /인터넷|아직 배포/.test(message)
+            return {
+              tag: benign ? "SKIP" : "FAIL",
+              tone: benign ? "dim" : "warn",
+              text: `업데이트 확인 못 함: ${message}`,
+            }
+          }
           updateCheck.result = result
           return { tag: "OK", tone: "ok", text: `업데이트 정보 받음 (${took(performance.now() - t0)})` }
         },

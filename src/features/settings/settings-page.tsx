@@ -490,7 +490,7 @@ function UpdatesSection() {
     <Section
       icon={Download}
       title="업데이트"
-      description="앱을 켤 때 새 버전이 있으면 업데이트 창으로, 쓰는 동안 나오면 사이드바에 알려 줘요. 설치는 직접 누를 때만 하고, 서명을 확인한 파일만 설치해요."
+      description="앱을 켤 때 시작 화면에서 새 버전을 확인하고 설치할지 y/n으로 물어요. 쓰는 동안 나오면 사이드바에 알려 줘요. 설치는 직접 고를 때만 하고, 서명을 확인한 파일만 설치해요."
     >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="min-w-0 flex-1 text-sm">
@@ -517,7 +517,7 @@ function UpdatesSection() {
         <span>
           <span className="block font-medium">앱을 켤 때 확인하기</span>
           <span className="block text-xs text-muted-foreground">
-            켜 두면 시작하고 몇 초 뒤, 그 뒤로는 몇 시간마다 새 버전이 있는지 살펴봐요.
+            켜 두면 시작 화면에서 새 버전을 확인하고, 그 뒤로는 몇 시간마다 살펴봐요.
           </span>
         </span>
         <Switch checked={autoCheck} onCheckedChange={setAutoCheck} aria-label="앱을 켤 때 업데이트 확인하기" />

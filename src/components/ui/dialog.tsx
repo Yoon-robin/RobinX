@@ -56,27 +56,52 @@ function DialogOverlay({
   )
 }
 
+/**
+ * 창 내용이 그려질 때(포커스가 창 안으로 옮겨 가기 전에) 그때 포커스가 있던 요소를 기억한다.
+ * DialogContent 함수는 창이 닫혀 있을 때도 불리므로 거기서는 열기 직전을 알 수 없다.
+ */
+function RememberOpener({ into }: { into: React.RefObject<Element | null> }) {
+  React.useLayoutEffect(() => {
+    into.current = document.activeElement
+  }, [into])
+  return null
+}
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
   onInteractOutside,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // 열기 직전에 포커스가 있던 요소 (RememberOpener가 채운다). Radix는 DialogTrigger로 연 창만 닫을 때 포커스를 되돌려 주고,
+  // 상태로 여는 창(남은 흔적 찾기·강제 제거 등)은 body로 가 버려서 키보드로 쓰던 사람이 처음부터 다시 Tab을 눌러야 했다.
+  const opener = React.useRef<Element | null>(null)
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         onInteractOutside={keepOpenOnTitlebar(onInteractOutside as (event: Event) => void)}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event)
+          if (event.defaultPrevented) return
+          const el = opener.current
+          if (el instanceof HTMLElement && el !== document.body && el.isConnected) {
+            event.preventDefault()
+            el.focus({ preventScroll: true })
+          }
+        }}
         className={cn(
           "fixed top-[max(4rem,12vh)] left-1/2 z-50 grid max-h-[calc(100vh-max(4rem,12vh)-1rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 gap-4 overflow-y-auto bg-popover p-4 text-sm text-popover-foreground duration-200 ease-(--ease-out-quint) outline-none data-closed:duration-150 sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}
       >
+        <RememberOpener into={opener} />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>

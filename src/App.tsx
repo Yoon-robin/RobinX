@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ChevronRight } from "lucide-react"
 import { MotionConfig, motion, useReducedMotion } from "motion/react"
 
-import { AppSidebar, type Page } from "@/components/app-sidebar"
+import { AppSidebar, pageOrder, type Page } from "@/components/app-sidebar"
 import { AppReadyContext } from "@/lib/app-ready"
 import { IconTooltip } from "@/components/icon-tooltip"
 import { StartupSplash } from "@/components/startup-splash"
@@ -214,6 +214,25 @@ export default function App() {
     const onNavigate = (e: Event) => setPage((e as CustomEvent<Page>).detail)
     window.addEventListener("robin:navigate", onNavigate)
     return () => window.removeEventListener("robin:navigate", onNavigate)
+  }, [])
+
+  // Ctrl+1~6: 사이드바 순서대로 화면을 옮긴다. 시작 화면이나 대화상자·시트가 열려 있으면 뒤 화면을 바꾸지 않는다.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) return
+      const next = pageOrder[Number(e.key) - 1]
+      if (!next || !/^[1-9]$/.test(e.key)) return
+      if (
+        document.querySelector(
+          '[data-slot="dialog-content"], [data-slot="sheet-content"], [aria-label="RobinX를 준비하는 중이에요"]',
+        )
+      )
+        return
+      e.preventDefault()
+      setPage(next)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
   }, [])
 
   return (

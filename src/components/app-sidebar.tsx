@@ -46,6 +46,10 @@ const toolItems: Item[] = [
   { page: "settings", label: "설정", icon: Settings },
 ]
 
+/** 사이드바 순서 그대로. Ctrl+1~6으로 옮겨 갈 때 쓴다 (App.tsx) */
+export const pageOrder: Page[] = [...mainItems, ...toolItems].map((item) => item.page)
+const shortcut = (page: Page) => `Ctrl+${pageOrder.indexOf(page) + 1}`
+
 export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page: Page) => void }) {
   const { version, available, openUpdate } = useUpdates()
   // 제거했지만 아직 남은 흔적을 찾아보지 않은 프로그램 수 (남은 흔적 정리 옆에 표시)
@@ -58,8 +62,9 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
         <SidebarMenuButton
           isActive={page === item.page}
           aria-current={page === item.page ? "page" : undefined}
+          aria-keyshortcuts={shortcut(item.page).replace("Ctrl", "Control")}
           onClick={() => onNavigate(item.page)}
-          tooltip={item.label}
+          tooltip={`${item.label} (${shortcut(item.page)})`}
           // 마우스를 올린 항목은 선택된 항목(진한 알약)보다 옅게
           className="relative isolate h-9 rounded-lg hover:bg-sidebar-accent/45 data-[active=true]:bg-transparent data-[active=true]:font-semibold data-[active=true]:hover:bg-transparent"
         >
