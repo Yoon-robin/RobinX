@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 프로필 이미지: 검정(#0b0b0b) 바탕, 가운데에 R, 흰 글로우. 원형으로 잘려도 R이 남는다 -->
+  <defs>
+    <linearGradient id="ink" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="52">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9a9a9a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.9" result="near"/>
+      <feFlood flood-color="#ffffff" flood-opacity="0.32"/><feComposite in2="near" operator="in" result="nearGlow"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="far"/>
+      <feFlood flood-color="#ffffff" flood-opacity="0.14"/><feComposite in2="far" operator="in" result="farGlow"/>
+      <feMerge><feMergeNode in="farGlow"/><feMergeNode in="nearGlow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="#0b0b0b"/>
+  <g transform="translate(512 512) scale(14) translate(-32 -32)">
+    <path d="M12 12h8v40h-8zM20 12h24v8H20zM44 20h8v8h-8zM20 28h24v8H20zM36 36h8v8h-8zM44 44h8v8h-8z" fill="url(#ink)" shape-rendering="crispEdges" filter="url(#glow)"/>
+  </g>
+</svg>
