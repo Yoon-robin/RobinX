@@ -7,13 +7,14 @@ Windows 프로그램 제거·정리 도구 (예전 이름 RobinUninstaller). 언
 
 - **답변은 항상 한국어로.** 코드 주석·커밋 메시지는 지금처럼 쓰면 된다(주석 한국어, 커밋 메시지 영어).
 - **도구 설치·환경 설정은 사용자에게 시키지 말고 직접 실행한다.** 사용자가 꼭 해야 하는 것(로그인, UAC "예" 누르기 등)만 부탁한다.
-- 작업이 끝나면 이 PC에서 `pnpm check`로 검사하고, 앱을 실제로 띄워 확인한 뒤 커밋·push한다. GitHub CI는 쓰지 않는다(사용자 요청으로 제거함).
+- 작업이 끝나면 이 PC에서 `pnpm check`로 검사하고, 앱을 실제로 띄워 확인한 뒤 커밋·push한다. GitHub CI는 쓰지 않는다(사용자 요청으로 제거함). 예외는 iOS 앱 빌드뿐이다(2026-10-30 사용자 결정, Windows에 Xcode가 없어서 macOS 서버로 빌드).
 - `/loop`으로 혼자 일할 때는 [docs/LOOP.md](docs/LOOP.md)의 순서를 따른다: 한 바퀴에 할 일 하나, 확인 후 커밋·push, 목록과 기록 갱신. 사용자 손이나 결정이 필요한 항목(🔒)은 건너뛰고 끝에 모아 보고한다.
 - 문서를 고칠 때 `\r`, `\t`, `\n`이 든 Windows 경로가 줄바꿈·탭으로 바뀌지 않게 한다 (Python 문자열로 고치다 실제로 깨진 적이 있다). 고친 뒤 `grep`으로 경로를 다시 본다.
 
 ## 안전 원칙 (반드시 지킬 것)
 
 - **사용자 PC의 실제 프로그램을 제거하거나 실제 잔여물을 지우는 테스트를 하지 않는다.** 제거·정리 기능은 `crates/fixture`의 가짜 앱 "Fixture Notes"(게시자 "Robin Test Labs")로만 시험하고, 끝나면 `robin-fixture remove`로 정리한다.
+- iOS 앱의 사진·파일 지우기는 시뮬레이터에서만 시험한다(시험 그림, 임시 폴더). 사용자 iPhone의 실제 사진·파일로 시험하지 않는다.
 - 시작프로그램 끄기·켜기도 실제 항목으로는 시험하지 않는다. 테스트 앱 항목(`FixtureNotes`, `Fixture Notes.lnk`)만 쓴다.
 - 실제 프로그램 대상으로는 읽기 전용 확인만 한다 (`cargo run -p robin-scanner --example scan -- "이름"`).
 - **삭제 원칙 (사용자와 정함, 2026-10-17):**
@@ -75,6 +76,7 @@ DevTools 프로토콜(`http://127.0.0.1:9223/json`)로 클릭·캡처한다. 마
 - `crates/settings` 사용자 설정(백업 보관 기간, 잔여물 스캔 제외 목록)
 - `crates/setup` 자체 설치 프로그램 엔진 + `src-tauri/src/setup.rs`(모드 판단·명령) + `src/features/setup`(화면). 설계는 [docs/INSTALLER.md](docs/INSTALLER.md). 설치·제거 시험은 RobinX 자신으로만 하고, 끝나면 이 PC의 원래 상태(설치 여부, 데이터 폴더)로 돌려놓는다. 0.1.0(NSIS)은 데이터 폴더에 설치됐으므로 그 폴더를 통째로 지우는 코드는 절대 넣지 않는다
 
+- `ios/` iPhone 앱(SwiftUI, iOS 16+). 사진 보관함과 사용자가 고른 폴더만 정리한다(iOS가 그 밖은 열어 주지 않는다). `ios/**`를 push하면 `.github/workflows/ios.yml`이 macOS에서 테스트·서명 없는 ipa·시뮬레이터 캡처를 만든다(`gh run download --name robinx-ios --dir ios/out`). 자세한 것은 [ios/README.md](ios/README.md)
 - `website/` 소개 사이트 (별도 프로젝트, GitHub Pages). 디자인·문구 규칙과 검사 방법은 [website/README.md](website/README.md)
 - `scripts/release.sh` 서명된 설치 파일과 `latest.json` 만들기, `scripts/ui-mock/` 가짜 응답 화면 캡처, `scripts/wine-check.sh` 클라우드용 검사
 
