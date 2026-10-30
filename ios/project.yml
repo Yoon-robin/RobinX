@@ -45,11 +45,23 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.yoonrobin.robinx.ios.tests
         GENERATE_INFOPLIST_FILE: YES
+  RobinXUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [RobinXUITests]
+    dependencies:
+      - target: RobinX
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yoonrobin.robinx.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: RobinX
 schemes:
   RobinX:
     build:
       targets:
         RobinX: all
         RobinXTests: [test]
+        RobinXUITests: [test]
     test:
-      targets: [RobinXTests]
+      targets: [RobinXTests, RobinXUITests]

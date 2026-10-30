@@ -16,9 +16,10 @@ iOS는 다른 앱의 캐시, 앱별 용량, 시스템 데이터를 열어 주지
 Windows PC에는 Xcode가 없으므로 GitHub Actions의 macOS 서버(`.github/workflows/ios.yml`)가 빌드한다. `ios/**`를 push하면 돈다.
 
 1. XcodeGen으로 `project.yml`에서 Xcode 프로젝트를 만든다 (`RobinX.xcodeproj`와 `RobinX/Info.plist`는 저장소에 넣지 않는다).
-2. 시뮬레이터에서 단위 테스트 (`RobinXTests`). 워드마크가 데스크톱 시작 화면의 `LOGO`와 같은지도 본다.
-3. 서명하지 않은 `RobinX.ipa`를 만든다.
-4. 시뮬레이터 화면을 찍는다: `-demo YES`(가짜 자료)로 화면마다 한 장, 그리고 시험 그림(`scripts/make-test-media.swift`)을 넣은 진짜 사진 보관함으로 중복 찾기.
+2. 시뮬레이터 사진 보관함에 시험 그림(`scripts/make-test-media.swift`, 같은 그림 두 장 포함)을 넣는다.
+3. 단위 테스트(`RobinXTests`, 워드마크가 데스크톱 시작 화면의 `LOGO`와 같은지도 본다)와 UI 테스트(`RobinXUITests`: 사용자처럼 사진 허용 → "전체 접근" → 중복 1묶음을 찾는지).
+4. 서명하지 않은 `RobinX.ipa`를 만든다.
+5. 시뮬레이터 화면을 찍는다: `-demo YES`(가짜 자료)로 화면마다 한 장, 그리고 진짜 사진 보관함 두 장.
 
 결과는 실행의 아티팩트 `robinx-ios`에 있다:
 
