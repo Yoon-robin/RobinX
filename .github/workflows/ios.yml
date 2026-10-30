@@ -1,0 +1,28 @@
+# iOS 앱 빌드 전용 (Windows PC에는 Xcode가 없어서 GitHub의 macOS 서버를 쓴다).
+# 데스크톱 앱 검사는 여기서 하지 않는다 (PC에서 pnpm check).
+name: iOS
+on:
+  push:
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: XcodeGen
+        run: brew install xcodegen
+      - name: 빌드·테스트·화면 캡처
+        run: bash ios/scripts/ci.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: robinx-ios
+          path: |
+            ios/out/RobinX.ipa
+            ios/out/test.log
+            ios/out/shots/
+          if-no-files-found: warn

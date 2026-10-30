@@ -1,0 +1,55 @@
+# XcodeGen 설정. Xcode 프로젝트(RobinX.xcodeproj)는 이 파일로 만들고 저장소에는 넣지 않는다.
+#   cd ios && xcodegen generate
+name: RobinX
+options:
+  bundleIdPrefix: com.yoonrobin
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: ko
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  RobinX:
+    type: application
+    platform: iOS
+    sources: [RobinX]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yoonrobin.robinx.ios
+        PRODUCT_NAME: RobinX
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: RobinX/Info.plist
+      properties:
+        CFBundleDisplayName: RobinX
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: ko
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIUserInterfaceStyle: Dark
+        ITSAppUsesNonExemptEncryption: false
+        NSPhotoLibraryUsageDescription: 중복 사진, 큰 동영상, 스크린샷을 찾아 크기를 보여 주려면 사진 보관함을 읽어야 해요. 지우는 것은 직접 고른 사진뿐이에요.
+  RobinXTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [RobinXTests]
+    dependencies:
+      - target: RobinX
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yoonrobin.robinx.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  RobinX:
+    build:
+      targets:
+        RobinX: all
+        RobinXTests: [test]
+    test:
+      targets: [RobinXTests]

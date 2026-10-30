@@ -86,6 +86,18 @@ const avatar = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" 
 `
 writeFileSync(`${out}/avatar-glow.svg`, avatar)
 
+// iOS 앱 아이콘: 모서리는 iOS가 깎으므로 바탕을 끝까지 채운다 (투명 없음, 글로우 없음)
+const iosIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="ink" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="52">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9a9a9a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="#0b0b0b"/>
+  <path d="${R}" fill="url(#ink)" shape-rendering="crispEdges"/>
+</svg>
+`
+
 // PNG로 뽑는다
 const executablePath =
   process.env.CHROMIUM_PATH ??
@@ -102,5 +114,11 @@ await png(wordmark(true), "wordmark-glow-black.png", wmW, wmH, { scale: 4 })
 await png(wordmark(true), "wordmark-glow-transparent.png", wmW, wmH, { transparent: true, scale: 4 })
 await png(icon, "logo-icon-1024.png", 64, 64, { transparent: true, scale: 16 })
 await png(avatar, "avatar-glow-1024.png", 1024, 1024)
+{
+  const page = await browser.newPage({ viewport: { width: 64, height: 64 }, deviceScaleFactor: 16 })
+  await page.setContent(`<!doctype html><body style="margin:0;background:#0b0b0b">${iosIcon.replace(/<svg /, '<svg style="display:block;width:64px;height:64px" ')}</body>`)
+  await page.screenshot({ path: `${root}/ios/RobinX/Assets.xcassets/AppIcon.appiconset/icon-1024.png` })
+  await page.close()
+}
 await browser.close()
 console.log(`칸 ${cols}×${rows.length}, 워드마크 ${wmW}×${wmH}`)
