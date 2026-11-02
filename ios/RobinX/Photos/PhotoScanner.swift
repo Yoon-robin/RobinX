@@ -6,7 +6,22 @@ import UIKit
 enum PhotoScanner {
     enum Stage { case reading, comparing }
 
-    static func scan(options: PhotoScanOptions, progress: @escaping (Stage, Int, Int) -> Void) -> PhotoScanResult {
+    /// cache에 든 크기·그림 지문은 사진이 바뀌지 않았으면 다시 재지 않는다. 끝나면 이번에 본 사진만 남긴다.
+    /// isCancelled가 true가 되면 중간에 멈춘다 (그때 결과는 버린다)
+    static func scan(
+        options: PhotoScanOptions, cache: inout PhotoCache, isCancelled: @escaping () -> Bool = { false },
+        progress: @escaping (Stage, Int, Int) -> Void
+    ) -> PhotoScanResult {
+        let old = cache
+        var fresh = PhotoCache()
+        defer {
+            // 멈췄으면 지금까지 잰 것을 예전 것에 보태 둔다 (다음에 덜 잰다)
+            if isCancelled() {
+                cache.entries.merge(fresh.entries) { _, new in new }
+            } else {
+                cache = fresh
+            }
+        }
         let skipped = assetIDs(inAlbums: options.excludedAlbums)
         let fetchOptions = PHFetchOptions()
         // 연속 촬영의 대표가 아닌 장들도 받는다 (사진 앱에서는 묶음 안에 숨어 있다)
@@ -22,9 +37,17 @@ enum PhotoScanner {
         // 비슷한 사진 후보: 찍은 시각 순 (연속 촬영의 나머지 장은 빼고)
         var timeline: [(PHAsset, PhotoItem, Date)] = []
 
-        fetch.enumerateObjects { asset, index, _ in
+        fetch.enumerateObjects { asset, index, stop in
+            if index % 200 == 0 && isCancelled() {
+                stop.pointee = true
+                return
+            }
             autoreleasepool {
-                let bytes = size(of: asset)
+                let id = asset.localIdentifier
+                let stamp = asset.modificationDate?.timeIntervalSinceReferenceDate ?? 0
+                let known = old.entries[id].flatMap { $0.modified == stamp ? $0 : nil }
+                let bytes = known?.bytes ?? size(of: asset)
+                fresh.entries[id] = PhotoCache.Entry(modified: stamp, bytes: bytes, hash: known?.hash)
                 let item = PhotoItem(
                     id: asset.localIdentifier, bytes: bytes, isVideo: asset.mediaType == .video,
                     duration: asset.duration, created: asset.creationDate)
@@ -48,18 +71,20 @@ enum PhotoScanner {
             }
             if index % 200 == 0 { progress(.reading, index, total) }
         }
+        if isCancelled() { return result }
         progress(.reading, total, total)
 
-        var hashes: [String: UInt64] = [:]
         func hash(_ asset: PHAsset) -> UInt64? {
-            if let known = hashes[asset.localIdentifier] { return known }
+            let id = asset.localIdentifier
+            if let known = fresh.entries[id]?.hash { return known }
             let made = autoreleasepool { thumbnailHash(asset) }
-            if let made { hashes[asset.localIdentifier] = made }
+            if let made { fresh.entries[id]?.hash = made }
             return made
         }
 
         // 중복: 크기·용량이 같고 작은 그림도 같은 것
         for group in candidates.values where group.count > 1 {
+            if isCancelled() { return result }
             var byHash: [UInt64: [PhotoItem]] = [:]
             for (asset, item) in group {
                 if let h = hash(asset) { byHash[h, default: []].append(item) }
@@ -81,6 +106,7 @@ enum PhotoScanner {
         }
         var compared: [SimilarCandidate] = []
         for (n, i) in needed.enumerated() {
+            if n % 50 == 0 && isCancelled() { return result }
             if let h = hash(pool[i].0) { compared.append(SimilarCandidate(id: pool[i].1.id, date: pool[i].2, hash: h)) }
             if n % 50 == 0 { progress(.comparing, n, needed.count) }
         }
@@ -169,5 +195,34 @@ enum DHash {
 
     static func distance(_ a: UInt64, _ b: UInt64) -> Int {
         (a ^ b).nonzeroBitCount
+    }
+}
+
+/// 사진마다 잰 크기와 그림 지문. 사진이 바뀌지 않았으면(수정 시각이 같으면) 다음에 다시 재지 않는다
+struct PhotoCache: Codable {
+    struct Entry: Codable, Equatable {
+        var modified: Double
+        var bytes: Int64
+        /// 아직 만들지 않았거나 만들지 못했으면 nil
+        var hash: UInt64?
+    }
+
+    var entries: [String: Entry] = [:]
+
+    static var file: URL { AppFiles.url("photo-cache.plist") }
+
+    /// UInt64를 그대로 담으려고 JSON 대신 바이너리 plist로 저장한다
+    static func load(from url: URL = file) -> PhotoCache {
+        guard let data = try? Data(contentsOf: url),
+            let cache = try? PropertyListDecoder().decode(PhotoCache.self, from: data)
+        else { return PhotoCache() }
+        return cache
+    }
+
+    func save(to url: URL = file) {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        guard let data = try? encoder.encode(self) else { return }
+        try? data.write(to: url, options: .atomic)
     }
 }

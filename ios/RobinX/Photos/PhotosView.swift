@@ -43,7 +43,7 @@ struct PhotosView: View {
         switch photos.access {
         case .unknown:
             VStack(alignment: .leading, spacing: 14) {
-                Text("사진 보관함에서 중복 사진, 큰 동영상, 스크린샷, 연속 촬영을 찾아 크기를 보여 줘요.")
+                Text("사진 보관함에서 중복·비슷한 사진, 큰 동영상, 스크린샷, 연속 촬영을 찾아 크기를 보여 줘요.")
                     .foregroundStyle(Brand.text)
                 Text("찾기만 하고, 지우는 것은 직접 고른 사진뿐이에요.")
                     .font(.footnote)
@@ -83,15 +83,22 @@ struct PhotosView: View {
             }
             .buttonStyle(RowBoxStyle())
             SectionLabel("찾아낸 것")
-            if photos.scanning {
-                ScanProgress(
-                    label: photos.stage == .reading ? "사진 보관함 훑는 중" : "비슷한 사진 비교하는 중",
-                    detail: photos.scanTotal > 0 ? "\(photos.scanned.grouped) / \(photos.scanTotal.grouped)" : nil,
-                    fraction: photos.scanTotal > 0 ? Double(photos.scanned) / Double(photos.scanTotal) : nil)
-            } else if let result = photos.result {
-                Text("사진·동영상 \(result.totalCount.grouped)개 · \(Bytes.format(result.totalBytes))")
+            if let result = photos.result {
+                // 결과가 있으면 그대로 보여 주고, 다시 찾는 동안은 한 줄만 띄운다
+                if photos.scanning {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small).tint(Brand.dim)
+                        Text("다시 찾는 중")
+                        Spacer()
+                        if photos.scanTotal > 0 { Text(progressText) }
+                    }
                     .font(Brand.mono(13))
                     .foregroundStyle(Brand.dim)
+                } else {
+                    Text("사진·동영상 \(result.totalCount.grouped)개 · \(Bytes.format(result.totalBytes))")
+                        .font(Brand.mono(13))
+                        .foregroundStyle(Brand.dim)
+                }
                 ForEach(PhotoKind.allCases) { kind in
                     NavigationLink(value: PhotoRoute.kind(kind)) {
                         NavRow(
@@ -101,15 +108,24 @@ struct PhotosView: View {
                     }
                     .buttonStyle(RowBoxStyle())
                 }
-                Text("아래로 당기면 다시 찾아요. 지운 사진은 사진 앱의 '최근 삭제된 항목'에 30일 동안 남아요.")
+                Text("사진 앱에서 지우거나 새로 찍으면 다시 찾아요. 지운 사진은 사진 앱의 '최근 삭제된 항목'에 30일 동안 남아요.")
                     .font(.footnote)
                     .foregroundStyle(Brand.dim)
                     .fixedSize(horizontal: false, vertical: true)
+            } else if photos.scanning {
+                ScanProgress(
+                    label: photos.stage == .reading ? "사진 보관함 훑는 중" : "비슷한 사진 비교하는 중",
+                    detail: photos.scanTotal > 0 ? progressText : nil,
+                    fraction: photos.scanTotal > 0 ? Double(photos.scanned) / Double(photos.scanTotal) : nil)
             } else {
                 Button("찾기") { Task { await photos.scan(options: settings.photoOptions) } }
                     .buttonStyle(TermButtonStyle())
             }
         }
+    }
+
+    private var progressText: String {
+        "\(photos.scanned.grouped) / \(photos.scanTotal.grouped)"
     }
 
     private func countText(_ kind: PhotoKind, _ result: PhotoScanResult) -> String {
@@ -131,11 +147,11 @@ enum PhotoRoute: Hashable {
     case kind(PhotoKind)
     case swipe
 
-    /// 화면 캡처용 실행 인자 (-route duplicates|similar|swipe)
+    /// 화면 캡처용 실행 인자 (-route duplicates|similar|viewer|swipe)
     static var initial: [PhotoRoute] {
         switch Launch.route {
         case "duplicates": [.kind(.duplicates)]
-        case "similar": [.kind(.similar)]
+        case "similar", "viewer": [.kind(.similar)]
         case "swipe": [.swipe]
         default: []
         }

@@ -46,8 +46,8 @@ enum Demo {
         }
     }
 
-    /// 회색 줄무늬 썸네일 (같은 이름이면 같은 그림)
-    static func thumbnail(_ id: String) -> UIImage {
+    /// 회색 줄무늬 썸네일 (같은 이름이면 같은 그림). side는 그릴 크기, 그림은 120 기준으로 그려 늘린다
+    static func thumbnail(_ id: String, side size: CGFloat = 120) -> UIImage {
         let key = id.split(separator: "#").first.map(String.init) ?? id
         var seed = key.unicodeScalars.reduce(UInt32(7)) { ($0 &* 31) &+ $1.value }
         func next() -> CGFloat {
@@ -55,7 +55,8 @@ enum Demo {
             return CGFloat((seed >> 16) & 0xff) / 255
         }
         let side: CGFloat = 120
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+        return UIGraphicsImageRenderer(size: CGSize(width: size, height: size)).image { ctx in
+            ctx.cgContext.scaleBy(x: size / side, y: size / side)
             let top = 0.15 + next() * 0.5
             UIColor(white: top, alpha: 1).setFill()
             ctx.fill(CGRect(x: 0, y: 0, width: side, height: side))

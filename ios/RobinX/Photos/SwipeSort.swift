@@ -52,6 +52,18 @@ final class SwipeStore: ObservableObject {
         save()
     }
 
+    /// 사진 앱에서 먼저 지운 사진은 지울 것 표시에서 뺀다
+    func prune() {
+        guard !Launch.demo, !marked.isEmpty else { return }
+        var alive = Set<String>()
+        PHAsset.fetchAssets(withLocalIdentifiers: marked.map(\.id), options: nil).enumerateObjects { asset, _, _ in
+            alive.insert(asset.localIdentifier)
+        }
+        guard alive.count < marked.count else { return }
+        marked.removeAll { !alive.contains($0.id) }
+        save()
+    }
+
     /// 남긴 사진을 다시 보이게 한다 (설정)
     func forgetKept() {
         kept = []
@@ -329,15 +341,23 @@ struct SwipeReviewView: View {
     @State private var confirming = false
     @State private var working = false
     @State private var notice: String?
+    @State private var viewing: ViewerTarget?
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 160), spacing: 3)]
+
+    /// 크게 보기에서 고른 것 = 지울 것 (뺀 것을 뺀 나머지)
+    private var picked: Binding<Set<String>> {
+        Binding(
+            get: { Set(swipe.marked.map(\.id)).subtracting(spared) },
+            set: { spared = Set(swipe.marked.map(\.id)).subtracting($0) })
+    }
 
     private var targets: [PhotoItem] { swipe.marked.filter { !spared.contains($0.id) } }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text("왼쪽으로 민 사진이에요. 지우지 않을 사진은 눌러서 빼 주세요.")
+                Text("왼쪽으로 민 사진이에요. 지우지 않을 사진은 눌러서 빼 주세요. 길게 누르면 크게 볼 수 있어요.")
                     .font(.footnote)
                     .foregroundStyle(Brand.dim)
                 if let notice { OkLine(text: notice) }
@@ -347,10 +367,17 @@ struct SwipeReviewView: View {
                         .termBox(padding: 18)
                 } else {
                     LazyVGrid(columns: columns, spacing: 3) {
-                        ForEach(swipe.marked) { item in
+                        ForEach(Array(swipe.marked.enumerated()), id: \.element.id) { index, item in
                             PhotoTile(item: item, selected: !spared.contains(item.id))
                                 .onTapGesture {
                                     if spared.contains(item.id) { spared.remove(item.id) } else { spared.insert(item.id) }
+                                }
+                                .contextMenu {
+                                    Button {
+                                        viewing = ViewerTarget(items: swipe.marked, start: index)
+                                    } label: {
+                                        Label("크게 보기", systemImage: "arrow.up.left.and.arrow.down.right")
+                                    }
                                 }
                         }
                     }
@@ -377,6 +404,7 @@ struct SwipeReviewView: View {
                 .background(Brand.term.opacity(0.97).ignoresSafeArea())
             }
         }
+        .fullScreenCover(item: $viewing) { PhotoViewer(target: $0, selection: picked) }
         .confirmationDialog(
             "\(targets.count.grouped)장을 지울까요?", isPresented: $confirming, titleVisibility: .visible
         ) {
@@ -391,7 +419,7 @@ struct SwipeReviewView: View {
         working = true
         let items = targets
         let ids = Set(items.map(\.id))
-        if await photos.delete(ids) {
+        if await photos.delete(items) {
             log.add(.photos, source: "넘겨 보며 정리", count: items.count, bytes: items.reduce(0) { $0 + $1.bytes })
             swipe.finish(deleted: ids, spared: spared)
             spared = []

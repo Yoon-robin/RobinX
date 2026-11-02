@@ -111,9 +111,15 @@ final class FolderScan: ObservableObject {
     @Published private(set) var scanning = false
     @Published private(set) var scanned = 0
     @Published var problem: String?
+    private var running: ScanFlag?
 
     init(folder: SavedFolder) {
         self.folder = folder
+    }
+
+    /// 폴더 화면을 나가면 찾던 것을 멈춘다 (돌아오면 처음부터 다시 찾는다)
+    func cancel() {
+        running?.cancel()
     }
 
     func scan(store: FolderStore, settings: AppSettings) async {
@@ -128,16 +134,23 @@ final class FolderScan: ObservableObject {
         }
         scanning = true
         scanned = 0
+        let flag = ScanFlag()
+        running = flag
         let options = settings.fileOptions(excluding: store.current(folder).excludedNames)
         let found = await Task.detached(priority: .userInitiated) { () -> FileScanResult in
             let scoped = root.startAccessingSecurityScopedResource()
             defer { if scoped { root.stopAccessingSecurityScopedResource() } }
-            return FileScanner.scan(root, options: options, progress: { count in
-                Task { @MainActor in self.scanned = count }
-            })
+            return FileScanner.scan(
+                root, options: options, isCancelled: { flag.cancelled },
+                progress: { count in
+                    Task { @MainActor in self.scanned = count }
+                })
         }.value
-        result = found
+        running = nil
         scanning = false
+        // 멈춘 것은 반쯤 센 결과라 버린다
+        guard !flag.cancelled else { return }
+        result = found
         store.record(folder, total: found.totalBytes, count: found.fileCount)
     }
 

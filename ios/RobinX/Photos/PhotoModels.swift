@@ -116,12 +116,11 @@ struct PhotoScanResult {
         return sum
     }
 
-    /// 지운 항목을 빼고, 하나만 남은 묶음은 없앤다
-    mutating func remove(_ ids: Set<String>) {
+    /// 지운 사진을 빼고, 하나만 남은 묶음은 없앤다. 찾아낸 칸에 없는 사진(넘겨 보며 지운 것)도 합계에서 뺀다
+    mutating func remove(_ deleted: [PhotoItem]) {
         var gone = [String: Int64]()
-        for item in items(.duplicates) + items(.similar) + videos + screenshots + bursts where ids.contains(item.id) {
-            gone[item.id] = item.bytes
-        }
+        for item in deleted { gone[item.id] = item.bytes }
+        let ids = Set(gone.keys)
         totalCount -= gone.count
         totalBytes -= gone.values.reduce(0, +)
         duplicates = duplicates.map { $0.filter { !ids.contains($0.id) } }.filter { $0.count > 1 }

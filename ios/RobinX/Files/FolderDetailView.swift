@@ -1,3 +1,4 @@
+import QuickLook
 import SwiftUI
 
 /// 폴더 하나: 큰 파일 · 중복 · 오래된 파일 · 폴더별 크기.
@@ -20,6 +21,11 @@ struct FolderDetailView: View {
     @State private var working = false
     @State private var notices: [String] = []
     @State private var failures: [String] = []
+    /// 미리 보기 중인 파일과 옆으로 넘겨 볼 파일들
+    @State private var previewURL: URL?
+    @State private var previewList: [URL] = []
+    /// 미리 보는 동안 열어 둔 고른 폴더 (닫으면 닫는다)
+    @State private var previewRoot: URL?
 
     enum Part: String, CaseIterable, Identifiable {
         case large, duplicates, old, children
@@ -35,9 +41,9 @@ struct FolderDetailView: View {
         @MainActor
         func note(_ settings: AppSettings) -> String {
             switch self {
-            case .large: "\(settings.largeFileMB) MB 이상, 큰 것부터"
-            case .duplicates: "내용이 똑같은 파일 (100 KB 이상)"
-            case .old: "\(AppSettings.ageText(settings.oldFileDays)) 넘게 바뀌지 않은 10 MB 이상 파일"
+            case .large: "\(settings.largeFileMB) MB 이상, 큰 것부터. 길게 누르면 미리 볼 수 있어요"
+            case .duplicates: "내용이 똑같은 파일 (100 KB 이상). 길게 누르면 미리 볼 수 있어요"
+            case .old: "\(AppSettings.ageText(settings.oldFileDays)) 넘게 바뀌지 않은 10 MB 이상 파일. 길게 누르면 미리 볼 수 있어요"
             case .children: "고른 폴더 바로 아래 항목의 크기. 길게 누르면 그 폴더를 찾지 않게 할 수 있어요"
             }
         }
@@ -107,6 +113,14 @@ struct FolderDetailView: View {
         }
         .refreshable { await scan.scan(store: store, settings: settings) }
         .task { if scan.result == nil { await scan.scan(store: store, settings: settings) } }
+        .onDisappear { scan.cancel() }
+        .quickLookPreview($previewURL, in: previewList)
+        .onChange(of: previewURL) { url in
+            if url == nil, let root = previewRoot {
+                root.stopAccessingSecurityScopedResource()
+                previewRoot = nil
+            }
+        }
         .onChange(of: section) { _ in selection = [] }
         .safeAreaInset(edge: .bottom) {
             if !selection.isEmpty {
@@ -213,6 +227,11 @@ struct FolderDetailView: View {
                     .onTapGesture { toggle(item.url) }
                     .contextMenu {
                         Button {
+                            preview(item.url, in: items.map(\.url))
+                        } label: {
+                            Label("미리 보기", systemImage: "eye")
+                        }
+                        Button {
                             showInFiles(item.url)
                         } label: {
                             Label("파일 앱에서 보기", systemImage: "folder")
@@ -290,6 +309,16 @@ struct FolderDetailView: View {
             failures.append("\(failure.url.lastPathComponent): \(failure.reason)")
         }
         if outcome.failed.count > 5 { failures.append("그 밖에 \(outcome.failed.count - 5)개도 지우지 못했어요.") }
+    }
+
+    /// 미리 보기 (Quick Look). 묶음·목록 안에서 옆으로 넘겨 볼 수 있다.
+    /// iOS는 고른 폴더를 열어 둔 동안만 파일을 읽게 해 주므로 미리 보기가 닫힐 때까지 열어 둔다
+    private func preview(_ url: URL, in list: [URL]) {
+        if previewRoot == nil, let root = store.resolve(folder), root.startAccessingSecurityScopedResource() {
+            previewRoot = root
+        }
+        previewList = list
+        previewURL = url
     }
 
     /// 파일 앱을 그 파일이 든 폴더에서 연다

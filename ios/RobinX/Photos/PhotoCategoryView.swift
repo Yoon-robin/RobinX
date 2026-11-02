@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// 한 칸(중복·큰 동영상·스크린샷·연속 촬영)의 사진 격자. 미리 골라 두지 않고, 사용자가 고른 것만 지운다.
+/// 한 칸(중복·비슷한 사진·큰 동영상·스크린샷·연속 촬영)의 사진 격자. 미리 골라 두지 않고, 사용자가 고른 것만 지운다.
 struct PhotoCategoryView: View {
     let kind: PhotoKind
 
@@ -11,6 +11,7 @@ struct PhotoCategoryView: View {
     @State private var confirming = false
     @State private var deleting = false
     @State private var notice: String?
+    @State private var viewing: ViewerTarget?
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 160), spacing: 3)]
 
@@ -22,6 +23,11 @@ struct PhotoCategoryView: View {
                 Text(summary(result))
                     .font(Brand.mono(13))
                     .foregroundStyle(Brand.dim)
+                if !items.isEmpty {
+                    Text("누르면 고르고, 길게 누르면 크게 볼 수 있어요.")
+                        .font(.footnote)
+                        .foregroundStyle(Brand.dim)
+                }
                 if let notice {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("[ OK ]").font(Brand.mono(13, .semibold)).foregroundStyle(Brand.strong)
@@ -83,6 +89,13 @@ struct PhotoCategoryView: View {
                 .background(Brand.term.opacity(0.97).ignoresSafeArea())
             }
         }
+        .fullScreenCover(item: $viewing) { PhotoViewer(target: $0, selection: $selection) }
+        .onAppear {
+            // 화면 캡처용: 첫 묶음을 크게 연다
+            if Launch.route == "viewer", viewing == nil, let group = (photos.result ?? PhotoScanResult()).groups(kind).first {
+                viewing = ViewerTarget(items: group, start: 1, keepBadge: kind.keepBadge)
+            }
+        }
         .confirmationDialog(
             "고른 \(selection.count.grouped)개를 지울까요?", isPresented: $confirming, titleVisibility: .visible
         ) {
@@ -103,6 +116,19 @@ struct PhotoCategoryView: View {
                     badge: oldestFirst && index == 0 ? kind.keepBadge : nil
                 )
                 .onTapGesture { toggle(item.id) }
+                .contextMenu {
+                    Button {
+                        viewing = ViewerTarget(items: items, start: index, keepBadge: oldestFirst ? kind.keepBadge : nil)
+                    } label: {
+                        Label(oldestFirst ? "크게 보기 · 묶음 비교" : "크게 보기", systemImage: "arrow.up.left.and.arrow.down.right")
+                    }
+                    Button {
+                        toggle(item.id)
+                    } label: {
+                        selection.contains(item.id)
+                            ? Label("고른 것 풀기", systemImage: "circle") : Label("고르기", systemImage: "checkmark.circle")
+                    }
+                }
             }
         }
     }
@@ -122,18 +148,22 @@ struct PhotoCategoryView: View {
         return "묶음 \(index + 1) · \(group.count)장 · 하나 빼고 \(Bytes.format(PhotoScanner.wasted(group)))"
     }
 
-    private func selectedBytes(_ items: [PhotoItem]) -> Int64 {
+    /// 고른 사진 (여러 칸에 같이 든 사진은 한 번만)
+    private func selectedItems(_ items: [PhotoItem]) -> [PhotoItem] {
         var seen = Set<String>()
-        return items.reduce(0) { sum, item in
-            selection.contains(item.id) && seen.insert(item.id).inserted ? sum + item.bytes : sum
-        }
+        return items.filter { selection.contains($0.id) && seen.insert($0.id).inserted }
+    }
+
+    private func selectedBytes(_ items: [PhotoItem]) -> Int64 {
+        selectedItems(items).reduce(0) { $0 + $1.bytes }
     }
 
     private func delete() async {
         deleting = true
-        let count = selection.count
-        let bytes = selectedBytes(photos.result?.items(kind) ?? [])
-        if await photos.delete(selection) {
+        let items = selectedItems(photos.result?.items(kind) ?? [])
+        let count = items.count
+        let bytes = items.reduce(0) { $0 + $1.bytes }
+        if await photos.delete(items) {
             log.add(.photos, source: kind.title, count: count, bytes: bytes)
             notice = "\(count.grouped)개를 지웠어요. 공간은 사진 앱의 '최근 삭제된 항목'을 비우거나 30일이 지나면 돌아와요."
             selection = []

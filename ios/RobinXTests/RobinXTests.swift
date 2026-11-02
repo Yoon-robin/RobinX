@@ -89,7 +89,7 @@ final class PhotoResultTests: XCTestCase {
         r.screenshots = [item("a2", 10)]
         r.totalCount = 5
         r.totalBytes = 32
-        r.remove(["a2", "b3"])
+        r.remove([item("a2", 10), item("b3", 4)])
         XCTAssertEqual(r.duplicates.count, 1)
         XCTAssertEqual(r.duplicates[0].map(\.id), ["b1", "b2"])
         XCTAssertTrue(r.screenshots.isEmpty)
@@ -101,8 +101,39 @@ final class PhotoResultTests: XCTestCase {
         var r = PhotoScanResult()
         r.similar = [[item("s1", 30), item("s2", 20)], [item("t1", 9), item("t2", 8), item("t3", 7)]]
         XCTAssertEqual(r.bytes(.similar), 20 + 15, "묶음마다 맨 앞(가장 큰 것)을 남긴다고 본다")
-        r.remove(["s2", "t1"])
+        r.remove([item("s2", 20), item("t1", 9)])
         XCTAssertEqual(r.similar.map { $0.map(\.id) }, [["t2", "t3"]])
+    }
+
+    func testRemoveCountsPhotosNotInAnyList() {
+        // 넘겨 보며 지운 사진은 찾아낸 칸에 없어도 전체 합계에서 빠져야 한다
+        var r = PhotoScanResult()
+        r.screenshots = [item("s1", 5)]
+        r.totalCount = 10
+        r.totalBytes = 100
+        r.remove([item("x1", 30), item("x2", 20)])
+        XCTAssertEqual(r.totalCount, 8)
+        XCTAssertEqual(r.totalBytes, 50)
+        XCTAssertEqual(r.screenshots.map(\.id), ["s1"])
+    }
+}
+
+final class PhotoCacheTests: XCTestCase {
+    func testRoundTripKeepsFullHash() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("photo-cache-\(UUID().uuidString).plist")
+        defer { try? FileManager.default.removeItem(at: url) }
+        var cache = PhotoCache()
+        // 2^53을 넘는 값도 그대로 돌아와야 한다 (JSON이면 깨질 수 있다)
+        cache.entries["a"] = PhotoCache.Entry(modified: 12.5, bytes: 4_000_000, hash: UInt64.max - 7)
+        cache.entries["b"] = PhotoCache.Entry(modified: 3, bytes: 9, hash: nil)
+        cache.save(to: url)
+        let loaded = PhotoCache.load(from: url)
+        XCTAssertEqual(loaded.entries, cache.entries)
+    }
+
+    func testMissingFileGivesEmptyCache() {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("none-\(UUID().uuidString).plist")
+        XCTAssertTrue(PhotoCache.load(from: url).entries.isEmpty)
     }
 }
 
@@ -204,6 +235,15 @@ final class FileScannerTests: XCTestCase {
         XCTAssertTrue(r.old.isEmpty)
         XCTAssertEqual(r.fileCount, 2)
         XCTAssertFalse(r.children.contains { $0.name == "skip" })
+    }
+
+    func testStopsWhenCancelled() throws {
+        try write("big.bin", bytes: 300_000)
+        try write("a/copy1.bin", bytes: 20_000, fill: 4)
+        try write("a/copy2.bin", bytes: 20_000, fill: 4)
+        let r = FileScanner.scan(root, options: options, isCancelled: { true })
+        XCTAssertEqual(r.fileCount, 0)
+        XCTAssertTrue(r.duplicates.isEmpty)
     }
 
     func testSkipsSymlinks() throws {
