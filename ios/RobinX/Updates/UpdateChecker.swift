@@ -60,7 +60,7 @@ final class UpdateChecker: ObservableObject {
     }
 
     /// iPhone용 릴리스(`ios-v`로 시작하고 ipa가 붙은 것) 중 가장 높은 버전
-    static func newest(_ releases: [GitHubRelease]) -> AppRelease? {
+    nonisolated static func newest(_ releases: [GitHubRelease]) -> AppRelease? {
         releases.compactMap { release -> AppRelease? in
             guard !release.draft, !release.prerelease, release.tagName.hasPrefix("ios-v"),
                 let ipa = release.assets.first(where: { $0.name.hasSuffix(".ipa") })
