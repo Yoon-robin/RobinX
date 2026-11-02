@@ -56,6 +56,7 @@ cargo run -p robin-storage --example storage_scan            # 정리할 수 있
 cargo run -p robin-storage --example storage_clean_fixture   # 테스트 앱 캐시만 정리해 보기
 cargo run -p robin-storage --example storage_admin_fixture   # 관리자 항목 정리 (먼저 관리자로 robin-fixture install --machine)
 bash scripts/release.sh [--publish]                         # 서명된 설치 파일 + latest.json (--publish는 GitHub Release에 올림)
+bash ios/scripts/release.sh [--publish "바뀐 점"]           # iPhone ipa를 GitHub Release ios-v<버전>에 (Latest로 표시하지 않음, 올리기 전 사용자에게 묻기)
 ```
 
 Windows PC를 쓸 수 없을 때(클라우드 세션 등)는 먼저 `bash scripts/cloud-setup.sh`로 도구를 준비하고,

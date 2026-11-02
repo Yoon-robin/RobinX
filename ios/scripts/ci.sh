@@ -65,6 +65,8 @@ shot 9-history -demo YES -skipBoot YES -tab history
 shot 10-settings -demo YES -skipBoot YES -tab settings
 shot 11-albums -demo YES -skipBoot YES -tab settings -route albums
 shot 15-viewer -demo YES -skipBoot YES -tab photos -route viewer
+shot 16-update -demo YES -skipBoot YES -tab settings -demoUpdate YES
+shot 17-summary-update -demo YES -skipBoot YES -demoUpdate YES
 # 진짜 사진 보관함: UI 테스트(RobinXUITests)가 허용을 누른 뒤라 권한이 있다
 shot 12-real-photos -skipBoot YES -tab photos
 shot 13-real-duplicates -skipBoot YES -tab photos -route duplicates

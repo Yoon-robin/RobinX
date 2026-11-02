@@ -6,11 +6,21 @@ struct SummaryView: View {
     @EnvironmentObject private var storage: DeviceStorage
     @EnvironmentObject private var photos: PhotoLibrary
     @EnvironmentObject private var folders: FolderStore
+    @EnvironmentObject private var updates: UpdateChecker
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 TermTitle("저장공간")
+
+                if let release = updates.available {
+                    Button { tab = .settings } label: {
+                        NavRow(
+                            symbol: "arrow.down.circle", title: "새 버전 \(release.version)",
+                            detail: "지금 \(UpdateChecker.current) · 설정에서 받기")
+                    }
+                    .buttonStyle(RowBoxStyle())
+                }
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("남은 공간")

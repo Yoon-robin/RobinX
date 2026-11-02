@@ -12,6 +12,7 @@ Windows용 RobinX와 같은 원칙으로 만든 iPhone 정리 앱. SwiftUI, iOS 
 - **파일:** 사용자가 고른 폴더(나의 iPhone, iCloud Drive, 파일 앱에 보이는 다른 앱의 폴더)를 북마크로 기억하고, 큰 파일·중복 파일(SHA-256)·오래된 파일·폴더별 크기를 보여 준다. 파일을 길게 누르면 미리 볼 수 있다(Quick Look). 지울 때는 휴지통으로 먼저 옮겨 보고, 옮기지 못한 파일만 한 번 더 물어 영구 삭제한다. 고른 폴더 바로 아래 폴더는 "찾지 않기"로 뺄 수 있다.
 - **기록:** RobinX로 지운 사진·파일(`history.json`). 사진은 언제까지 "최근 삭제된 항목"에서 되살릴 수 있는지 함께 보여 준다.
 - **설정:** 큰 동영상·큰 파일·오래된 파일 기준, 비슷한 사진 기준(좁게·보통·넓게), 즐겨찾기 사진 빼기, 찾지 않을 앨범·폴더, 넘겨 보며 남긴 사진 다시 보기. 그 아래에 지우는 원칙·범위·권한·링크.
+- **새 버전 알림:** 앱을 켤 때 GitHub Release 중 `ios-v`로 시작하는 가장 높은 버전을 읽어, 지금보다 높으면 저장공간 탭과 설정 탭에 알린다. iOS는 앱이 스스로 바꿔 설치하게 두지 않으므로 ipa를 받는 데까지만 하고, 설치는 LiveContainer의 + 단추로 한다. 인터넷은 이 확인에만 쓴다.
 
 iOS는 다른 앱의 캐시, 앱별 용량, 시스템 데이터를 열어 주지 않는다. 그래서 하지 않는다 (탈옥·TrollStore 같은 방법도 쓰지 않는다).
 지우는 원칙은 데스크톱과 같다: 직접 고른 것만, 미리 골라 두지 않기, 되돌릴 수 없는 삭제는 따로 한 번 더 확인.
@@ -34,6 +35,17 @@ gh run download --name robinx-ios --dir ios/out
 
 Mac이 있으면 `brew install xcodegen` 뒤 `bash ios/scripts/ci.sh`로 같은 일을 한다.
 
+## 릴리스
+
+`ios/project.yml`의 `MARKETING_VERSION`을 높여 main에 push하고 CI가 끝나면:
+
+```bash
+bash ios/scripts/release.sh
+```
+
+ipa를 받아 버전만 확인한다. 올리는 것은 공개 행동이라 먼저 묻고, `--publish "바뀐 점"`으로 GitHub Release `ios-v<버전>`을 만든다.
+iOS 릴리스는 "Latest"로 표시하지 않는다(`--latest=false`). 데스크톱 자동 업데이트가 Latest 릴리스의 `latest.json`을 읽기 때문이다.
+
 ## iPhone에 설치
 
 서명하지 않은 ipa라 설치하는 앱이 서명한다. LiveContainer에서는 + 단추로 `RobinX.ipa`를 고른다. 사진 접근 허용 창이 뜨지 않으면 Flekstore 같은 서명 앱으로 직접 설치한다.
@@ -41,7 +53,7 @@ Mac이 있으면 `brew install xcodegen` 뒤 `bash ios/scripts/ci.sh`로 같은 
 ## 시험
 
 - 지우기 시험은 **시뮬레이터에서만** 한다 (시험 그림, 임시 폴더). 실제 iPhone의 사진·파일로 지우기를 시험하지 않는다.
-- 실행 인자: `-demo YES`(가짜 자료, 아무것도 지우지 않음), `-skipBoot YES`, `-bootHold YES`(시작 화면에서 멈춤), `-tab summary|photos|files|history|settings`, `-route duplicates|similar|viewer|swipe|folder|albums`.
+- 실행 인자: `-demo YES`(가짜 자료, 아무것도 지우지 않음), `-skipBoot YES`, `-bootHold YES`(시작 화면에서 멈춤), `-tab summary|photos|files|history|settings`, `-route duplicates|similar|viewer|swipe|folder|albums`, `-demoUpdate YES`(새 버전이 있는 것처럼).
 
 ## 디자인
 

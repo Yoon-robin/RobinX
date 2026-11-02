@@ -8,6 +8,7 @@ struct RobinXApp: App {
     @StateObject private var settings = AppSettings()
     @StateObject private var log = DeleteLog()
     @StateObject private var swipe = SwipeStore()
+    @StateObject private var updates = UpdateChecker()
 
     var body: some Scene {
         WindowGroup {
@@ -18,6 +19,7 @@ struct RobinXApp: App {
                 .environmentObject(settings)
                 .environmentObject(log)
                 .environmentObject(swipe)
+                .environmentObject(updates)
         }
     }
 }
@@ -26,6 +28,7 @@ struct RootView: View {
     @EnvironmentObject private var photos: PhotoLibrary
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var swipe: SwipeStore
+    @EnvironmentObject private var updates: UpdateChecker
     @State private var booted = Launch.skipBoot
     @State private var tab = Launch.initialTab
 
@@ -47,6 +50,7 @@ struct RootView: View {
                 SettingsView()
                     .tabItem { Label("설정", systemImage: "gearshape") }
                     .tag(AppTab.settings)
+                    .badge(updates.available == nil ? 0 : 1)
             }
             .toolbarBackground(Brand.term, for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)
@@ -60,6 +64,7 @@ struct RootView: View {
         .tint(Brand.strong)
         .preferredColorScheme(.dark)
         // 앱을 켜면 바로 찾기 시작한다 (저장공간 탭에서도 결과가 보이게). 전에 잰 것은 다시 재지 않아 빠르다
+        .task { await updates.check() }
         .task {
             guard photos.canRead else { return }
             pruneSwipe()

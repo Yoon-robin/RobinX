@@ -290,3 +290,36 @@ final class FileScannerTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: a.path))
     }
 }
+
+final class UpdateTests: XCTestCase {
+    func testVersionCompare() {
+        XCTAssertTrue(AppVersion.isNewer("0.2.10", than: "0.2.9"))
+        XCTAssertTrue(AppVersion.isNewer("1.0", than: "0.9.9"))
+        XCTAssertTrue(AppVersion.isNewer("0.2.1", than: "0.2"))
+        XCTAssertFalse(AppVersion.isNewer("0.2.0", than: "0.2"))
+        XCTAssertFalse(AppVersion.isNewer("0.1.9", than: "0.2.0"))
+    }
+
+    func testPicksNewestIOSReleaseOnly() throws {
+        // 데스크톱 릴리스(v0.9.0), 초안, ipa 없는 것은 빼고 가장 높은 ios- 버전을 고른다
+        let json = """
+            [
+              {"tag_name": "v0.9.0", "body": "desktop", "html_url": "https://e.com/d", "draft": false, "prerelease": false,
+               "assets": [{"name": "latest.json", "browser_download_url": "https://e.com/latest.json"}]},
+              {"tag_name": "ios-v0.3.0", "body": "draft", "html_url": "https://e.com/3", "draft": true, "prerelease": false,
+               "assets": [{"name": "RobinX.ipa", "browser_download_url": "https://e.com/3.ipa"}]},
+              {"tag_name": "ios-v0.2.10", "body": "ten", "html_url": "https://e.com/210", "draft": false, "prerelease": false,
+               "assets": [{"name": "RobinX.ipa", "browser_download_url": "https://e.com/210.ipa"}]},
+              {"tag_name": "ios-v0.2.9", "body": null, "html_url": "https://e.com/29", "draft": false, "prerelease": false,
+               "assets": [{"name": "RobinX.ipa", "browser_download_url": "https://e.com/29.ipa"}]},
+              {"tag_name": "ios-v0.4.0", "body": "no ipa", "html_url": "https://e.com/4", "draft": false, "prerelease": false,
+               "assets": []}
+            ]
+            """
+        let releases = try JSONDecoder().decode([GitHubRelease].self, from: Data(json.utf8))
+        let newest = try XCTUnwrap(UpdateChecker.newest(releases))
+        XCTAssertEqual(newest.version, "0.2.10")
+        XCTAssertEqual(newest.ipa.absoluteString, "https://e.com/210.ipa")
+        XCTAssertEqual(newest.notes, "ten")
+    }
+}

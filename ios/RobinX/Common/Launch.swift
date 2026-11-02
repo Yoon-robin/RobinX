@@ -12,6 +12,8 @@ enum Launch {
     static let initialTab = AppTab(rawValue: defaults.string(forKey: "tab") ?? "") ?? .summary
     /// 처음부터 열어 둘 하위 화면: "duplicates"·"similar"·"viewer"·"swipe"(사진), "folder"(파일의 첫 폴더), "albums"(설정)
     static let route = defaults.string(forKey: "route")
+    /// 가짜 자료일 때 새 버전이 있는 것처럼 보여 준다
+    static let demoUpdate = defaults.bool(forKey: "demoUpdate")
 }
 
 enum AppTab: String, Hashable {

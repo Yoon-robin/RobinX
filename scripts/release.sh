@@ -101,7 +101,7 @@ if [ "$PUBLISH" = 1 ]; then
 - 빌드한 커밋: $COMMIT
 - 확인 방법 (PowerShell): \`Get-FileHash .\\$ASSET_NAME -Algorithm SHA256\`
 - 이 파일은 Windows 게시자 코드 서명이 아직 없어요. 위 SHA-256이 같은지 확인한 뒤 실행해 주세요."
-  gh release create "$TAG" "$SETUP" "$OUT" --repo Yoon-robin/RobinX --target "$COMMIT" --title "RobinX $VERSION" --notes "$NOTES"
+  gh release create "$TAG" "$SETUP" "$OUT" --repo Yoon-robin/RobinX --target "$COMMIT" --title "RobinX $VERSION" --notes "$NOTES" --latest
   echo "올림: https://github.com/Yoon-robin/RobinX/releases/tag/$TAG"
 
   # 올라간 파일을 다시 받아, 로컬에서 만든 것과 같은지 확인한다

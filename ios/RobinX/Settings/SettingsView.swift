@@ -7,6 +7,7 @@ struct SettingsView: View {
     @EnvironmentObject private var photos: PhotoLibrary
     @EnvironmentObject private var folders: FolderStore
     @EnvironmentObject private var swipe: SwipeStore
+    @EnvironmentObject private var updates: UpdateChecker
     @Environment(\.openURL) private var openURL
     @State private var path: [SettingsRoute] = Launch.route == "albums" ? [.albums] : []
 
@@ -22,6 +23,10 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     TermTitle("설정")
+                    if let release = updates.available {
+                        SectionLabel("업데이트")
+                        UpdateBox(release: release)
+                    }
                     photoSection
                     fileSection
                     infoSection
@@ -169,6 +174,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 bullet("사진 보관함(허용한 경우)과 직접 고른 폴더뿐이에요.")
                 bullet("다른 앱의 캐시, 앱별 용량, 시스템 데이터는 iOS가 다른 앱에 열어 주지 않아요.")
+                bullet("인터넷은 새 버전 확인(GitHub)에만 써요. 사진·파일 정보는 밖으로 보내지 않아요.")
             }
             .termBox()
 
@@ -193,8 +199,12 @@ struct SettingsView: View {
                     .foregroundStyle(Brand.text)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("버전 \(version)").font(Brand.mono(13)).foregroundStyle(Brand.dim)
+                Text(updateStatus).font(Brand.mono(13)).foregroundStyle(Brand.dim)
             }
             .termBox()
+            Button(updates.state == .checking ? "확인하는 중" : "새 버전 확인") { Task { await updates.check() } }
+                .buttonStyle(TermButtonStyle())
+                .disabled(updates.state == .checking)
             Link(destination: URL(string: "https://yoon-robin.github.io/RobinX/")!) {
                 NavRow(symbol: "desktopcomputer", title: "Windows용 RobinX", detail: "yoon-robin.github.io/RobinX")
             }
@@ -226,6 +236,17 @@ struct SettingsView: View {
 
     private var divider: some View {
         Rectangle().fill(Brand.border).frame(height: 1)
+    }
+
+    /// 새 버전 확인은 GitHub Release만 읽는다 (보내는 것 없음)
+    private var updateStatus: String {
+        switch updates.state {
+        case .idle: "새 버전 확인 전"
+        case .checking: "새 버전 확인하는 중"
+        case .latest: "최신 버전이에요"
+        case .available(let release): "새 버전 \(release.version)이 있어요 (위에서 받기)"
+        case .failed: "새 버전을 확인하지 못했어요 (인터넷 연결 확인)"
+        }
     }
 
     private var photoAccess: String {

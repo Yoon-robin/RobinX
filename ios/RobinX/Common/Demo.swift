@@ -87,6 +87,11 @@ enum Demo {
         AlbumInfo(id: "album-wallpaper", title: "배경화면", count: 41),
     ]
 
+    static let release = AppRelease(
+        version: "0.3.0", notes: "비슷한 사진을 크게 보며 비교할 수 있어요.\n사진을 다시 찾을 때 훨씬 빨라졌어요.",
+        ipa: URL(string: "https://github.com/Yoon-robin/RobinX/releases")!,
+        page: URL(string: "https://github.com/Yoon-robin/RobinX/releases")!)
+
     // MARK: 기록
 
     static let history: [DeleteRecord] = {
