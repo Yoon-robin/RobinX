@@ -96,6 +96,46 @@ final class PhotoResultTests: XCTestCase {
         XCTAssertEqual(r.totalCount, 3)
         XCTAssertEqual(r.totalBytes, 18)
     }
+
+    func testRemoveFromSimilarGroups() {
+        var r = PhotoScanResult()
+        r.similar = [[item("s1", 30), item("s2", 20)], [item("t1", 9), item("t2", 8), item("t3", 7)]]
+        XCTAssertEqual(r.bytes(.similar), 20 + 15, "묶음마다 맨 앞(가장 큰 것)을 남긴다고 본다")
+        r.remove(["s2", "t1"])
+        XCTAssertEqual(r.similar.map { $0.map(\.id) }, [["t2", "t3"]])
+    }
+}
+
+final class SimilarGrouperTests: XCTestCase {
+    private let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+
+    private func c(_ id: String, _ seconds: TimeInterval, _ hash: UInt64) -> SimilarCandidate {
+        SimilarCandidate(id: id, date: t0.addingTimeInterval(seconds), hash: hash)
+    }
+
+    func testGroupsCloseShotsTakenTogether() {
+        let groups = SimilarGrouper.groups(
+            [c("a", 0, 0b1111), c("b", 20, 0b0111), c("c", 35, 0b0011), c("far", 500, 0b1111)],
+            window: 60, maxDistance: 2)
+        XCTAssertEqual(groups, [["a", "b", "c"]])
+    }
+
+    func testSplitsWhenPictureChanges() {
+        let groups = SimilarGrouper.groups(
+            [c("a", 0, 0), c("b", 10, 0), c("other", 20, UInt64.max), c("d", 30, UInt64.max)],
+            window: 60, maxDistance: 5)
+        XCTAssertEqual(groups, [["a", "b"], ["other", "d"]])
+    }
+
+    func testIgnoresShotsOutsideWindow() {
+        let groups = SimilarGrouper.groups([c("a", 0, 0), c("b", 61, 0)], window: 60, maxDistance: 5)
+        XCTAssertTrue(groups.isEmpty)
+    }
+
+    func testSortsByDateFirst() {
+        let groups = SimilarGrouper.groups([c("late", 30, 1), c("early", 0, 0)], window: 60, maxDistance: 2)
+        XCTAssertEqual(groups, [["early", "late"]])
+    }
 }
 
 final class FileScannerTests: XCTestCase {
@@ -150,6 +190,20 @@ final class FileScannerTests: XCTestCase {
         XCTAssertEqual(Set(r.children.map(\.name)), ["big.bin", "a", "b", "old.bin", "tiny.txt"])
         XCTAssertEqual(r.children.first { $0.name == "b" }?.isFolder, true)
         XCTAssertEqual(r.children.first?.name, "big.bin")
+    }
+
+    func testSkipsExcludedFolders() throws {
+        try write("keep/big.bin", bytes: 300_000)
+        try write("skip/big.bin", bytes: 300_000)
+        try write("skip/deeper/old.bin", bytes: 60_000, age: 400 * 86_400)
+        try write("other/skip/big.bin", bytes: 300_000)
+        var o = options
+        o.excludedFolders = ["skip"]
+        let r = FileScanner.scan(root, options: o)
+        XCTAssertEqual(Set(r.large.map(\.path)), ["keep/big.bin", "other/skip/big.bin"], "바로 아래 폴더만 뺀다")
+        XCTAssertTrue(r.old.isEmpty)
+        XCTAssertEqual(r.fileCount, 2)
+        XCTAssertFalse(r.children.contains { $0.name == "skip" })
     }
 
     func testSkipsSymlinks() throws {

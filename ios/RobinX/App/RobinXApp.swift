@@ -5,6 +5,9 @@ struct RobinXApp: App {
     @StateObject private var storage = DeviceStorage()
     @StateObject private var photos = PhotoLibrary()
     @StateObject private var folders = FolderStore()
+    @StateObject private var settings = AppSettings()
+    @StateObject private var log = DeleteLog()
+    @StateObject private var swipe = SwipeStore()
 
     var body: some Scene {
         WindowGroup {
@@ -12,11 +15,16 @@ struct RobinXApp: App {
                 .environmentObject(storage)
                 .environmentObject(photos)
                 .environmentObject(folders)
+                .environmentObject(settings)
+                .environmentObject(log)
+                .environmentObject(swipe)
         }
     }
 }
 
 struct RootView: View {
+    @EnvironmentObject private var photos: PhotoLibrary
+    @EnvironmentObject private var settings: AppSettings
     @State private var booted = Launch.skipBoot
     @State private var tab = Launch.initialTab
 
@@ -32,9 +40,12 @@ struct RootView: View {
                 FilesView()
                     .tabItem { Label("파일", systemImage: "folder") }
                     .tag(AppTab.files)
-                InfoView()
-                    .tabItem { Label("정보", systemImage: "info.circle") }
-                    .tag(AppTab.info)
+                HistoryView()
+                    .tabItem { Label("기록", systemImage: "clock.arrow.circlepath") }
+                    .tag(AppTab.history)
+                SettingsView()
+                    .tabItem { Label("설정", systemImage: "gearshape") }
+                    .tag(AppTab.settings)
             }
             .toolbarBackground(Brand.term, for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)
@@ -47,5 +58,7 @@ struct RootView: View {
         }
         .tint(Brand.strong)
         .preferredColorScheme(.dark)
+        // 사진 기준을 바꾸면 찾은 결과를 버린다 (사진 탭을 열 때 새 기준으로 다시 찾는다)
+        .onChange(of: settings.photoSignature) { _ in photos.invalidate() }
     }
 }

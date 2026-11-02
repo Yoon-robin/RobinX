@@ -54,11 +54,11 @@ struct SummaryView: View {
 
     private var photoDetail: String {
         switch photos.access {
-        case .unknown: return "중복 사진, 큰 동영상, 스크린샷 찾기"
+        case .unknown: return "중복·비슷한 사진, 큰 동영상, 스크린샷 찾기"
         case .denied: return "사진 보관함을 허용하지 않았어요"
         case .full, .limited:
-            guard let r = photos.result else { return photos.scanning ? "찾는 중" : "중복 사진, 큰 동영상, 스크린샷 찾기" }
-            return "중복 \(r.duplicates.count)묶음 · 큰 동영상 \(r.videos.count)개 · 스크린샷 \(r.screenshots.count)장"
+            guard let r = photos.result else { return photos.scanning ? "찾는 중" : "중복·비슷한 사진, 큰 동영상, 스크린샷 찾기" }
+            return "중복 \(r.duplicates.count)묶음 · 비슷한 사진 \(r.similar.count)묶음 · 큰 동영상 \(r.videos.count)개"
         }
     }
 
@@ -132,5 +132,6 @@ struct NavRow: View {
                 .foregroundStyle(Brand.faint)
         }
         .termBox()
+        .accessibilityElement(children: .combine)
     }
 }

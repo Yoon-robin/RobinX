@@ -6,6 +6,8 @@ struct FolderDetailView: View {
     let folder: SavedFolder
 
     @EnvironmentObject private var store: FolderStore
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var log: DeleteLog
     @StateObject private var scan: FolderScan
     @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
@@ -30,12 +32,13 @@ struct FolderDetailView: View {
             case .children: "폴더별"
             }
         }
-        var note: String {
+        @MainActor
+        func note(_ settings: AppSettings) -> String {
             switch self {
-            case .large: "50 MB 이상, 큰 것부터"
+            case .large: "\(settings.largeFileMB) MB 이상, 큰 것부터"
             case .duplicates: "내용이 똑같은 파일 (100 KB 이상)"
-            case .old: "1년 넘게 바뀌지 않은 10 MB 이상 파일"
-            case .children: "고른 폴더 바로 아래 항목의 크기"
+            case .old: "\(AppSettings.ageText(settings.oldFileDays)) 넘게 바뀌지 않은 10 MB 이상 파일"
+            case .children: "고른 폴더 바로 아래 항목의 크기. 길게 누르면 그 폴더를 찾지 않게 할 수 있어요"
             }
         }
     }
@@ -60,9 +63,15 @@ struct FolderDetailView: View {
                         ForEach(Part.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    Text(section.note)
+                    Text(section.note(settings))
                         .font(.footnote)
                         .foregroundStyle(Brand.dim)
+                    if !store.current(folder).excludedNames.isEmpty {
+                        Text("찾지 않는 폴더: \(store.current(folder).excludedNames.joined(separator: ", "))")
+                            .font(.footnote)
+                            .foregroundStyle(Brand.dim)
+                            .lineLimit(2)
+                    }
                     ForEach(notices, id: \.self) { OkLine(text: $0) }
                     ForEach(failures, id: \.self) { FailLine(text: $0) }
                     list(result)
@@ -85,7 +94,7 @@ struct FolderDetailView: View {
                     }
                     Button("고른 것 풀기") { selection = [] }
                         .disabled(selection.isEmpty)
-                    Button("다시 찾기") { Task { await scan.scan(store: store) } }
+                    Button("다시 찾기") { Task { await scan.scan(store: store, settings: settings) } }
                     Button("목록에서 빼기", role: .destructive) {
                         store.forget(folder)
                         dismiss()
@@ -96,8 +105,8 @@ struct FolderDetailView: View {
                 .accessibilityLabel("더 보기")
             }
         }
-        .refreshable { await scan.scan(store: store) }
-        .task { if scan.result == nil { await scan.scan(store: store) } }
+        .refreshable { await scan.scan(store: store, settings: settings) }
+        .task { if scan.result == nil { await scan.scan(store: store, settings: settings) } }
         .onChange(of: section) { _ in selection = [] }
         .safeAreaInset(edge: .bottom) {
             if !selection.isEmpty {
@@ -171,6 +180,17 @@ struct FolderDetailView: View {
                         .padding(.vertical, 10)
                         .padding(.horizontal, 12)
                         .overlay(alignment: .bottom) { Rectangle().fill(Brand.border).frame(height: 1) }
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            if child.isFolder {
+                                Button {
+                                    store.exclude(folder, name: child.name)
+                                    Task { await scan.scan(store: store, settings: settings) }
+                                } label: {
+                                    Label("이 폴더는 찾지 않기", systemImage: "eye.slash")
+                                }
+                            }
+                        }
                     }
                 }
                 .background(Brand.term, in: RoundedRectangle(cornerRadius: Brand.radius))
@@ -217,12 +237,16 @@ struct FolderDetailView: View {
     // MARK: - 고르기와 지우기
 
     private var selectedBytes: Int64 {
-        guard let result = scan.result else { return 0 }
+        sizes(selection).values.reduce(0, +)
+    }
+
+    private func sizes(_ urls: Set<URL>) -> [URL: Int64] {
+        guard let result = scan.result else { return [:] }
         var sizes = [URL: Int64]()
-        for item in result.large + Array(result.duplicates.joined()) + result.old where selection.contains(item.url) {
+        for item in result.large + Array(result.duplicates.joined()) + result.old where urls.contains(item.url) {
             sizes[item.url] = item.bytes
         }
-        return sizes.values.reduce(0, +)
+        return sizes
     }
 
     private func toggle(_ url: URL) {
@@ -233,9 +257,10 @@ struct FolderDetailView: View {
         working = true
         notices = []
         failures = []
+        let known = sizes(selection)
         let outcome = await scan.trash(selection, store: store)
         selection = []
-        report(outcome)
+        report(outcome, sizes: known)
         if !outcome.notTrashed.isEmpty {
             leftovers = outcome.notTrashed
             askForever = true
@@ -245,13 +270,20 @@ struct FolderDetailView: View {
 
     private func removeLeftovers() async {
         working = true
+        let known = sizes(Set(leftovers))
         let outcome = await scan.removeForever(Set(leftovers), store: store)
         leftovers = []
-        report(outcome)
+        report(outcome, sizes: known)
         working = false
     }
 
-    private func report(_ outcome: FileDeleter.Outcome) {
+    private func report(_ outcome: FileDeleter.Outcome, sizes: [URL: Int64]) {
+        let done: [(DeleteRecord.Kind, [URL])] = [(.filesTrashed, outcome.trashed), (.filesRemoved, outcome.removed)]
+        for (kind, urls) in done where !urls.isEmpty {
+            log.add(
+                kind, source: folder.name, count: urls.count,
+                bytes: urls.reduce(0) { $0 + (sizes[$1] ?? 0) }, names: urls.map(\.lastPathComponent))
+        }
         if !outcome.trashed.isEmpty { notices.append("\(outcome.trashed.count.grouped)개를 휴지통으로 옮겼어요.") }
         if !outcome.removed.isEmpty { notices.append("\(outcome.removed.count.grouped)개를 영구 삭제했어요.") }
         for failure in outcome.failed.prefix(5) {

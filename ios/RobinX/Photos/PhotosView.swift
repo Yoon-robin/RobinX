@@ -4,9 +4,11 @@ import UIKit
 /// 사진 탭: 권한 묻기 → 훑기 → 칸별 목록
 struct PhotosView: View {
     @EnvironmentObject private var photos: PhotoLibrary
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var swipe: SwipeStore
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
-    @State private var path: [PhotoKind] = Launch.route == "duplicates" ? [.duplicates] : []
+    @State private var path: [PhotoRoute] = PhotoRoute.initial
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -19,11 +21,17 @@ struct PhotosView: View {
             }
             .pageBackground()
             .toolbar(.hidden, for: .navigationBar)
-            .refreshable { await photos.scan() }
-            .navigationDestination(for: PhotoKind.self) { PhotoCategoryView(kind: $0) }
+            .refreshable { await photos.scan(options: settings.photoOptions) }
+            .navigationDestination(for: PhotoRoute.self) { route in
+                switch route {
+                case .kind(let kind): PhotoCategoryView(kind: kind)
+                case .swipe: SwipeSortView()
+                }
+            }
         }
+        // 탭을 열 때마다: 결과가 없으면(처음이거나 설정이 바뀌었으면) 찾는다
         .task {
-            if photos.canRead && photos.result == nil { await photos.scan() }
+            if photos.canRead && photos.result == nil { await photos.scan(options: settings.photoOptions) }
         }
         .onChange(of: scenePhase) { phase in
             if phase == .active { photos.refreshAccess() }
@@ -40,7 +48,7 @@ struct PhotosView: View {
                 Text("찾기만 하고, 지우는 것은 직접 고른 사진뿐이에요.")
                     .font(.footnote)
                     .foregroundStyle(Brand.dim)
-                Button("사진 보관함 허용하기") { Task { await photos.requestAccess() } }
+                Button("사진 보관함 허용하기") { Task { await photos.requestAccess(options: settings.photoOptions) } }
                     .buttonStyle(TermButtonStyle())
             }
             .termBox(padding: 18)
@@ -65,9 +73,19 @@ struct PhotosView: View {
                 .termBox()
                 .onTapGesture { openSettings() }
             }
+            NavigationLink(value: PhotoRoute.swipe) {
+                NavRow(
+                    symbol: "hand.draw", title: "넘겨 보며 정리",
+                    detail: swipe.marked.isEmpty
+                        ? "왼쪽으로 밀면 지울 것, 오른쪽으로 밀면 남길 것"
+                        : "지울 것 \(swipe.marked.count.grouped)장 표시함 · 이어서 넘기기",
+                    value: swipe.marked.isEmpty ? nil : Bytes.format(swipe.markedBytes))
+            }
+            .buttonStyle(RowBoxStyle())
+            SectionLabel("찾아낸 것")
             if photos.scanning {
                 ScanProgress(
-                    label: "사진 보관함 훑는 중",
+                    label: photos.stage == .reading ? "사진 보관함 훑는 중" : "비슷한 사진 비교하는 중",
                     detail: photos.scanTotal > 0 ? "\(photos.scanned.grouped) / \(photos.scanTotal.grouped)" : nil,
                     fraction: photos.scanTotal > 0 ? Double(photos.scanned) / Double(photos.scanTotal) : nil)
             } else if let result = photos.result {
@@ -75,7 +93,7 @@ struct PhotosView: View {
                     .font(Brand.mono(13))
                     .foregroundStyle(Brand.dim)
                 ForEach(PhotoKind.allCases) { kind in
-                    NavigationLink(value: kind) {
+                    NavigationLink(value: PhotoRoute.kind(kind)) {
                         NavRow(
                             symbol: kind.symbol, title: kind.title,
                             detail: countText(kind, result),
@@ -88,22 +106,39 @@ struct PhotosView: View {
                     .foregroundStyle(Brand.dim)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                Button("찾기") { Task { await photos.scan() } }
+                Button("찾기") { Task { await photos.scan(options: settings.photoOptions) } }
                     .buttonStyle(TermButtonStyle())
             }
         }
     }
 
     private func countText(_ kind: PhotoKind, _ result: PhotoScanResult) -> String {
-        if kind == .duplicates {
-            let photos = result.duplicates.reduce(0) { $0 + $1.count }
-            return "\(result.duplicates.count.grouped)묶음 · \(photos.grouped)장 · \(kind.detail)"
+        if kind.isGrouped {
+            let groups = result.groups(kind)
+            let photos = groups.reduce(0) { $0 + $1.count }
+            return "\(groups.count.grouped)묶음 · \(photos.grouped)장 · \(kind.detail(result))"
         }
-        return "\(result.count(kind).grouped)개 · \(kind.detail)"
+        return "\(result.count(kind).grouped)개 · \(kind.detail(result))"
     }
 
     private func openSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+    }
+}
+
+/// 사진 탭 안에서 여는 화면
+enum PhotoRoute: Hashable {
+    case kind(PhotoKind)
+    case swipe
+
+    /// 화면 캡처용 실행 인자 (-route duplicates|similar|swipe)
+    static var initial: [PhotoRoute] {
+        switch Launch.route {
+        case "duplicates": [.kind(.duplicates)]
+        case "similar": [.kind(.similar)]
+        case "swipe": [.swipe]
+        default: []
+        }
     }
 }
 

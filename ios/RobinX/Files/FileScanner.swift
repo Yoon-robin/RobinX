@@ -54,6 +54,8 @@ struct FileScanOptions {
     /// 이보다 작은 파일은 중복을 찾지 않는다
     var duplicateMinBytes: Int64 = 100_000
     var listLimit = 300
+    /// 고른 폴더 바로 아래에서 찾지 않을 폴더 이름
+    var excludedFolders: Set<String> = []
     var now = Date()
 }
 
@@ -64,7 +66,7 @@ enum FileScanner {
         isCancelled: () -> Bool = { false }, progress: (Int) -> Void = { _ in }
     ) -> FileScanResult {
         let keys: [URLResourceKey] = [
-            .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey, .totalFileAllocatedSizeKey,
+            .isRegularFileKey, .isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .totalFileAllocatedSizeKey,
             .contentModificationDateKey,
         ]
         var result = FileScanResult()
@@ -80,6 +82,12 @@ enum FileScanner {
             if isCancelled() { break }
             guard let values = try? url.resourceValues(forKeys: Set(keys)) else { continue }
             if values.isSymbolicLink == true { continue }
+            if values.isDirectory == true {
+                if walker.level == 1 && options.excludedFolders.contains(url.lastPathComponent) {
+                    walker.skipDescendants()
+                }
+                continue
+            }
             guard values.isRegularFile == true else { continue }
 
             // 고른 폴더 기준 경로. /var와 /private/var가 섞여도 깊이로 자르면 맞는다

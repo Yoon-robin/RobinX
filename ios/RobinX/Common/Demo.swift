@@ -20,6 +20,12 @@ enum Demo {
             (1_820_000_000, 252), (918_000_000, 131), (611_000_000, 88), (342_000_000, 49), (176_000_000, 25),
             (74_000_000, 11),
         ]
+        // 비슷한 사진: "#" 앞이 같아 기본 그림은 같고, 썸네일에서 조금씩 다르게 그린다
+        r.similar = [
+            (1..<6).map { PhotoItem(id: "sim-a#\($0)", bytes: Int64(3_900_000 - $0 * 120_000), isVideo: false, created: days(-5)) },
+            (1..<4).map { PhotoItem(id: "sim-b#\($0)", bytes: Int64(2_700_000 - $0 * 90_000), isVideo: false, created: days(-12)) },
+            (1..<3).map { PhotoItem(id: "sim-c#\($0)", bytes: Int64(2_100_000 - $0 * 60_000), isVideo: false, created: days(-33)) },
+        ]
         r.videos = videos.enumerated().map { i, v in
             PhotoItem(id: "video-\(i)", bytes: v.0, isVideo: true, duration: v.1, created: days(Double(-i * 9)))
         }
@@ -52,8 +58,43 @@ enum Demo {
                 let w = 20 + next() * 70, h = 20 + next() * 70
                 ctx.fill(CGRect(x: next() * (side - w), y: next() * (side - h), width: w, height: h))
             }
+            // 비슷한 사진은 "#" 뒤 번호만큼 작은 조각을 옮겨 조금 다르게
+            if key.hasPrefix("sim-"), let n = Double(id.split(separator: "#").last ?? "") {
+                UIColor(white: 0.92, alpha: 1).setFill()
+                ctx.fill(CGRect(x: 14 + n * 12, y: 78 - n * 4, width: 16, height: 16))
+            }
         }
     }
+
+    /// 넘겨 보며 정리에 보여 줄 사진
+    static let swipeQueue: [PhotoItem] = (0..<40).map { i in
+        PhotoItem(id: "swipe-\(i)", bytes: Int64(1_800_000 + (i * 431_000) % 3_600_000), isVideo: false, created: days(Double(-i * 2)))
+    }
+
+    static let albums: [AlbumInfo] = [
+        AlbumInfo(id: "album-family", title: "가족", count: 1_204),
+        AlbumInfo(id: "album-trip", title: "제주 여행 2025", count: 386),
+        AlbumInfo(id: "album-receipts", title: "영수증", count: 92),
+        AlbumInfo(id: "album-wallpaper", title: "배경화면", count: 41),
+    ]
+
+    // MARK: 기록
+
+    static let history: [DeleteRecord] = {
+        let now = Date()
+        func ago(_ hours: Double) -> Date { now.addingTimeInterval(-hours * 3600) }
+        return [
+            DeleteRecord(date: ago(2), kind: .photos, source: "넘겨 보며 정리", count: 37, bytes: 98_400_000),
+            DeleteRecord(
+                date: ago(26), kind: .filesTrashed, source: "Downloads", count: 3, bytes: 7_590_000_000,
+                names: ["ubuntu-24.04.1-desktop-amd64.iso", "사진 백업 2023.zip", "setup-tool-2.3.exe"]),
+            DeleteRecord(date: ago(50), kind: .photos, source: "중복 사진", count: 4, bytes: 15_090_000),
+            DeleteRecord(
+                date: ago(30 * 24), kind: .filesRemoved, source: "iCloud Drive", count: 1, bytes: 812_000_000,
+                names: ["game-patch-1.8.2.pak"]),
+            DeleteRecord(date: ago(40 * 24), kind: .photos, source: "큰 동영상", count: 2, bytes: 2_738_000_000),
+        ]
+    }()
 
     // MARK: 파일
 
@@ -103,6 +144,7 @@ enum Demo {
             lastTotal: files.totalBytes, lastCount: files.fileCount, lastScanned: Date().addingTimeInterval(-3 * 3600)),
         SavedFolder(
             id: UUID(uuidString: "6F1C2B0E-0000-4000-8000-000000000002")!, name: "iCloud Drive", bookmark: Data(),
-            lastTotal: 21_300_000_000, lastCount: 6_920, lastScanned: Date().addingTimeInterval(-26 * 3600)),
+            lastTotal: 21_300_000_000, lastCount: 6_920, lastScanned: Date().addingTimeInterval(-26 * 3600),
+            excluded: ["Backups"]),
     ]
 }

@@ -22,7 +22,7 @@ echo "시뮬레이터: $UDID"
 xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b >/dev/null
 
-# 시험 그림을 사진 보관함에 넣는다 (같은 그림 두 장 → UI 테스트가 중복 1묶음을 찾아야 한다). 시뮬레이터 안에서만
+# 시험 그림을 사진 보관함에 넣는다 (UI 테스트가 중복 1묶음과 비슷한 사진 1묶음을 찾아야 한다). 시뮬레이터 안에서만
 swift scripts/make-test-media.swift "$OUT/media"
 xcrun simctl addmedia "$UDID" "$OUT"/media/*.jpg
 
@@ -57,10 +57,15 @@ shot 1-boot -demo YES -bootHold YES
 shot 2-summary -demo YES -skipBoot YES
 shot 3-photos -demo YES -skipBoot YES -tab photos
 shot 4-duplicates -demo YES -skipBoot YES -tab photos -route duplicates
-shot 5-files -demo YES -skipBoot YES -tab files
-shot 6-folder -demo YES -skipBoot YES -tab files -route folder
-shot 7-info -demo YES -skipBoot YES -tab info
+shot 5-similar -demo YES -skipBoot YES -tab photos -route similar
+shot 6-swipe -demo YES -skipBoot YES -tab photos -route swipe
+shot 7-files -demo YES -skipBoot YES -tab files
+shot 8-folder -demo YES -skipBoot YES -tab files -route folder
+shot 9-history -demo YES -skipBoot YES -tab history
+shot 10-settings -demo YES -skipBoot YES -tab settings
+shot 11-albums -demo YES -skipBoot YES -tab settings -route albums
 # 진짜 사진 보관함: UI 테스트(RobinXUITests)가 허용을 누른 뒤라 권한이 있다
-shot 8-real-photos -skipBoot YES -tab photos
-shot 9-real-duplicates -skipBoot YES -tab photos -route duplicates
+shot 12-real-photos -skipBoot YES -tab photos
+shot 13-real-duplicates -skipBoot YES -tab photos -route duplicates
+shot 14-real-similar -skipBoot YES -tab photos -route similar
 echo "::endgroup::"

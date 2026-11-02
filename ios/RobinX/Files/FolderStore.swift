@@ -8,6 +8,10 @@ struct SavedFolder: Codable, Identifiable, Hashable {
     var lastTotal: Int64? = nil
     var lastCount: Int? = nil
     var lastScanned: Date? = nil
+    /// 찾지 않을 폴더 (고른 폴더 바로 아래). 예전 기록에는 없어서 옵셔널
+    var excluded: [String]? = nil
+
+    var excludedNames: [String] { excluded ?? [] }
 }
 
 @MainActor
@@ -67,6 +71,24 @@ final class FolderStore: ObservableObject {
         return url
     }
 
+    func exclude(_ folder: SavedFolder, name: String) {
+        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else { return }
+        var names = folders[index].excludedNames
+        if !names.contains(name) { names.append(name) }
+        folders[index].excluded = names
+        save()
+    }
+
+    func include(_ folder: SavedFolder, name: String) {
+        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else { return }
+        folders[index].excluded = folders[index].excludedNames.filter { $0 != name }
+        save()
+    }
+
+    func current(_ folder: SavedFolder) -> SavedFolder {
+        folders.first { $0.id == folder.id } ?? folder
+    }
+
     func record(_ folder: SavedFolder, total: Int64, count: Int) {
         guard let index = folders.firstIndex(where: { $0.id == folder.id }) else { return }
         folders[index].lastTotal = total
@@ -94,7 +116,7 @@ final class FolderScan: ObservableObject {
         self.folder = folder
     }
 
-    func scan(store: FolderStore) async {
+    func scan(store: FolderStore, settings: AppSettings) async {
         if Launch.demo {
             result = Demo.files
             return
@@ -106,10 +128,11 @@ final class FolderScan: ObservableObject {
         }
         scanning = true
         scanned = 0
+        let options = settings.fileOptions(excluding: store.current(folder).excludedNames)
         let found = await Task.detached(priority: .userInitiated) { () -> FileScanResult in
             let scoped = root.startAccessingSecurityScopedResource()
             defer { if scoped { root.stopAccessingSecurityScopedResource() } }
-            return FileScanner.scan(root, progress: { count in
+            return FileScanner.scan(root, options: options, progress: { count in
                 Task { @MainActor in self.scanned = count }
             })
         }.value

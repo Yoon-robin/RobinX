@@ -10,10 +10,10 @@ enum Launch {
     /// 시작 화면을 닫지 않고 둔다
     static let bootHold = defaults.bool(forKey: "bootHold")
     static let initialTab = AppTab(rawValue: defaults.string(forKey: "tab") ?? "") ?? .summary
-    /// 처음부터 열어 둘 하위 화면: "duplicates"(사진), "folder"(파일의 첫 폴더)
+    /// 처음부터 열어 둘 하위 화면: "duplicates"·"similar"·"swipe"(사진), "folder"(파일의 첫 폴더), "albums"(설정)
     static let route = defaults.string(forKey: "route")
 }
 
 enum AppTab: String, Hashable {
-    case summary, photos, files, info
+    case summary, photos, files, history, settings
 }

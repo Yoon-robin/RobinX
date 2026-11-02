@@ -6,6 +6,7 @@ struct PhotoCategoryView: View {
     let kind: PhotoKind
 
     @EnvironmentObject private var photos: PhotoLibrary
+    @EnvironmentObject private var log: DeleteLog
     @State private var selection = Set<String>()
     @State private var confirming = false
     @State private var deleting = false
@@ -31,10 +32,10 @@ struct PhotoCategoryView: View {
                     Text("찾은 사진이 없어요.")
                         .foregroundStyle(Brand.dim)
                         .termBox(padding: 18)
-                } else if kind == .duplicates {
-                    ForEach(Array(result.duplicates.enumerated()), id: \.offset) { index, group in
+                } else if kind.isGrouped {
+                    ForEach(Array(result.groups(kind).enumerated()), id: \.offset) { index, group in
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("묶음 \(index + 1) · \(group.count)장 · 한 장 \(Bytes.format(group.first?.bytes ?? 0))")
+                            Text(groupTitle(index, group))
                                 .font(Brand.mono(12))
                                 .foregroundStyle(Brand.dim)
                             grid(group, oldestFirst: true)
@@ -54,10 +55,10 @@ struct PhotoCategoryView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu("고르기") {
-                    if kind == .duplicates {
+                    if kind.isGrouped {
                         // 묶음을 통째로 고르는 단추는 두지 않는다 (같은 사진이 하나도 안 남을 수 있다)
-                        Button("묶음마다 가장 오래된 것만 남기고 고르기") {
-                            selection = Set(result.duplicates.flatMap { $0.dropFirst().map(\.id) })
+                        Button("묶음마다 '\(kind.keepBadge)' 하나만 남기고 고르기") {
+                            selection = Set(result.groups(kind).flatMap { $0.dropFirst().map(\.id) })
                         }
                     } else {
                         Button("모두 고르기") { selection = Set(items.map(\.id)) }
@@ -99,7 +100,7 @@ struct PhotoCategoryView: View {
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 PhotoTile(
                     item: item, selected: selection.contains(item.id),
-                    badge: oldestFirst && index == 0 ? "가장 오래됨" : nil
+                    badge: oldestFirst && index == 0 ? kind.keepBadge : nil
                 )
                 .onTapGesture { toggle(item.id) }
             }
@@ -111,7 +112,14 @@ struct PhotoCategoryView: View {
     }
 
     private func summary(_ result: PhotoScanResult) -> String {
-        "\(kind.detail) · \(Bytes.format(result.bytes(kind)))"
+        "\(kind.detail(result)) · \(Bytes.format(result.bytes(kind)))"
+    }
+
+    private func groupTitle(_ index: Int, _ group: [PhotoItem]) -> String {
+        if kind == .duplicates {
+            return "묶음 \(index + 1) · \(group.count)장 · 한 장 \(Bytes.format(group.first?.bytes ?? 0))"
+        }
+        return "묶음 \(index + 1) · \(group.count)장 · 하나 빼고 \(Bytes.format(PhotoScanner.wasted(group)))"
     }
 
     private func selectedBytes(_ items: [PhotoItem]) -> Int64 {
@@ -124,8 +132,10 @@ struct PhotoCategoryView: View {
     private func delete() async {
         deleting = true
         let count = selection.count
+        let bytes = selectedBytes(photos.result?.items(kind) ?? [])
         if await photos.delete(selection) {
-            notice = "\(count.grouped)개를 지웠어요. 사진 앱의 '최근 삭제된 항목'에서 되살릴 수 있어요."
+            log.add(.photos, source: kind.title, count: count, bytes: bytes)
+            notice = "\(count.grouped)개를 지웠어요. 공간은 사진 앱의 '최근 삭제된 항목'을 비우거나 30일이 지나면 돌아와요."
             selection = []
         }
         deleting = false

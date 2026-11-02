@@ -4,20 +4,23 @@ import UIKit
 
 /// 사진 보관함을 한 번 훑어 정리할 만한 것을 찾는다 (읽기만 한다).
 enum PhotoScanner {
-    /// 이보다 큰 동영상만 "큰 동영상"에 넣는다
-    static let largeVideoBytes: Int64 = 50_000_000
+    enum Stage { case reading, comparing }
 
-    static func scan(progress: @escaping (Int, Int) -> Void) -> PhotoScanResult {
-        let options = PHFetchOptions()
+    static func scan(options: PhotoScanOptions, progress: @escaping (Stage, Int, Int) -> Void) -> PhotoScanResult {
+        let skipped = assetIDs(inAlbums: options.excludedAlbums)
+        let fetchOptions = PHFetchOptions()
         // 연속 촬영의 대표가 아닌 장들도 받는다 (사진 앱에서는 묶음 안에 숨어 있다)
-        options.includeAllBurstAssets = true
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-        let fetch = PHAsset.fetchAssets(with: options)
+        fetchOptions.includeAllBurstAssets = true
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        let fetch = PHAsset.fetchAssets(with: fetchOptions)
         let total = fetch.count
 
         var result = PhotoScanResult()
+        result.videoThreshold = options.largeVideoBytes
         // 가로·세로 픽셀과 용량이 같은 사진끼리만 그림을 비교한다 (모두 비교하면 너무 느리다)
         var candidates: [String: [(PHAsset, PhotoItem)]] = [:]
+        // 비슷한 사진 후보: 찍은 시각 순 (연속 촬영의 나머지 장은 빼고)
+        var timeline: [(PHAsset, PhotoItem, Date)] = []
 
         fetch.enumerateObjects { asset, index, _ in
             autoreleasepool {
@@ -27,40 +30,90 @@ enum PhotoScanner {
                     duration: asset.duration, created: asset.creationDate)
                 result.totalCount += 1
                 result.totalBytes += bytes
+                if (options.skipFavorites && asset.isFavorite) || skipped.contains(asset.localIdentifier) { return }
                 switch asset.mediaType {
                 case .video:
-                    if bytes >= largeVideoBytes { result.videos.append(item) }
+                    if bytes >= options.largeVideoBytes { result.videos.append(item) }
                 case .image:
+                    let burstExtra = asset.burstIdentifier != nil && !asset.representsBurst
                     if asset.mediaSubtypes.contains(.photoScreenshot) { result.screenshots.append(item) }
-                    if asset.burstIdentifier != nil && !asset.representsBurst { result.bursts.append(item) }
+                    if burstExtra { result.bursts.append(item) }
                     if bytes > 0 {
                         candidates["\(asset.pixelWidth)x\(asset.pixelHeight)/\(bytes)", default: []].append((asset, item))
                     }
+                    if !burstExtra, let date = asset.creationDate { timeline.append((asset, item, date)) }
                 default:
                     break
                 }
             }
-            if index % 200 == 0 { progress(index, total) }
+            if index % 200 == 0 { progress(.reading, index, total) }
+        }
+        progress(.reading, total, total)
+
+        var hashes: [String: UInt64] = [:]
+        func hash(_ asset: PHAsset) -> UInt64? {
+            if let known = hashes[asset.localIdentifier] { return known }
+            let made = autoreleasepool { thumbnailHash(asset) }
+            if let made { hashes[asset.localIdentifier] = made }
+            return made
         }
 
+        // 중복: 크기·용량이 같고 작은 그림도 같은 것
         for group in candidates.values where group.count > 1 {
             var byHash: [UInt64: [PhotoItem]] = [:]
             for (asset, item) in group {
-                if let hash = autoreleasepool(invoking: { thumbnailHash(asset) }) {
-                    byHash[hash, default: []].append(item)
-                }
+                if let h = hash(asset) { byHash[h, default: []].append(item) }
             }
             for same in byHash.values where same.count > 1 {
                 result.duplicates.append(same)  // 만든 날짜 순으로 받았으니 맨 앞이 가장 오래된 것
             }
         }
-        result.duplicates.sort { a, b in
-            a.dropFirst().reduce(0) { $0 + $1.bytes } > b.dropFirst().reduce(0) { $0 + $1.bytes }
+        result.duplicates.sort { wasted($0) > wasted($1) }
+
+        // 비슷한 사진: 중복으로 이미 잡힌 사본은 빼고, 가까운 시각에 찍은 이웃이 있는 사진만 그림을 비교한다
+        let copies = Set(result.duplicates.flatMap { $0.dropFirst().map(\.id) })
+        let pool = timeline.filter { !copies.contains($0.1.id) }
+        var needed: [Int] = []
+        for i in pool.indices {
+            let before = i > 0 && pool[i].2.timeIntervalSince(pool[i - 1].2) <= options.similarWindow
+            let after = i + 1 < pool.count && pool[i + 1].2.timeIntervalSince(pool[i].2) <= options.similarWindow
+            if before || after { needed.append(i) }
         }
+        var compared: [SimilarCandidate] = []
+        for (n, i) in needed.enumerated() {
+            if let h = hash(pool[i].0) { compared.append(SimilarCandidate(id: pool[i].1.id, date: pool[i].2, hash: h)) }
+            if n % 50 == 0 { progress(.comparing, n, needed.count) }
+        }
+        let byID = Dictionary(pool.map { ($0.1.id, $0.1) }, uniquingKeysWith: { a, _ in a })
+        result.similar = SimilarGrouper.groups(
+            compared, window: options.similarWindow, maxDistance: options.similarDistance
+        )
+        .map { ids in ids.compactMap { byID[$0] }.sorted { $0.bytes > $1.bytes } }
+        .filter { $0.count > 1 }
+        result.similar.sort { wasted($0) > wasted($1) }
+
         result.videos.sort { $0.bytes > $1.bytes }
         result.screenshots.reverse()  // 최근 것부터
-        progress(total, total)
+        progress(.comparing, needed.count, needed.count)
         return result
+    }
+
+    /// 묶음에서 하나를 남기고 지우면 늘어나는 공간
+    static func wasted(_ group: [PhotoItem]) -> Int64 {
+        group.dropFirst().reduce(0) { $0 + $1.bytes }
+    }
+
+    /// 찾지 않을 앨범에 든 사진들
+    static func assetIDs(inAlbums albums: Set<String>) -> Set<String> {
+        guard !albums.isEmpty else { return [] }
+        var ids = Set<String>()
+        PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: Array(albums), options: nil)
+            .enumerateObjects { collection, _, _ in
+                PHAsset.fetchAssets(in: collection, options: nil).enumerateObjects { asset, _, _ in
+                    ids.insert(asset.localIdentifier)
+                }
+            }
+        return ids
     }
 
     /// 원본·편집본·라이브 포토 동영상까지 합한 크기
