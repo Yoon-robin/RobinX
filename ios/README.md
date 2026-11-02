@@ -45,6 +45,7 @@ bash ios/scripts/release.sh
 
 ipa를 받아 버전만 확인한다. 올리는 것은 공개 행동이라 먼저 묻고, `--publish "바뀐 점"`으로 GitHub Release `ios-v<버전>`을 만든다.
 iOS 릴리스는 "Latest"로 표시하지 않는다(`--latest=false`). 데스크톱 자동 업데이트가 Latest 릴리스의 `latest.json`을 읽기 때문이다.
+올린 뒤에는 소개 사이트도 다시 배포한다(`bash website/scripts/deploy.sh`). iPhone 앱 칸의 ipa 받기 단추와 버전이 새 릴리스를 가리키게 된다.
 
 ## iPhone에 설치
 

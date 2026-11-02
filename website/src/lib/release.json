@@ -5,5 +5,13 @@
   "file": "RobinX_0.1.16_x64-setup.exe",
   "url": "https://github.com/Yoon-robin/RobinX/releases/download/v0.1.16/RobinX_0.1.16_x64-setup.exe",
   "size": 12780032,
-  "sha256": "669e52fc2279839e931b6557ce22f90be29e57a624bc2ceb70d8e7995d274c5c"
+  "sha256": "669e52fc2279839e931b6557ce22f90be29e57a624bc2ceb70d8e7995d274c5c",
+  "ios": {
+    "version": "0.2.0",
+    "publishedAt": "2026-11-02T06:13:21Z",
+    "pageUrl": "https://github.com/Yoon-robin/RobinX/releases/tag/ios-v0.2.0",
+    "url": "https://github.com/Yoon-robin/RobinX/releases/download/ios-v0.2.0/RobinX.ipa",
+    "size": 772166,
+    "sha256": "51ebfb4045614652b606338a4d265a2e66f3796fac01a98a45cf9d20ed736c72"
+  }
 }

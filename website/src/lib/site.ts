@@ -19,6 +19,19 @@ export const RELEASE = {
   publishedAt: new Date(release.publishedAt as string),
 }
 
+/**
+ * iPhone 앱의 최신 ipa (`ios-v` 릴리스, Latest로 표시하지 않는다). 값이 없으면 릴리스 목록으로 보낸다.
+ */
+const ios = release.ios as
+  | { version: string; pageUrl: string; url: string; size: number; sha256: string | null }
+  | undefined
+export const IOS_RELEASE = {
+  version: ios?.version ?? null,
+  downloadUrl: ios?.url ?? `${REPO_URL}/releases`,
+  pageUrl: ios?.pageUrl ?? `${REPO_URL}/releases`,
+  sizeMb: ios ? Math.round((ios.size / 1024 / 1024) * 10) / 10 : null,
+}
+
 /** 픽셀 R 로고. PNG를 줄이면 칸 모서리가 흐려져서 SVG를 쓴다 */
 export const LOGO = `${import.meta.env.BASE_URL}logo.svg`
 export const shot = (name: string) => `${import.meta.env.BASE_URL}shots/${name}.webp`

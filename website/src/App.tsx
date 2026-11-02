@@ -4,6 +4,7 @@ import { Nav } from "@/sections/nav"
 import { Hero } from "@/sections/hero"
 import { Story } from "@/sections/story"
 import { Features } from "@/sections/features"
+import { Iphone } from "@/sections/iphone"
 import { Status } from "@/sections/status"
 import { Faq } from "@/sections/faq"
 import { Cta } from "@/sections/cta"
@@ -26,6 +27,7 @@ export default function App() {
           <Hero />
           <Story />
           <Features />
+          <Iphone />
           <Status />
           <Faq />
           <Cta />

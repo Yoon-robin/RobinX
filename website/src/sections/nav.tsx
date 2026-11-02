@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 export const links = [
   { href: "#story", label: "정리 과정" },
   { href: "#features", label: "기능" },
+  { href: "#iphone", label: "iPhone" },
   { href: "#status", label: "최신 버전" },
   { href: "#faq", label: "FAQ" },
 ]
