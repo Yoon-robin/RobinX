@@ -143,11 +143,31 @@ struct UpdateBox: View {
                 Label("ipa 받기", systemImage: "arrow.down.circle")
             }
             .buttonStyle(TermButtonStyle())
-            Text("받은 ipa는 파일 앱의 다운로드 폴더에 있어요. LiveContainer에서 + 단추로 그 파일을 골라 설치해 주세요.")
-                .font(.footnote)
-                .foregroundStyle(Brand.dim)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(
+                "LiveContainer에 RobinX 소스를 추가했다면 소스 탭에서 설치를 누르면 돼요. 아니면 받은 ipa(파일 앱의 다운로드 폴더)를 LiveContainer의 + 단추로 골라 설치해 주세요."
+            )
+            .font(.footnote)
+            .foregroundStyle(Brand.dim)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .termBox(padding: 16)
+    }
+}
+
+/// 소스 주소 복사. LiveContainer의 소스 탭에 넣으면 새 버전을 거기서 바로 설치한다 (ipa를 받아 고를 필요가 없다).
+/// 소스 파일은 사이트를 배포할 때 GitHub Release에서 만든다 (website/scripts/release-info.mjs)
+struct SourceCopyRow: View {
+    static let url = "https://yoon-robin.github.io/RobinX/altstore.json"
+    @State private var copied = false
+
+    var body: some View {
+        Button {
+            UIPasteboard.general.string = Self.url
+            copied = true
+        } label: {
+            NavRow(
+                symbol: copied ? "checkmark" : "doc.on.doc", title: "소스 주소 복사",
+                detail: copied ? "복사했어요. LiveContainer 소스 탭에 붙여 넣어 주세요" : "yoon-robin.github.io/RobinX/altstore.json")
+        }
     }
 }

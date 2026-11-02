@@ -45,11 +45,13 @@ bash ios/scripts/release.sh
 
 ipa를 받아 버전만 확인한다. 올리는 것은 공개 행동이라 먼저 묻고, `--publish "바뀐 점"`으로 GitHub Release `ios-v<버전>`을 만든다.
 iOS 릴리스는 "Latest"로 표시하지 않는다(`--latest=false`). 데스크톱 자동 업데이트가 Latest 릴리스의 `latest.json`을 읽기 때문이다.
-올린 뒤에는 소개 사이트도 다시 배포한다(`bash website/scripts/deploy.sh`). iPhone 앱 칸의 ipa 받기 단추와 버전이 새 릴리스를 가리키게 된다.
+`--publish`는 올린 뒤 소개 사이트도 다시 배포한다(`website/scripts/deploy.sh`). 그래야 사이트의 ipa 받기 단추와 소스(`altstore.json`)가 새 버전을 가리킨다. 바뀐 `website/src/lib/release.json`과 `website/public/altstore.json`은 커밋한다.
 
 ## iPhone에 설치
 
-서명하지 않은 ipa라 설치하는 앱이 서명한다. LiveContainer에서는 + 단추로 `RobinX.ipa`를 고른다. 사진 접근 허용 창이 뜨지 않으면 Flekstore 같은 서명 앱으로 직접 설치한다.
+서명하지 않은 ipa라 설치하는 앱이 서명한다. LiveContainer에서는 + 단추로 `RobinX.ipa`를 고른다.
+
+소스: https://yoon-robin.github.io/RobinX/altstore.json (AltStore 형식, `website/scripts/release-info.mjs`가 `ios-v` 릴리스로 만든다). LiveContainer의 소스 탭에 추가하면(사이트의 "LiveContainer에 소스 추가" 단추는 `livecontainer://source?url=…`) 새 버전을 거기서 설치할 수 있어 ipa를 받아 고를 필요가 없다. 같은 앱이 있으면 LiveContainer가 바꿀지 묻는다. 앱의 설정 탭에 "소스 주소 복사"가 있다. 사진 접근 허용 창이 뜨지 않으면 Flekstore 같은 서명 앱으로 직접 설치한다.
 
 ## 시험
 

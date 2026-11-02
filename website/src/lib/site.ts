@@ -32,6 +32,11 @@ export const IOS_RELEASE = {
   sizeMb: ios ? Math.round((ios.size / 1024 / 1024) * 10) / 10 : null,
 }
 
+/** iPhone 앱 소스 (scripts/release-info.mjs가 만든다). 늘 배포된 주소를 쓴다: LiveContainer가 iPhone에서 읽는다 */
+export const IOS_SOURCE_URL = "https://yoon-robin.github.io/RobinX/altstore.json"
+/** LiveContainer가 열리며 소스 추가를 묻는다 (LiveContainer의 `livecontainer://source?url=`) */
+export const IOS_SOURCE_ADD = `livecontainer://source?url=${encodeURIComponent(IOS_SOURCE_URL)}`
+
 /** 픽셀 R 로고. PNG를 줄이면 칸 모서리가 흐려져서 SVG를 쓴다 */
 export const LOGO = `${import.meta.env.BASE_URL}logo.svg`
 export const shot = (name: string) => `${import.meta.env.BASE_URL}shots/${name}.webp`

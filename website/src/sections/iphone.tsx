@@ -1,7 +1,7 @@
 import { m, useReducedMotion } from "motion/react"
-import { Download } from "lucide-react"
+import { Download, Plus } from "lucide-react"
 
-import { IOS_RELEASE } from "@/lib/site"
+import { IOS_RELEASE, IOS_SOURCE_ADD, IOS_SOURCE_URL } from "@/lib/site"
 import { easeOutQuint } from "@/components/motion"
 import { LineButton } from "@/components/download"
 import { Typed } from "@/components/typed"
@@ -10,6 +10,7 @@ import { Typed } from "@/components/typed"
  * iPhone 앱: 왼쪽에 하는 일 네 줄과 ipa 받기, 오른쪽에 앱 화면 세 장 (CI가 시뮬레이터에서 가짜 자료로 찍은 것,
  * scripts/ios-shots.py). 화면은 기능 칸처럼 보일 때 아래에서 열린다.
  * 흰 내려받기 단추는 Windows 설치 파일 하나뿐이라 여기는 테두리 단추를 쓴다.
+ * 소스 추가가 먼저다: 한 번 추가하면 새 버전마다 ipa를 받아 고를 필요가 없다.
  */
 const rows = [
   { k: "사진", v: "중복·비슷한 사진, 큰 동영상, 스크린샷, 연속 촬영을 찾아요" },
@@ -49,10 +50,14 @@ export function Iphone() {
             ))}
           </dl>
 
-          <div className="mt-9">
+          <div className="mt-9 flex flex-wrap gap-3">
+            <LineButton href={IOS_SOURCE_ADD}>
+              <Plus className="size-[1.1rem]" aria-hidden />
+              LiveContainer에 소스 추가
+            </LineButton>
             <LineButton href={IOS_RELEASE.downloadUrl}>
               <Download className="size-[1.1rem]" aria-hidden />
-              iPhone용 ipa 받기
+              ipa 받기
             </LineButton>
           </div>
           <p className="mt-5 max-w-[60ch] text-fine text-muted-foreground">
@@ -62,6 +67,10 @@ export function Iphone() {
               iOS 16 이상
             </span>
             <span className="block">App Store에는 없어요. 서명 없는 ipa라 LiveContainer 같은 설치 앱으로 설치해요.</span>
+            <span className="block">
+              소스를 추가하면 새 버전도 LiveContainer의 소스 탭에서 바로 설치해요. 소스 주소:{" "}
+              <code className="[overflow-wrap:anywhere] text-foreground">{IOS_SOURCE_URL}</code>
+            </span>
             <span className="block">시뮬레이터에서 확인함 · 실제 iPhone은 확인하는 중</span>
             <a href={IOS_RELEASE.pageUrl} target="_blank" rel="noreferrer" className={"mt-1 inline-block " + link}>
               릴리스 노트와 SHA-256

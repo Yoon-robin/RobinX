@@ -89,7 +89,7 @@ gh run download --name robinx-ios --dir ios/out   # 저장소 루트에서
 python website/scripts/ios-shots.py               # ios/out/shots → website/public/shots/ios-*.webp
 ```
 
-ipa 받기 단추와 버전·크기는 `scripts/release-info.mjs`가 `ios-v` 릴리스 중 가장 높은 버전을 찾아 `release.json`의 `ios`에 적는다(앱의 새 버전 알림과 같은 규칙). iPhone 앱을 새로 릴리스한 뒤에도 사이트를 다시 배포한다.
+ipa 받기 단추와 버전·크기는 `scripts/release-info.mjs`가 `ios-v` 릴리스 중 가장 높은 버전을 찾아 `release.json`의 `ios`에 적는다(앱의 새 버전 알림과 같은 규칙). 같은 스크립트가 모든 `ios-v` 릴리스로 LiveContainer용 소스 `public/altstore.json`(AltStore 형식, 새 버전부터)을 만든다. 아이콘 `public/ios-icon.png`는 `ios-shots.py`가 만든다. iPhone 앱을 새로 릴리스하면(`ios/scripts/release.sh --publish`) 사이트도 저절로 다시 배포된다.
 
 ## 공유 이미지 (public/og.png)
 

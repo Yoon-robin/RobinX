@@ -61,6 +61,10 @@ if [ "$PUBLISH" = 1 ]; then
   gh release create "$TAG" "$IPA" --repo "$REPO" --target "$COMMIT" --title "RobinX iOS $VERSION" \
     --notes "$NOTES" --latest=false
   echo "올렸어요: https://github.com/$REPO/releases/tag/$TAG"
+  # 사이트의 ipa 받기 단추와 소스(altstore.json)가 새 버전을 가리키게 다시 배포한다.
+  # LiveContainer는 이 소스로 새 버전을 설치하므로 빠뜨리면 소스 탭에 새 버전이 안 보인다
+  bash "$(dirname "$0")/../../website/scripts/deploy.sh"
+  echo "website/src/lib/release.json과 website/public/altstore.json이 바뀌었어요. 커밋해 주세요."
 else
   echo "올리지 않았어요. 올리려면: bash ios/scripts/release.sh --publish \"바뀐 점\""
 fi

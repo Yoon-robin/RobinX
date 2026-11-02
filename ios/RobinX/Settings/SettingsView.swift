@@ -205,6 +205,7 @@ struct SettingsView: View {
             Button(updates.state == .checking ? "확인하는 중" : "새 버전 확인") { Task { await updates.check() } }
                 .buttonStyle(TermButtonStyle())
                 .disabled(updates.state == .checking)
+            SourceCopyRow()
             Link(destination: URL(string: "https://yoon-robin.github.io/RobinX/")!) {
                 NavRow(symbol: "desktopcomputer", title: "Windows용 RobinX", detail: "yoon-robin.github.io/RobinX")
             }
