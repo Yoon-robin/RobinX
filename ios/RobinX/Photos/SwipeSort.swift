@@ -186,13 +186,14 @@ struct SwipeSortView: View {
             }
             .disabled(loading || index >= queue.count || moving)
 
-            NavigationLink {
-                SwipeReviewView()
-            } label: {
-                Text("지울 것 \(swipe.marked.count.grouped)장 확인하고 지우기")
+            if !swipe.marked.isEmpty {
+                NavigationLink {
+                    SwipeReviewView()
+                } label: {
+                    Text("지울 것 \(swipe.marked.count.grouped)장 확인하고 지우기")
+                }
+                .buttonStyle(TermButtonStyle(tone: Brand.red))
             }
-            .buttonStyle(TermButtonStyle(tone: Brand.red))
-            .disabled(swipe.marked.isEmpty)
         }
         .padding(16)
         .pageBackground()
