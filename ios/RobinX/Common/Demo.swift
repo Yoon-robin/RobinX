@@ -22,9 +22,9 @@ enum Demo {
         ]
         // 비슷한 사진: "#" 앞이 같아 기본 그림은 같고, 썸네일에서 조금씩 다르게 그린다
         r.similar = [
-            (1..<6).map { PhotoItem(id: "sim-a#\($0)", bytes: Int64(3_900_000 - $0 * 120_000), isVideo: false, created: days(-5)) },
-            (1..<4).map { PhotoItem(id: "sim-b#\($0)", bytes: Int64(2_700_000 - $0 * 90_000), isVideo: false, created: days(-12)) },
-            (1..<3).map { PhotoItem(id: "sim-c#\($0)", bytes: Int64(2_100_000 - $0 * 60_000), isVideo: false, created: days(-33)) },
+            similarGroup("sim-a", count: 5, bytes: 3_900_000, step: 120_000, day: -5),
+            similarGroup("sim-b", count: 3, bytes: 2_700_000, step: 90_000, day: -12),
+            similarGroup("sim-c", count: 2, bytes: 2_100_000, step: 60_000, day: -33),
         ]
         r.videos = videos.enumerated().map { i, v in
             PhotoItem(id: "video-\(i)", bytes: v.0, isVideo: true, duration: v.1, created: days(Double(-i * 9)))
@@ -39,6 +39,12 @@ enum Demo {
         r.totalBytes = 41_700_000_000
         return r
     }()
+
+    private static func similarGroup(_ key: String, count: Int, bytes: Int64, step: Int64, day: Double) -> [PhotoItem] {
+        (1...count).map { (n: Int) -> PhotoItem in
+            PhotoItem(id: "\(key)#\(n)", bytes: bytes - Int64(n) * step, isVideo: false, created: days(day))
+        }
+    }
 
     /// 회색 줄무늬 썸네일 (같은 이름이면 같은 그림)
     static func thumbnail(_ id: String) -> UIImage {
@@ -67,8 +73,10 @@ enum Demo {
     }
 
     /// 넘겨 보며 정리에 보여 줄 사진
-    static let swipeQueue: [PhotoItem] = (0..<40).map { i in
-        PhotoItem(id: "swipe-\(i)", bytes: Int64(1_800_000 + (i * 431_000) % 3_600_000), isVideo: false, created: days(Double(-i * 2)))
+    static let swipeQueue: [PhotoItem] = (0..<40).map { (i: Int) -> PhotoItem in
+        let bytes: Int = 1_800_000 + (i * 431_000) % 3_600_000
+        let day: Double = Double(-2 * i)
+        return PhotoItem(id: "swipe-\(i)", bytes: Int64(bytes), isVideo: false, created: days(day))
     }
 
     static let albums: [AlbumInfo] = [
