@@ -165,6 +165,16 @@ enum PhotoScanner {
     }
 }
 
+extension PHAsset {
+    /// localIdentifier로 사진을 찾는다. 연속 촬영의 대표가 아닌 장도 찾도록 includeAllBurstAssets를 켠다
+    /// (기본값이면 그 장들은 없는 것처럼 빠져서 썸네일이 비고 지우기도 되지 않는다)
+    static func fetch(ids: [String]) -> PHFetchResult<PHAsset> {
+        let options = PHFetchOptions()
+        options.includeAllBurstAssets = true
+        return fetchAssets(withLocalIdentifiers: ids, options: options)
+    }
+}
+
 /// 차이 해시: 9×8 흑백으로 줄여 옆 칸보다 밝은지를 64비트로 적는다.
 /// 같은 그림이면 크기를 바꿔도 거의 같은 값이 나온다.
 enum DHash {

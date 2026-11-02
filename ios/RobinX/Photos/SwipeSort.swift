@@ -56,7 +56,7 @@ final class SwipeStore: ObservableObject {
     func prune() {
         guard !Launch.demo, !marked.isEmpty else { return }
         var alive = Set<String>()
-        PHAsset.fetchAssets(withLocalIdentifiers: marked.map(\.id), options: nil).enumerateObjects { asset, _, _ in
+        PHAsset.fetch(ids: marked.map(\.id)).enumerateObjects { asset, _, _ in
             alive.insert(asset.localIdentifier)
         }
         guard alive.count < marked.count else { return }
@@ -114,7 +114,7 @@ enum SwipeQueue {
 
     static func sized(_ item: PhotoItem) -> PhotoItem {
         guard !Launch.demo, item.bytes == 0,
-            let asset = PHAsset.fetchAssets(withLocalIdentifiers: [item.id], options: nil).firstObject
+            let asset = PHAsset.fetch(ids: [item.id]).firstObject
         else { return item }
         var sized = item
         sized.bytes = PhotoScanner.size(of: asset)

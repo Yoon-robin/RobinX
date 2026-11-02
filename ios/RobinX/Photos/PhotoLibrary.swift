@@ -150,9 +150,11 @@ final class PhotoLibrary: NSObject, ObservableObject, PHPhotoLibraryChangeObserv
             result?.remove(items)
             return true
         }
-        let assets = PHAsset.fetchAssets(withLocalIdentifiers: items.map(\.id), options: nil)
+        let assets = PHAsset.fetch(ids: items.map(\.id))
         var alive = Set<String>()
         assets.enumerateObjects { asset, _, _ in alive.insert(asset.localIdentifier) }
+        // 모두 이미 사라졌으면 지운 것이 없다 (기록에 남기지 않는다)
+        guard !alive.isEmpty else { return false }
         do {
             try await PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.deleteAssets(assets)
@@ -180,7 +182,7 @@ enum ThumbLoader {
     /// fit이면 자르지 않고 사진 전체를 받는다 (크게 보기)
     static func load(_ id: String, side: CGFloat, network: Bool = false, fit: Bool = false) async -> UIImage? {
         if Launch.demo { return Demo.thumbnail(id, side: min(side, 600)) }
-        guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil).firstObject else { return nil }
+        guard let asset = PHAsset.fetch(ids: [id]).firstObject else { return nil }
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat  // 결과를 한 번만 받는다
         options.resizeMode = .fast
