@@ -7,11 +7,11 @@
   "size": 12780032,
   "sha256": "669e52fc2279839e931b6557ce22f90be29e57a624bc2ceb70d8e7995d274c5c",
   "ios": {
-    "version": "0.2.0",
-    "publishedAt": "2026-11-02T06:13:21Z",
-    "pageUrl": "https://github.com/Yoon-robin/RobinX/releases/tag/ios-v0.2.0",
-    "url": "https://github.com/Yoon-robin/RobinX/releases/download/ios-v0.2.0/RobinX.ipa",
-    "size": 772166,
-    "sha256": "51ebfb4045614652b606338a4d265a2e66f3796fac01a98a45cf9d20ed736c72"
+    "version": "0.2.1",
+    "publishedAt": "2026-11-02T09:49:36Z",
+    "pageUrl": "https://github.com/Yoon-robin/RobinX/releases/tag/ios-v0.2.1",
+    "url": "https://github.com/Yoon-robin/RobinX/releases/download/ios-v0.2.1/RobinX.ipa",
+    "size": 772282,
+    "sha256": "5a6c94eae99b7d8c3db04924debf81f25101862422ef24b4ca1dc853360609e0"
   }
 }
