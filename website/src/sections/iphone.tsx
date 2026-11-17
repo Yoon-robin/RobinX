@@ -1,7 +1,7 @@
 import { m, useReducedMotion } from "motion/react"
 import { Download, Plus } from "lucide-react"
 
-import { IOS_RELEASE, IOS_SOURCE_ADD, IOS_SOURCE_URL } from "@/lib/site"
+import { IOS_RELEASE, IOS_SOURCE_ADD, IOS_SOURCE_LABEL } from "@/lib/site"
 import { easeOutQuint } from "@/components/motion"
 import { LineButton } from "@/components/download"
 import { Typed } from "@/components/typed"
@@ -67,9 +67,10 @@ export function Iphone() {
               iOS 16 이상
             </span>
             <span className="block">App Store에는 없어요. 서명 없는 ipa라 LiveContainer 같은 설치 앱으로 설치해요.</span>
+            <span className="block">소스를 추가하면 새 버전도 LiveContainer의 소스 탭에서 바로 설치해요.</span>
+            {/* 주소는 줄이 바뀌지 않게 따로 한 줄에, https:// 없이 적는다 (휴대폰 폭에 들어가고, LiveContainer가 https로 읽는다) */}
             <span className="block">
-              소스를 추가하면 새 버전도 LiveContainer의 소스 탭에서 바로 설치해요. 소스 주소:{" "}
-              <code className="[overflow-wrap:anywhere] text-foreground">{IOS_SOURCE_URL}</code>
+              소스 주소 <code className="block whitespace-nowrap text-foreground">{IOS_SOURCE_LABEL}</code>
             </span>
             <span className="block">시뮬레이터에서 확인함 · 실제 iPhone은 확인하는 중</span>
             <a href={IOS_RELEASE.pageUrl} target="_blank" rel="noreferrer" className={"mt-1 inline-block " + link}>

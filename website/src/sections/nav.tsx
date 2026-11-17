@@ -25,7 +25,7 @@ function goTo(href: string) {
 
 /**
  * 위에 붙는 막대: 왼쪽 이름과 링크, 오른쪽 GitHub 아이콘과 다운로드. 지금 보는 구역의 링크 앞에는 > 가 붙는다.
- * 맨 위에서는 투명하고, 내려가면 바탕과 아래 선을 깔아 글자 위에서도 읽힌다.
+ * 맨 위에서는 투명하고, 내려가면 불투명한 바탕과 아래 선을 깔아 글자 위에서도 읽힌다.
  */
 export function Nav() {
   // 구역을 JS로 그려서, `/#faq`처럼 구역 주소로 열면 브라우저가 대상을 못 찾고 맨 위에 머문다. 그린 뒤에 직접 옮긴다.
@@ -85,7 +85,8 @@ export function Nav() {
     <div
       className={
         "fixed inset-x-0 top-0 z-30 border-b transition-colors duration-200 " + // taste-skill-ignore: 내려가면 본문과 막대를 나누는 선
-        (scrolled ? "border-white/10 bg-background/95" : "border-transparent bg-background/0")
+        // 내려가면 불투명하게: 반투명이면 뒤로 지나가는 글자가 메뉴 글자에 겹쳐 비쳤다
+        (scrolled ? "border-white/10 bg-background" : "border-transparent bg-background/0")
       }
     >
       <header className="frame relative flex h-14 items-center gap-3 sm:h-16 sm:gap-6">

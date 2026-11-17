@@ -33,8 +33,8 @@ const overrides = {
 
 const browser = await launch()
 // PNG보다 가벼운 WebP로 저장한다. 브라우저의 canvas 인코더를 쓰므로 따로 설치할 것이 없다.
-// 글자가 많은 화면이라 품질은 높게 둔다. 2배로 찍어 <name>@2x.webp(2560×1600)와,
-// 그것을 줄인 <name>.webp(1280×800)를 만든다 (사이트는 화면 배율에 따라 srcset으로 고른다).
+// 글자가 많은 화면이라 품질은 높게 둔다. 2배로 찍어 <name>@2x.webp(1800×1520)와,
+// 그것을 줄인 <name>.webp(900×760)를 만든다 (사이트는 화면 배율에 따라 srcset으로 고른다).
 const encoder = await browser.newPage()
 const shot = async (name, page) => {
   const png = await page.screenshot()
@@ -68,12 +68,17 @@ const nav = async (page, name) => {
 // 사이트가 어두운 바탕이라 앱도 어두운 테마로 찍는다 (CAPTURE_SCHEME=light로 바꿀 수 있다)
 const page = await openApp(browser, {
   overrides,
-  width: 1280,
-  height: 800,
+  // 앱 창의 가장 작은 크기(900 폭)로 찍는다. 사이트의 기능 칸은 좁아서(휴대폰 330px쯤), 넓은 창을 줄여 넣으면
+  // 글자를 읽을 수 없었다. 좁은 창은 앱이 스스로 그 폭에 맞게 배치하므로 줄이는 비율이 작고 잘리는 것도 없다.
+  width: 900,
+  height: 760,
   scale: 2,
   scheme: process.env.CAPTURE_SCHEME ?? "dark",
 })
 await page.waitForTimeout(2500)
+// 처음 한 번만 보이는 안내 카드는 닫고 찍는다 (칸에는 요약 카드와 목록이 보이게)
+await page.getByRole("button", { name: "알겠어요" }).click()
+await page.waitForTimeout(700)
 await shot("programs", page)
 
 await nav(page, "남은 흔적 정리")

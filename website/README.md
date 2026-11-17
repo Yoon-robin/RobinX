@@ -28,6 +28,7 @@ pnpm build                                 # dist/ 에 정적 파일
 - 구역 차례: 첫 화면 → 정리 과정(`story.tsx`) → 그 밖의 기능 → iPhone 앱(`iphone.tsx`) → 최신 버전 → FAQ → 받기. 위 막대 링크(`nav.tsx`의 `links`)도 이 구역 id를 따른다.
 - 정리 과정은 스크롤로 넘기는 장면이다: 화면에 붙은 "남은 흔적" 창 하나가 내려 볼수록 찾기 → 고르기 → 백업 → 정리 → 되돌리기로 바뀐다. 왼쪽에는 지금 단계 이름만 크게. 단계와 말은 앱의 동작과 같게 한다(설치 정보와 연결된 것만 미리 고름, 정리는 백업으로 옮기는 것, 백업이 있는 동안 되돌림, 처음 보관 기간 30일). 창 위쪽은 고정해서 줄이 접혀도 흔들리지 않는다.
 - 기능은 선을 같이 쓰는 2칸 격자에 이름과 한 줄, 최신 버전은 "이름 값" 줄로 적은 창 하나, FAQ는 질문만 보이고 누르면 답이 열린다(`[+]`/`[-]`).
+- 위 막대는 내려가면 불투명하다(반투명이면 뒤로 지나가는 글자가 메뉴에 겹쳐 비친다).
 - 선은 실제로 나누는 곳에만: 터미널 창 틀과 위 막대, 기능 격자와 그 안 앱 화면의 모서리, 내려갔을 때 위 막대 아래. 구역 사이는 여백과 아주 옅은 바탕(`bg-white/[0.02]`)으로 나눈다.
 - iPhone 앱은 하는 일 네 줄, 앱 화면 세 장(테두리만, 휴대폰 틀 그림은 쓰지 않는다), 테두리 단추 "iPhone용 ipa 받기"와 사실 줄(App Store에 없음, 서명 없는 ipa라 설치 앱이 필요함, 어디까지 확인했는지). 화면 속 사진과 숫자는 예시라고 밝힌다.
 - 내려받기 단추는 흰 바탕 하나뿐이고 설치 파일로 바로 이어진다. 옆에 버전·크기·지원 환경·미리보기·서명 상태와 릴리스 노트(SHA-256) 링크를 둔다. 보안 경고를 그냥 넘기라고 쓰지 않는다: 공식 릴리스에서 받고 SHA-256을 확인하라고 쓴다.
@@ -38,7 +39,7 @@ pnpm build                                 # dist/ 에 정적 파일
   - 기능 칸의 앱 화면이 보이면 아래에서 열린다(잘라 낸 그림은 브라우저가 안 보인다고 여기므로 칸을 기준으로 시작한다). 최신 버전 창의 줄은 한 줄씩 찍힌다. FAQ 답은 높이가 부드럽게 열린다(`::details-content`를 아는 브라우저에서만).
   - 구역 전체가 떠오르는 흔한 움직임은 쓰지 않는다.
 - 글자 크기는 다섯 단계(`text-fine`·`text-body`·`text-lead`·`text-section`·`text-display`)만 쓴다.
-- 앱 화면 그림은 앱의 기본 모양(터미널, 어두운 테마)으로 찍는다 (`scripts/capture.mjs`). 타일 안의 그림은 사이드바를 빼고 내용 부분만 확대해 자른다.
+- 앱 화면 그림은 앱의 기본 모양(터미널, 어두운 테마)으로 찍는다 (`scripts/capture.mjs`). 타일 안의 그림은 사이드바를 빼고 내용 부분만 확대해 자른다. 앱 창의 가장 작은 크기(900 폭)로 찍는다: 넓은 창을 줄여 넣으면 칸 안의 글자를 읽을 수 없었다(휴대폰에서 5px쯤). 좁은 창은 앱이 그 폭에 맞게 배치하므로 내용 폭이 통째로 들어가고 오른쪽이 잘리지 않는다. 앱 화면 배치가 바뀌면 `features.tsx`의 `crop`(보여 줄 곳의 위쪽)도 맞춘다.
 - 쓰지 않는 것: 제목 위 작은 꼬리표, 아이콘 카드 줄, 고객사 로고 줄·후기·수치 같은 꾸민 신뢰 표시, 마우스를 따라오는 빛.
 - 앱 화면 조각(`data-ui`가 붙은 요소)은 앱의 모양을 그대로 따른다.
 - 문구는 코드와 대조해 사실만 쓴다. 과장, "X가 아니라 Y" 식 대비, 상투어(한곳에, 올인원)는 쓰지 않는다. 화면 속 숫자와 PC 정보는 예시라고 밝힌다.
@@ -46,11 +47,14 @@ pnpm build                                 # dist/ 에 정적 파일
 바꾼 뒤에는 [taste-skill](https://github.com/Leonxlnx/taste-skill)(MIT) 검사기로 확인한다. FAIL이 0개여야 한다. 단, 사용자가 고른 터미널 디자인 때문에 생기는 FAIL은 받아들인다: 고정폭 글꼴(mono), 터미널 창 틀과 테두리 단추(outlined-box). 정적 검사(lint)에서 실제로 나누는 선은 그 줄에 `taste-skill-ignore` 주석을 단다. 그 밖의 FAIL은 고친다.
 
 ```bash
-git clone --depth 1 https://github.com/Leonxlnx/taste-skill.git "$TEMP/taste-skill"   # 처음 한 번 (저장소에 넣지 않음)
+git clone https://github.com/Leonxlnx/taste-skill.git "$TEMP/taste-skill"             # 처음 한 번 (저장소에 넣지 않음)
+git -C "$TEMP/taste-skill" checkout 939b564                                         # lint.mjs·inspect.mjs가 있는 마지막 버전 (그 뒤 버전은 두 스크립트를 없앴다)
 pnpm --dir website build                                                            # BASE_PATH 없이
 node "$TEMP/taste-skill/skills/taste-skill/scripts/lint.mjs" website/src
 (cd website/dist && node "$TEMP/taste-skill/skills/taste-skill/scripts/inspect.mjs" index.html --out "$TEMP/taste-out")
 ```
+
+이 버전(2026-11-17에 고정)은 예전보다 규칙이 늘어, 지금 디자인에서 다음도 FAIL로 나온다: small-body(각주·사실 줄 13px), lone-heading("최신 버전" 제목이 왼쪽 칸에 혼자), cut-text(정리 과정 예시 창의 긴 경로가 휴대폰에서 …로 줄어듦). 모두 전부터 있던 모양이고, 받아들일지 고칠지는 사용자가 정한다. 그 밖의 FAIL은 고친다.
 
 검사기는 지금 폴더를 웹 서버의 뿌리로 쓰므로 `website/dist` 안에서 실행해야 한다(밖에서 실행하면 `/assets/...`를 못 찾아 빈 페이지로 검사한다).
 1440·768·390px 화면을 `$TEMP/taste-out`에 찍는다. 눈으로도 본다.

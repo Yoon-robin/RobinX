@@ -14,7 +14,11 @@ type Tile = {
   text: string
   shot: string
   alt: string
-  /** 앱 화면에서 보여 줄 부분: 사이드바를 빼고 내용만 확대한다 (그림 너비 대비 비율이라 화면 너비가 바뀌어도 같은 부분이 보인다) */
+  /**
+   * 앱 화면에서 보여 줄 부분: 사이드바를 빼고 내용만 확대한다 (그림 너비 대비 비율이라 화면 너비가 바뀌어도 같은 부분이 보인다).
+   * 그림은 앱 창의 가장 작은 크기(900 폭)로 찍은 것이다 (scripts/capture.mjs). 가로는 내용 폭(284~872px)에 양옆 12px,
+   * 세로는 칸마다 보여 줄 곳의 위쪽에서 시작한다.
+   */
   crop: CSSProperties
 }
 
@@ -23,30 +27,30 @@ const tiles: Tile[] = [
     name: "프로그램 제거",
     text: "원래 언인스톨러로 지우고, 바로 흔적을 찾아요",
     shot: "programs",
-    alt: "설치된 프로그램 화면: 이름·게시자·크기·설치일이 있는 목록",
-    // 요약 카드와 목록 부분 (이름·게시자·크기·설치일)
-    crop: { width: "132%", marginLeft: "-29.3%", marginTop: "-31%" },
+    alt: "설치된 프로그램 화면: 검색·필터와 이름·게시자·크기가 있는 목록",
+    // 목록 부분 (도구 줄·필터·이름·게시자·크기)
+    crop: { width: "147%", marginLeft: "-44.4%", marginTop: "-54.4%" },
   },
   {
     name: "복구 기록",
     text: "정리한 것을 원래 자리로 되돌려요",
     shot: "restore",
     alt: "복구 기록 화면: 정리한 작업마다 되돌리기 단추가 있어요",
-    crop: { width: "150%", marginLeft: "-40.8%", marginTop: "-36.3%" },
+    crop: { width: "147%", marginLeft: "-44.4%", marginTop: "-52.3%" },
   },
   {
     name: "저장공간 정리",
     text: "다시 생기는 임시 파일만 미리 골라요",
     shot: "storage",
     alt: "저장공간 정리 화면: 휴지통은 되돌릴 수 없다는 표시와 함께 고르지 않은 상태예요",
-    crop: { width: "132%", marginLeft: "-29.3%", marginTop: "-33%" },
+    crop: { width: "147%", marginLeft: "-44.4%", marginTop: "-49.8%" },
   },
   {
     name: "시작프로그램",
     text: "설정만 바꿔서, 언제든 다시 켤 수 있어요",
     shot: "startup",
     alt: "시작프로그램 화면: 항목마다 켜고 끄는 스위치가 있어요",
-    crop: { width: "132%", marginLeft: "-29.3%", marginTop: "-30.5%" },
+    crop: { width: "147%", marginLeft: "-44.4%", marginTop: "-48.4%" },
   },
 ]
 
@@ -73,8 +77,8 @@ function Shot({ t, i }: { t: Tile; i: number }) {
         src={shot(t.shot)}
         srcSet={shotSrcSet(t.shot)}
         alt={t.alt}
-        width={1280}
-        height={800}
+        width={900}
+        height={760}
         loading="lazy"
         decoding="async"
         variants={imageIn}
@@ -89,7 +93,8 @@ function Shot({ t, i }: { t: Tile; i: number }) {
 export function Features() {
   const reduce = useReducedMotion()
   return (
-    <section id="features" className="py-20 sm:py-28">
+    // 위 여백은 작게: 바로 위 정리 과정 장면이 창 아래에 빈 곳을 남기고 끝나서, 여백을 다 주면 화면 하나가 거의 비었다
+    <section id="features" className="pt-10 pb-20 sm:pt-12 sm:pb-28">
       <div className="frame">
         <Typed lines={["그 밖의 기능"]} className="section-title" />
 

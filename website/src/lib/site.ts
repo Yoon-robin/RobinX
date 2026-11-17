@@ -34,6 +34,8 @@ export const IOS_RELEASE = {
 
 /** iPhone 앱 소스 (scripts/release-info.mjs가 만든다). 늘 배포된 주소를 쓴다: LiveContainer가 iPhone에서 읽는다 */
 export const IOS_SOURCE_URL = "https://yoon-robin.github.io/RobinX/altstore.json"
+/** 화면에 적는 소스 주소 (https:// 없이: 휴대폰에서도 한 줄에 들어간다) */
+export const IOS_SOURCE_LABEL = IOS_SOURCE_URL.replace("https://", "")
 /** LiveContainer가 열리며 소스 추가를 묻는다 (LiveContainer의 `livecontainer://source?url=`) */
 export const IOS_SOURCE_ADD = `livecontainer://source?url=${encodeURIComponent(IOS_SOURCE_URL)}`
 
