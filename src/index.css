@@ -242,6 +242,23 @@
   }
 }
 
+/* 터미널 모양에서는 글꼴과 모서리가 한 가지다. 층(@layer) 밖에 두어 컴포넌트에 적힌 유틸리티 클래스보다 앞선다.
+ * - 대화상자·시트 제목(font-heading), 단축키·값 표시(font-sans), 경로(font-mono)도 같은 고정폭 글꼴로.
+ * - 알약·원 모양(필터 칩, 탭, 배지, 막대, 스위치, 상태 아이콘 칸)도 각지게.
+ */
+.terminal .font-heading,
+.terminal .font-sans,
+.terminal .font-mono {
+  font-family: var(--font-term);
+}
+.terminal .rounded-full,
+.terminal .rounded-4xl {
+  border-radius: var(--radius);
+}
+.terminal ::-webkit-scrollbar-thumb {
+  border-radius: 0;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -447,13 +464,14 @@
     border: 1px solid var(--border);
     box-shadow: var(--shadow-floating);
   }
+  /* 모서리는 --radius에서 계산한다: 일반 모양은 1rem·0.75rem, 터미널 모양은 다른 면처럼 거의 각지게 */
   [data-slot="dialog-content"],
   [data-slot="alert-dialog-content"] {
-    border-radius: 1rem;
+    border-radius: calc(var(--radius) * 1.6);
   }
   [data-slot="dropdown-menu-content"],
   [data-slot="context-menu-content"] {
-    border-radius: 0.75rem;
+    border-radius: calc(var(--radius) * 1.2);
     padding: 0.25rem;
   }
   /* 대화상자 뒤를 어둡게: 밝은 테마는 옅게, 어두운 테마는 진하게 (macOS처럼) */
@@ -471,7 +489,7 @@
 [data-sonner-toast][data-styled="true"] {
   background-color: var(--popover) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 0.875rem !important;
+  border-radius: calc(var(--radius) * 1.4) !important;
   box-shadow: var(--shadow-floating) !important;
 }
 /* 페이지를 옮길 때 제목으로 옮긴 포커스는 테두리로 보이지 않게 (스크린리더는 제목을 읽는다) */

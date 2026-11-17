@@ -72,7 +72,8 @@ export function SearchInput({
           if (e.key === "Enter") onEnter?.()
         }}
         placeholder={placeholder}
-        className={cn("h-9 w-full rounded-lg bg-background/60 pr-9 pl-9 lg:pr-14", inputClassName)}
+        // text-ellipsis: 좁은 창에서 안내 글이 글자 중간에서 잘리지 않고 …로 끝난다
+        className={cn("h-9 w-full rounded-lg bg-background/60 pr-9 pl-9 text-ellipsis lg:pr-14", inputClassName)}
       />
       {text ? (
         <button

@@ -35,37 +35,36 @@ export function StatCard({
   const Tag = onClick ? "button" : "div"
   return (
     <FadeUp className="h-full">
+      {/* 낮게 만든다: 이 카드들 아래에 목록이 있어, 카드가 높으면 기본 창 크기에서 목록이 몇 줄밖에 보이지 않았다.
+          설명은 자리가 있으면 숫자 옆에, 없으면 아래 줄로 간다. */}
       <Tag
         type={onClick ? "button" : undefined}
         onClick={onClick}
         aria-pressed={onClick ? active : undefined}
         className={cn(
-          "relative flex h-full w-full items-start gap-3 overflow-hidden rounded-2xl border bg-card p-4 text-left shadow-sm lg:gap-4 lg:p-5",
+          "relative flex h-full w-full items-center gap-3 overflow-hidden rounded-2xl border bg-card px-4 py-3.5 text-left shadow-sm",
           "transition-[transform,border-color,box-shadow] duration-200 ease-(--ease-out-quint)",
           onClick &&
             "cursor-pointer hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.99] motion-reduce:active:scale-100",
           active && "border-chart-3/60 ring-1 ring-chart-3/40",
         )}
       >
-        <span
-          className={cn(
-            "relative flex size-8 shrink-0 items-center justify-center rounded-xl lg:size-10",
-            toneClasses[tone],
-          )}
-        >
-          <Icon className="size-4 lg:size-5" />
+        <span className={cn("relative flex size-9 shrink-0 items-center justify-center rounded-xl", toneClasses[tone])}>
+          <Icon className="size-[1.125rem]" />
         </span>
-        <span className="relative min-w-0">
-          <span className="block truncate text-sm text-muted-foreground">{label}</span>
-          {value == null ? (
-            <span className="mt-1.5 block h-7 w-20 animate-pulse rounded-md bg-muted" />
-          ) : (
-            <span className="block mt-0.5 text-2xl font-bold tracking-tight tabular-nums">
-              {value}
-              {unit && <span className="ml-0.5 text-base font-medium text-muted-foreground">{unit}</span>}
-            </span>
-          )}
-          {hint && <span className="mt-1 block text-xs text-pretty text-muted-foreground">{hint}</span>}
+        <span className="relative min-w-0 flex-1">
+          <span className="block truncate text-xs text-muted-foreground">{label}</span>
+          <span className="flex flex-wrap items-baseline gap-x-2.5">
+            {value == null ? (
+              <span className="my-1 block h-5 w-20 animate-pulse rounded-md bg-muted" />
+            ) : (
+              <span className="block text-xl leading-7 font-bold tracking-tight tabular-nums">
+                {value}
+                {unit && <span className="ml-0.5 text-sm font-medium text-muted-foreground">{unit}</span>}
+              </span>
+            )}
+            {hint && <span className="block text-xs text-pretty text-muted-foreground">{hint}</span>}
+          </span>
         </span>
       </Tag>
     </FadeUp>

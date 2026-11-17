@@ -17,7 +17,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react"
 import { toast } from "sonner"
 
 import { api, storeApi, canUninstall, needsForce, type InstalledApplication } from "@/lib/api"
@@ -346,11 +346,50 @@ export function ProgramsPage({ active = true }: { active?: boolean }) {
     setQuery("")
     setFilter("all")
   }
+  // 검색을 시작하면 목록을 화면 위쪽으로 올린다. 목록은 요약 카드 아래에 있어서, 기본 창 크기에서는
+  // 검색어를 쳐도 결과가 몇 줄밖에 보이지 않았다. 빈 검색어에서 처음 칠 때만 한다 (글자마다, 또는 검색어를 둔 채
+  // 다른 화면에 다녀올 때는 움직이지 않는다).
+  const listSection = useRef<HTMLElement>(null)
+  const searching = query.trim() !== ""
+  const wasSearching = useRef(false)
+  useEffect(() => {
+    const started = searching && !wasSearching.current
+    wasSearching.current = searching
+    if (!started || !active) return
+    const section = listSection.current
+    const main = section?.closest("main")
+    if (!section || !main) return
+    // main의 scroll-pt-4와 같은 여백을 남긴다
+    const offset = section.getBoundingClientRect().top - main.getBoundingClientRect().top - 16
+    if (offset <= 0) return
+    const target = main.scrollTop + offset
+    if (reduceMotion) {
+      main.scrollTop = target
+      return
+    }
+    // 브라우저의 부드러운 스크롤(scrollBy smooth)은 다음 글자를 치는 순간 멈춘다 (입력 칸을 보이게 맞추는 동작이 끼어든다).
+    // 그래서 프레임마다 직접 옮긴다. 사용자가 휠을 굴리면 그만둔다.
+    const controls = animate(main.scrollTop, target, {
+      duration: 0.28,
+      ease: EASE_OUT_QUINT,
+      onUpdate: (top) => (main.scrollTop = top),
+    })
+    const stop = () => controls.stop()
+    main.addEventListener("wheel", stop, { passive: true, once: true })
+    return () => main.removeEventListener("wheel", stop)
+  }, [searching, active, reduceMotion])
 
   return (
-    <Stagger className="relative mx-auto flex max-w-6xl min-w-0 flex-col gap-6 px-7 pt-7 pb-10">
-      <FadeUp className="flex flex-wrap items-end gap-4">
-        <div className="mr-auto">
+    <Stagger
+      className={cn(
+        "relative mx-auto flex max-w-6xl min-w-0 flex-col gap-6 px-7 pt-7 pb-10",
+        // 고르는 중에는 떠 있는 막대가 마지막 줄을 가리지 않게 그만큼 더 내릴 수 있게 한다
+        picked && "pb-24",
+      )}
+    >
+      {/* 탭은 제목 옆에 둔다. 설명이 길어도 설명만 줄을 바꾸고, 아주 좁을 때만 탭이 다음 줄로 간다 (목록이 그만큼 위에서 시작한다) */}
+      <FadeUp className="flex flex-wrap items-end gap-x-6 gap-y-4">
+        <div className="min-w-64 flex-1">
           <h1 className="text-2xl font-bold tracking-tight">프로그램</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             이 PC에 설치된 프로그램이에요. 항목을 누르면 자세한 정보를, 오른쪽 클릭하면 바로 할 수 있는 작업을 볼 수
@@ -474,7 +513,7 @@ export function ProgramsPage({ active = true }: { active?: boolean }) {
 
           <FadeUp>
             {/* overflow-clip: 모서리는 자르되 스크롤 컨테이너가 되지 않아 안쪽 sticky가 동작한다 */}
-            <section className="@container overflow-clip rounded-2xl border bg-card shadow-sm">
+            <section ref={listSection} className="@container overflow-clip rounded-2xl border bg-card shadow-sm">
               {/* 창 높이가 720 이하면 고정하지 않는다 (도구 줄·필터·머리글이 화면의 1/3 넘게 가렸다) */}
               <div className="top-0 z-10 rounded-t-2xl border-b bg-card [@media(min-height:721px)]:sticky">
                 <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3">

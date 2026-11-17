@@ -35,7 +35,12 @@ export default defineConfig(() => ({
       : undefined,
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      // Rust 빌드 폴더(target)와 앱 화면이 아닌 폴더도 보지 않는다. 파일이 아주 많아 개발 서버가 응답하지 못한 적이 있다
+      ignored: ["**/src-tauri/**", "**/target/**", "**/crates/**", "**/website/**", "**/ios/**", "**/docs/**"],
     },
+  },
+  // 의존성을 찾을 때 저장소 전체의 html(website/dist, target 등)을 훑지 않고 앱의 입구만 본다
+  optimizeDeps: {
+    entries: ["index.html"],
   },
 }));

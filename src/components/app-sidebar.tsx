@@ -59,23 +59,24 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
   const renderItems = (items: Item[]) =>
     items.map((item) => (
       <SidebarMenuItem key={item.page}>
+        {page === item.page && (
+          // 선택 표시가 메뉴 사이를 미끄러지듯 옮겨 간다. 버튼 안에 두면 버튼이 넘치는 부분을 잘라서(overflow-hidden)
+          // 옮겨 가는 동안 보이지 않다가 도착해서야 아래에서 차올랐다. 그래서 버튼 밖(항목 칸)에 둔다.
+          <motion.span
+            layoutId="sidebar-active"
+            className="absolute inset-0 rounded-lg bg-sidebar-accent"
+            transition={{ type: "spring", duration: 0.22, bounce: 0 }}
+          />
+        )}
         <SidebarMenuButton
           isActive={page === item.page}
           aria-current={page === item.page ? "page" : undefined}
           aria-keyshortcuts={shortcut(item.page).replace("Ctrl", "Control")}
           onClick={() => onNavigate(item.page)}
           tooltip={`${item.label} (${shortcut(item.page)})`}
-          // 마우스를 올린 항목은 선택된 항목(진한 알약)보다 옅게
-          className="relative isolate h-9 rounded-lg hover:bg-sidebar-accent/45 data-[active=true]:bg-transparent data-[active=true]:font-semibold data-[active=true]:hover:bg-transparent"
+          // 마우스를 올린 항목은 선택된 항목보다 옅게
+          className="relative h-9 rounded-lg hover:bg-sidebar-accent/45 data-[active=true]:bg-transparent data-[active=true]:font-semibold data-[active=true]:hover:bg-transparent"
         >
-          {page === item.page && (
-            // 선택 표시(둥근 알약)가 메뉴 사이를 미끄러지듯 옮겨 간다.
-            <motion.span
-              layoutId="sidebar-active"
-              className="absolute inset-0 -z-10 rounded-lg bg-sidebar-accent"
-              transition={{ type: "spring", duration: 0.22, bounce: 0 }}
-            />
-          )}
           <item.icon className={page === item.page ? "text-sidebar-primary" : undefined} />
           <span>{item.label}</span>
         </SidebarMenuButton>

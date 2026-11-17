@@ -4,6 +4,19 @@ import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import { IconTooltip } from "@/components/icon-tooltip"
+import { useTheme } from "@/components/theme"
+
+/**
+ * 글자·아이콘에는 z-10을 준다: 바탕이 옆 칸으로 미끄러지는 동안 지나가는 칸의 글자를 덮지 않게 한다
+ * (바탕은 새로 고른 칸 안에 그려져서, 그대로 두면 앞 칸의 글자 위로 지나갔다).
+ *
+ * 고른 칸을 따라 움직이는 바탕의 모서리. 움직이는 동안 모서리가 찌그러지지 않으려면 숫자로 줘야 해서
+ * CSS(.terminal .rounded-full)와 따로 맞춘다: 터미널 모양은 각지게, 일반 모양은 알약.
+ */
+function useIndicatorRadius() {
+  const terminal = useTheme().look === "terminal"
+  return { pill: terminal ? 3 : 9999, inner: terminal ? 2 : 6 }
+}
 
 /**
  * 라디오·탭 묶음의 키보드 이동: ←/→(↑/↓)로 앞뒤, Home/End로 처음·끝. 사용 못 하는 항목은 건너뛴다.
@@ -46,6 +59,7 @@ export function FilterChips<K extends string>({
   counts: Record<K, number>
   onChange: (key: K) => void
 }) {
+  const { pill } = useIndicatorRadius()
   return (
     <div
       className="flex flex-wrap gap-1.5"
@@ -83,12 +97,14 @@ export function FilterChips<K extends string>({
               <motion.span
                 layoutId="filter-chip"
                 className="absolute inset-0 bg-primary"
-                style={{ borderRadius: 9999 }}
+                style={{ borderRadius: pill }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}
-            <span className="relative">{o.label}</span>
-            <span className={cn("relative tabular-nums", active ? "opacity-80" : "opacity-60")}>{counts[o.key]}</span>
+            <span className="relative z-10">{o.label}</span>
+            <span className={cn("relative z-10 tabular-nums", active ? "opacity-80" : "opacity-60")}>
+              {counts[o.key]}
+            </span>
           </button>
         )
       })}
@@ -111,6 +127,7 @@ export function IconSegmented<K extends string>({
   /** 묶음 이름 (화면 읽기 프로그램용) */
   label: string
 }) {
+  const { inner } = useIndicatorRadius()
   return (
     <div
       className="flex h-9 items-center rounded-lg border bg-background/60 p-0.5"
@@ -144,11 +161,11 @@ export function IconSegmented<K extends string>({
               <motion.span
                 layoutId={layoutId}
                 className="absolute inset-0 bg-muted shadow-sm"
-                style={{ borderRadius: 6 }}
+                style={{ borderRadius: inner }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}
-            <o.icon className="relative size-4" />
+            <o.icon className="relative z-10 size-4" />
           </button>
         </IconTooltip>
       ))}
@@ -170,6 +187,7 @@ export function TextTabs<K extends string>({
   layoutId: string
   label: string
 }) {
+  const { pill } = useIndicatorRadius()
   return (
     <div
       className="flex h-9 items-center rounded-full border bg-muted p-1"
@@ -204,12 +222,12 @@ export function TextTabs<K extends string>({
               <motion.span
                 layoutId={layoutId}
                 className="absolute inset-0 bg-background shadow-sm"
-                style={{ borderRadius: 9999 }}
+                style={{ borderRadius: pill }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}
-            <span className="relative">{o.label}</span>
-            {o.count != null && <span className="relative text-xs tabular-nums opacity-60">{o.count}</span>}
+            <span className="relative z-10">{o.label}</span>
+            {o.count != null && <span className="relative z-10 text-xs tabular-nums opacity-60">{o.count}</span>}
           </button>
         )
       })}
