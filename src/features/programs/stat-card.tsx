@@ -4,13 +4,14 @@ import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FadeUp } from "@/components/motion"
 
+/** 브랜드 V5: 아이콘 타일은 같은 컨트롤 면이고, 색은 주의(살구색)만 아이콘에 남긴다 */
 const toneClasses = {
-  "chart-1": "bg-chart-1/12 text-chart-1",
-  "chart-2": "bg-chart-2/12 text-chart-2",
-  "chart-3": "bg-chart-3/12 text-warning",
-  "chart-5": "bg-chart-5/12 text-success",
+  "chart-1": "text-rk-head",
+  "chart-2": "text-rk-head",
+  "chart-3": "text-rk-note",
+  "chart-5": "text-rk-head",
   /** 아직 모르는 값 (불러오는 중·불러오지 못함) */
-  muted: "bg-muted text-muted-foreground",
+  muted: "text-rk-faint",
 } as const
 
 export function StatCard({
@@ -42,23 +43,22 @@ export function StatCard({
         onClick={onClick}
         aria-pressed={onClick ? active : undefined}
         className={cn(
-          "relative flex h-full w-full items-center gap-3 overflow-hidden rounded-2xl border bg-card px-4 py-3.5 text-left shadow-sm",
-          "transition-[transform,border-color,box-shadow] duration-200 ease-(--ease-out-quint)",
-          onClick &&
-            "cursor-pointer hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.99] motion-reduce:active:scale-100",
-          active && "border-chart-3/60 ring-1 ring-chart-3/40",
+          "v5-card relative flex h-full w-full items-center gap-3 overflow-hidden px-4 py-3.5 text-left",
+          "transition-[transform,box-shadow] duration-200 ease-(--rk-ease-out)",
+          onClick && "cursor-pointer hover:bg-rk-hover active:scale-[0.99] motion-reduce:active:scale-100",
+          active && "shadow-[inset_0_0_0_1px_var(--rk-note)]!",
         )}
       >
-        <span className={cn("relative flex size-9 shrink-0 items-center justify-center rounded-xl", toneClasses[tone])}>
+        <span className={cn("v5-tile size-9", toneClasses[tone])}>
           <Icon className="size-[1.125rem]" />
         </span>
         <span className="relative min-w-0 flex-1">
-          <span className="block truncate text-xs text-muted-foreground">{label}</span>
+          <span className="block truncate text-xs text-rk-soft">{label}</span>
           <span className="flex flex-wrap items-baseline gap-x-2.5">
             {value == null ? (
               <span className="my-1 block h-5 w-20 animate-pulse rounded-md bg-muted" />
             ) : (
-              <span className="block text-xl leading-7 font-bold tracking-tight tabular-nums">
+              <span className="block text-[22px] leading-7 font-[650] tracking-tight text-rk-head tabular-nums">
                 {value}
                 {unit && <span className="ml-0.5 text-sm font-medium text-muted-foreground">{unit}</span>}
               </span>

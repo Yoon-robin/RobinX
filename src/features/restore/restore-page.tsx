@@ -614,7 +614,7 @@ function DeleteBackupDialog({ op, onClose }: { op: Operation | null; onClose: ()
           <Button variant="outline" onClick={onClose} disabled={busy}>
             취소
           </Button>
-          <Button variant="destructive" onClick={confirm} disabled={busy}>
+          <Button variant="destructiveFill" onClick={confirm} disabled={busy}>
             {busy ? <Loader2 className="animate-spin" /> : needsAdmin ? <ShieldAlert /> : <Trash2 />}
             {needsAdmin ? "관리자 권한으로 지우기" : "영구 삭제"}
           </Button>

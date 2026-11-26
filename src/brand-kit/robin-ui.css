@@ -1,0 +1,490 @@
+/* robin-ui.css — the V5 kit (docs/brand.md "V5: Recurrence"), for any project.
+   One file, no build, no script. Every class starts with rk-, every token with --rk-.
+
+   Two grammars:
+   - the MENU: what sits on a face. Three blue-black faces (side < page < card) parted by
+     1px lines, no glass and no blur; controls with 7px corners.
+   - the INDICATOR: what floats (a state chip, a toast, an alert, the header's pills). A
+     dark face with a soft shadow of its own and a short tick at the left in the colour of
+     what it says: plain, blue (on, at work), salmon (look), red (wrong). No green, no amber.
+
+   Dark is the default. Put data-theme="light" on <html> (or any wrapper) for the light
+   mirror, which keeps white faces and takes the grammar only.
+
+   Measured from "Neverlose CS2: Recurrence Design" by Jellyx Design (Figma Community,
+   CC BY 4.0). Shapes and values only: no name, logo or asset of that product is here. */
+
+:root, [data-theme="dark"] {
+  color-scheme: dark;
+  /* faces */
+  --rk-side: #0a0e11;
+  --rk-page: #0e1012;
+  --rk-card: #0f1115;
+  --rk-line: #181a1d;
+  --rk-line-side: #17191b;
+  /* controls */
+  --rk-control: #14151c;
+  --rk-control-line: #26272d;
+  --rk-control-hover: #1b1d25;
+  --rk-control-line-hover: #32343b;
+  --rk-control-press: #20222b;
+  --rk-chosen: #222629;
+  --rk-hover: #15181b;
+  --rk-track: #1c1e24;
+  /* words */
+  --rk-head: #f0f0f0;
+  --rk-text: #e6e7e9;
+  --rk-soft: #8a8e94;
+  --rk-faint: #7d8187;
+  /* the one blue: links, switches, sliders, the chosen icon. Under white words it is a step deeper. */
+  --rk-accent: #4b7dfe;
+  --rk-accent-fill: #3d6af0;
+  --rk-accent-fill-hover: #4b7dfe;
+  --rk-accent-fill-press: #3562e0;
+  --rk-accent-soft: rgb(75 125 254 / 14%);
+  --rk-ring: #4b7dfe;
+  /* what an indicator says */
+  --rk-plain: #98a4b8;
+  --rk-note: #c27463;
+  --rk-alarm: #d52236;
+  --rk-alarm-text: #e5475a;
+  --rk-alarm-soft: rgb(213 34 54 / 12%);
+  /* parts */
+  --rk-switch-off: #030913;
+  --rk-switch-knob: #798895;
+  --rk-knob: #ffffff;
+  --rk-hud: #08090b;
+  --rk-hud-line: #1c1e22;
+  --rk-hud-shadow: 0 0 14px rgb(0 0 0 / 60%);
+  --rk-chip-line: #25282d;
+  --rk-chip-face: rgb(255 255 255 / 5%);
+  --rk-window-shadow: 0 0 0 1px #17191b, 0 18px 60px rgb(0 0 0 / 55%);
+  --rk-backdrop: rgb(0 0 0 / 55%);
+  --rk-tile: #14151c;
+  --rk-mark: #060a14;
+  --rk-scroll: #33363c;
+  /* corners */
+  --rk-r-chip: 6px;
+  --rk-r: 7px;
+  --rk-r-toast: 10px;
+  --rk-r-card: 12px;
+  --rk-r-win: 14px;
+  /* space: the measured rhythm (docs/brand.md "간격") */
+  --rk-gap-xs: 6px;
+  --rk-inset: 9px;
+  --rk-gap: 10px;
+  --rk-gap-col: 13px;
+  --rk-pad: 16px 18px;
+  /* type steps: 11 12 13 14 15 16 19 22 28 (9.5 only under the brand name) */
+  /* type: Pretendard, kept heavy (450 body, 550 strong, 650 heads) */
+  --rk-font: 'Pretendard Variable', Pretendard, -apple-system, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --rk-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, ui-monospace, 'Malgun Gothic', monospace;
+  --rk-w: 450;
+  --rk-w-strong: 550;
+  --rk-w-head: 650;
+  /* motion */
+  --rk-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rk-t-fast: 150ms;
+  --rk-t: 200ms;
+  --rk-t-slow: 240ms;
+}
+
+/* The light mirror: white faces stay; the side column a step under the page, the grammar the same. */
+[data-theme="light"] {
+  color-scheme: light;
+  --rk-side: #f4f5f7;
+  --rk-page: #ffffff;
+  --rk-card: #f8f8f9;
+  --rk-line: #e3e6eb;
+  --rk-line-side: #e3e6eb;
+  --rk-control: #f1f1f2;
+  --rk-control-line: #dedee3;
+  --rk-control-hover: #e9ecf0;
+  --rk-control-line-hover: #c6cad2;
+  --rk-control-press: #dfe3e9;
+  --rk-chosen: #dfe3e9;
+  --rk-hover: #e9ecf0;
+  --rk-track: #e3e6eb;
+  --rk-head: #000000;
+  --rk-text: #1a1a1a;
+  --rk-soft: #616161;
+  --rk-faint: #6b6b6b;
+  --rk-accent: #3566e8;
+  --rk-accent-fill: #3566e8;
+  --rk-accent-fill-hover: #2f5cd6;
+  --rk-accent-fill-press: #2a52c0;
+  --rk-accent-soft: rgb(53 102 232 / 12%);
+  --rk-ring: #3566e8;
+  --rk-plain: #6b7480;
+  --rk-note: #a4523f;
+  --rk-alarm: #c0263a;
+  --rk-alarm-text: #c0263a;
+  --rk-alarm-soft: rgb(192 38 58 / 9%);
+  --rk-switch-off: #dedee3;
+  --rk-switch-knob: #727d89;
+  --rk-hud: #ffffff;
+  --rk-hud-line: #dedee3;
+  --rk-hud-shadow: 0 6px 24px rgb(20 24 30 / 12%);
+  --rk-chip-line: #dedee3;
+  --rk-chip-face: rgb(0 0 0 / 5%);
+  --rk-window-shadow: 0 0 0 1px #e3e6eb, 0 10px 30px rgb(20 24 30 / 10%);
+  --rk-backdrop: rgb(0 0 0 / 30%);
+  --rk-scroll: #c6cad2;
+}
+
+/* ---------- base (opt in: put class="rk" on <body> or a wrapper) ---------- */
+.rk {
+  margin: 0;
+  background: var(--rk-page);
+  color: var(--rk-text);
+  font: var(--rk-w) 14px/1.5 var(--rk-font);
+  -webkit-font-smoothing: antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rk-scroll) transparent;
+}
+.rk *, .rk *::before, .rk *::after { box-sizing: border-box; }
+.rk ::selection { background: rgb(75 125 254 / 28%); }
+.rk :focus-visible { outline: 2px solid var(--rk-ring); outline-offset: 2px; }
+/* a bare link is the blue; a link that is a part (a row, a button) keeps the part's colour */
+/* a bare link only, and at the weight of one class, so any part's own link rule wins */
+.rk :where(a:not([class])) { color: var(--rk-accent); text-underline-offset: 3px; }
+.rk h1, .rk h2, .rk h3 { margin: 0; color: var(--rk-head); font-weight: var(--rk-w-head); letter-spacing: -0.01em; text-wrap: balance; }
+.rk-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-ico { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* =====================================================================
+   THE MENU
+   ===================================================================== */
+
+/* the window: a side column that is part of it, a 1px line, the panel */
+.rk-window { display: grid; grid-template-columns: var(--rk-side-w, 178px) minmax(0, 1fr); min-height: 0; overflow: hidden; border-radius: var(--rk-r-win); background: var(--rk-page); box-shadow: var(--rk-window-shadow); }
+.rk-window--page { min-height: 100vh; min-height: 100dvh; border-radius: 0; box-shadow: none; }
+.rk-side { display: flex; flex-direction: column; min-width: 0; padding: 0 var(--rk-inset); background: var(--rk-side); border-right: 1px solid var(--rk-line-side); }
+.rk-main { display: flex; flex-direction: column; min-width: 0; }
+
+/* the brand: a 30px mark (white letter, a blue light behind it), the name 16, a faint line under */
+.rk-brand { display: flex; align-items: center; gap: var(--rk-gap); height: 60px; padding: 0 6px; }
+.rk-mark { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: var(--rk-r); background: var(--rk-mark); color: #fff; font-size: 15px; font-weight: 900; letter-spacing: -0.02em; text-shadow: 0 0 10px rgb(75 125 254 / 90%); }
+.rk-brand b { display: block; font-size: 16px; font-weight: var(--rk-w-head); line-height: 19px; color: var(--rk-head); }
+.rk-brand small { display: block; font-size: 9.5px; line-height: 12px; color: var(--rk-faint); }
+
+/* a group's name: small and faint, outside what it names */
+.rk-label { margin: 14px 0 var(--rk-gap-xs); padding: 0 6px; font-size: 11px; font-weight: 500; line-height: 16px; letter-spacing: 0.02em; color: var(--rk-faint); }
+
+/* a row of the side column: 33 high; the one in use a grey face with a blue icon */
+.rk-nav { display: flex; align-items: center; gap: 11px; width: 100%; height: 33px; margin: 0 0 6px; padding: 0 12px; border: 0; border-radius: var(--rk-r); background: none; color: var(--rk-soft); font: inherit; font-size: 14px; text-align: left; text-decoration: none; cursor: pointer; transition: background-color var(--rk-t-fast) ease-out, color var(--rk-t-fast) ease-out; }
+.rk-nav .rk-ico { width: 15px; height: 15px; color: var(--rk-faint); }
+.rk-nav:hover { background: var(--rk-hover); color: var(--rk-text); }
+.rk-nav[aria-current="page"], .rk-nav[aria-current="true"], .rk-nav.is-on { background: var(--rk-chosen); color: var(--rk-head); font-weight: var(--rk-w-strong); }
+.rk-nav[aria-current="page"] .rk-ico, .rk-nav[aria-current="true"] .rk-ico, .rk-nav.is-on .rk-ico { color: var(--rk-accent); }
+.rk-nav:active { transform: scale(0.99); }
+
+/* the account at the foot of the side column */
+.rk-account { display: flex; align-items: center; gap: var(--rk-gap); margin-top: auto; padding: 11px 6px 12px; border-top: 1px solid var(--rk-line); color: inherit; text-decoration: none; }
+.rk-avatar { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); color: var(--rk-text); font-size: 13px; font-weight: var(--rk-w-head); text-transform: uppercase; overflow: hidden; }
+.rk-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rk-account b { display: block; font-size: 14px; font-weight: var(--rk-w-strong); line-height: 17px; color: var(--rk-head); }
+.rk-account small { display: block; font-size: 11px; line-height: 14px; color: var(--rk-faint); }
+.rk-account > .rk-ico:last-child { margin-left: auto; width: 14px; height: 14px; }
+
+/* the bar over the panel: 60 high, a line under; picks at the left, tools at the right */
+.rk-bar { display: flex; align-items: center; gap: var(--rk-gap); min-height: 60px; padding: 0 16px 0 12px; border-bottom: 1px solid var(--rk-line); }
+.rk-bar h1 { font-size: 22px; }
+.rk-bar > .rk-gap { flex: 1; }
+.rk-body { display: grid; gap: 0 var(--rk-gap-col); padding: 0 var(--rk-gap) var(--rk-gap); }
+.rk-body--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rk-body .rk-label { margin: 15px 0 9px; padding: 0 14px; }
+
+/* a card: its face and a 1px line. Rows 41 high, parted by a line inset 9 from the edges. */
+.rk-card { border-radius: var(--rk-r-card); background: var(--rk-card); box-shadow: inset 0 0 0 1px var(--rk-line); }
+.rk-card--pad { padding: var(--rk-pad); }
+.rk-row { display: flex; align-items: center; gap: var(--rk-gap); min-height: 41px; margin: 0 var(--rk-inset); padding: 0 6px; color: var(--rk-text); font-size: 14px; text-decoration: none; }
+.rk-row + .rk-row { box-shadow: 0 -1px 0 var(--rk-line); }
+.rk-row > :first-child { margin-right: auto; }
+.rk-row small { display: block; font-size: 12px; line-height: 16px; color: var(--rk-soft); }
+a.rk-row:hover, button.rk-row:hover { color: var(--rk-head); }
+.rk-row > .rk-ico { width: 13px; height: 13px; color: var(--rk-soft); stroke-width: 2.2; }
+.rk-more { display: inline-flex; gap: 2px; padding: 6px 2px; }
+.rk-more i { width: 2.5px; height: 2.5px; border-radius: 50%; background: currentColor; }
+
+/* a number tile */
+.rk-tile { display: grid; gap: var(--rk-gap-xs); padding: var(--rk-pad); border-radius: var(--rk-r-card); background: var(--rk-card); box-shadow: inset 0 0 0 1px var(--rk-line); }
+.rk-tile dt { font-size: 13px; font-weight: var(--rk-w-strong); color: var(--rk-faint); }
+.rk-tile dd { margin: 0; font-size: 28px; font-weight: var(--rk-w-head); line-height: 34px; letter-spacing: -0.01em; color: var(--rk-head); font-variant-numeric: tabular-nums; }
+.rk-tile small { font-size: 12px; color: var(--rk-soft); }
+
+/* ---------- controls: 7px corners, the control face in its line ---------- */
+.rk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 14px; border: 0; border-radius: var(--rk-r); background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); color: var(--rk-text); font: inherit; font-weight: var(--rk-w-strong); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color var(--rk-t-fast) ease-out, box-shadow var(--rk-t-fast) ease-out, color var(--rk-t-fast) ease-out, transform 120ms ease-out; }
+.rk-btn:hover { background: var(--rk-control-hover); box-shadow: inset 0 0 0 1px var(--rk-control-line-hover); color: var(--rk-head); }
+.rk-btn:active { background: var(--rk-control-press); transform: scale(0.98); }
+.rk-btn:disabled, .rk-btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; transform: none; }
+/* the one filled button of a screen: its main action */
+.rk-btn--primary, .rk-btn--primary:hover, .rk-btn--primary:active { box-shadow: none; color: #fff; }
+.rk-btn--primary { background: var(--rk-accent-fill); }
+.rk-btn--primary:hover { background: var(--rk-accent-fill-hover); }
+.rk-btn--primary:active { background: var(--rk-accent-fill-press); }
+/* what cannot be undone: a red line and red words. Filled red is for the one button of a confirm. */
+.rk-btn--danger, .rk-btn--danger:hover { background: none; box-shadow: inset 0 0 0 1px var(--rk-alarm); color: var(--rk-alarm-text); }
+.rk-btn--danger:hover { background: var(--rk-alarm-soft); }
+.rk-btn--danger-fill, .rk-btn--danger-fill:hover { background: var(--rk-alarm); box-shadow: none; color: #fff; }
+.rk-btn--small { min-height: 26px; padding: 0 9px; border-radius: var(--rk-r-chip); font-size: 12px; }
+.rk-btn--icon { width: 36px; padding: 0; }
+.rk-btn--icon.rk-btn--small { width: 26px; }
+.rk-btn--bare { background: none; box-shadow: none; color: var(--rk-soft); }
+.rk-btn--bare:hover { background: var(--rk-hover); box-shadow: none; }
+
+/* a pick in the bar: 30 high, a line and no face */
+.rk-pick { display: inline-flex; align-items: center; gap: 9px; height: 30px; padding: 0 10px; border: 0; border-radius: var(--rk-r); background: none; box-shadow: inset 0 0 0 1px var(--rk-line); color: var(--rk-text); font: inherit; font-size: 14px; cursor: pointer; }
+.rk-pick:hover { background: var(--rk-hover); box-shadow: inset 0 0 0 1px var(--rk-control-line); }
+.rk-pick .rk-ico { width: 12px; height: 12px; stroke-width: 2.2; }
+
+.rk-field { display: grid; gap: 6px; }
+.rk-field > span { font-size: 13px; color: var(--rk-faint); }
+.rk-input, .rk-select, .rk-textarea { width: 100%; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--rk-r); background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); color: var(--rk-head); font: inherit; transition: box-shadow var(--rk-t-fast) ease-out; }
+.rk-textarea { padding: 9px 12px; line-height: 1.5; resize: vertical; }
+.rk-input::placeholder, .rk-textarea::placeholder { color: var(--rk-faint); }
+.rk-input:hover, .rk-select:hover, .rk-textarea:hover { box-shadow: inset 0 0 0 1px var(--rk-control-line-hover); }
+.rk-input:focus-visible, .rk-select:focus-visible, .rk-textarea:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--rk-ring); }
+/* a select in a row: 142 x 26, 5px corners */
+.rk-select { appearance: none; -webkit-appearance: none; padding-right: 28px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8e94' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; background-size: 12px; cursor: pointer; }
+.rk-select--row { width: 142px; min-height: 26px; padding: 0 26px 0 8px; border-radius: 5px; font-size: 13px; }
+/* a value beside a slider */
+.rk-value { display: inline-grid; place-items: center; min-width: 34px; height: 20px; padding: 0 6px; border-radius: 5px; background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--rk-text); }
+
+/* the switch: 34 x 19. Off: a dark well in a line with a grey-blue knob. On: the blue, a white knob.
+   <button class="rk-switch" role="switch" aria-checked="true"></button> */
+.rk-switch { position: relative; flex: none; width: 34px; height: 19px; padding: 0; border: 0; border-radius: 10px; background: var(--rk-switch-off); box-shadow: inset 0 0 0 1px var(--rk-control-line); cursor: pointer; transition: background-color 165ms ease-out, box-shadow 165ms ease-out; }
+.rk-switch::before { content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 14px; height: 14px; border-radius: 50%; background: var(--rk-switch-knob); transition: transform 165ms ease-out, background-color 165ms ease-out; }
+.rk-switch::after { content: ''; position: absolute; inset: -8px -4px; }
+.rk-switch[aria-checked="true"] { background: var(--rk-accent); box-shadow: none; }
+.rk-switch[aria-checked="true"]::before { background: var(--rk-knob, #fff); transform: translateX(15px); }
+.rk-switch:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* a checkbox: 16, 4px corners */
+.rk-check { appearance: none; -webkit-appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border-radius: 4px; background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); cursor: pointer; }
+.rk-check:checked { background: var(--rk-accent-fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat; box-shadow: none; }
+
+/* the slider: a 3px groove, the blue up to the knob, a white 11px knob.
+   <input class="rk-slider" type="range" style="--rk-at: 60%"> (set --rk-at to the value's share) */
+.rk-slider { appearance: none; -webkit-appearance: none; width: 96px; height: 15px; margin: 0; background: linear-gradient(var(--rk-accent), var(--rk-accent)) 0 50% / var(--rk-at, 50%) 3px no-repeat, linear-gradient(var(--rk-track), var(--rk-track)) 0 50% / 100% 3px no-repeat; cursor: pointer; }
+.rk-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 11px; height: 11px; border: 0; border-radius: 50%; background: var(--rk-knob, #fff); box-shadow: 0 0 0 1px rgb(0 0 0 / 10%); }
+.rk-slider::-moz-range-thumb { width: 11px; height: 11px; border: 0; border-radius: 50%; background: var(--rk-knob, #fff); }
+.rk-slider::-moz-range-track { background: none; }
+/* a meter: the same groove, not a control. <span class="rk-meter"><i style="width: 16%"></i></span> */
+.rk-meter { display: block; height: 3px; border-radius: 2px; background: var(--rk-track); overflow: hidden; }
+.rk-meter i { display: block; height: 100%; border-radius: 2px; background: var(--rk-accent); }
+.rk-meter[data-tone="note"] i { background: var(--rk-note); }
+.rk-meter[data-tone="alarm"] i { background: var(--rk-alarm); }
+
+/* a group of choices: the one in use is the grey face with white words, never a bright slab */
+.rk-tabs { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; padding: 4px; border-radius: 9px; box-shadow: inset 0 0 0 1px var(--rk-line); }
+.rk-tab { min-height: 28px; padding: 0 14px; border: 0; border-radius: var(--rk-r-chip); background: none; color: var(--rk-soft); font: inherit; font-weight: var(--rk-w-strong); cursor: pointer; transition: background-color var(--rk-t-fast) ease-out, color var(--rk-t-fast) ease-out; }
+.rk-tab:hover { color: var(--rk-text); }
+.rk-tab[aria-selected="true"], .rk-tab[aria-pressed="true"], .rk-tab.is-on { background: var(--rk-chosen); color: var(--rk-head); }
+
+/* a small tag: what kind, how many. Not a state (a state is an indicator, below). */
+.rk-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: var(--rk-r-chip); background: var(--rk-control); box-shadow: inset 0 0 0 1px var(--rk-control-line); font-size: 11px; font-weight: var(--rk-w-strong); color: var(--rk-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rk-kbd { padding: 1px 6px; border-radius: 5px; box-shadow: inset 0 0 0 1px var(--rk-control-line); font: 500 11px var(--rk-mono); color: var(--rk-soft); }
+.rk-code { padding: 1px 5px; border-radius: 5px; background: var(--rk-control); font: 500 0.92em var(--rk-mono); }
+
+/* a table */
+.rk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rk-table th { padding: 10px 12px; text-align: left; font-size: 13px; font-weight: var(--rk-w-strong); color: var(--rk-faint); }
+.rk-table td { padding: 10px 12px; border-top: 1px solid var(--rk-line); }
+.rk-table tbody tr:hover td { background: var(--rk-hover); }
+
+/* nothing here yet: an icon and one line (no sentence on how to use the page) */
+.rk-empty { display: grid; justify-items: center; gap: 8px; padding: 32px 16px; color: var(--rk-soft); font-size: 13px; text-align: center; }
+.rk-empty .rk-ico { width: 24px; height: 24px; color: var(--rk-faint); }
+
+/* a menu that opens: the indicator's face, rows of 7px corners; a row that deletes is red */
+.rk-menu { min-width: 180px; padding: 6px; border-radius: var(--rk-r-card); background: var(--rk-hud); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); }
+.rk-menu__item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px; border: 0; border-radius: var(--rk-r); background: none; color: var(--rk-text); font: inherit; font-size: 13px; text-align: left; text-decoration: none; cursor: pointer; }
+.rk-menu__item:hover, .rk-menu__item:focus-visible { background: var(--rk-hover); color: var(--rk-head); outline: 0; }
+.rk-menu__item--danger { color: var(--rk-alarm-text); }
+.rk-menu__item--danger:hover { background: var(--rk-alarm-soft); color: var(--rk-alarm-text); }
+.rk-menu hr { height: 1px; margin: 6px 4px; border: 0; background: var(--rk-hud-line); }
+
+/* a window over the page: the card face, 14px corners. Behind it the page goes dark (the one blur). */
+.rk-dialog { width: min(440px, calc(100vw - 32px)); padding: 20px 22px; border: 0; border-radius: var(--rk-r-win); background: var(--rk-card); box-shadow: var(--rk-window-shadow); color: var(--rk-text); }
+.rk-dialog::backdrop { background: var(--rk-backdrop); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.rk-dialog h2 { font-size: 19px; }
+.rk-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+/* =====================================================================
+   THE INDICATOR
+   data-tone: none (plain) | on | note | alarm
+   ===================================================================== */
+.rk-hud, .rk-chip, .rk-toast, .rk-alert, .rk-person { --rk-tick: var(--rk-plain); position: relative; background: var(--rk-hud); color: var(--rk-head); }
+:is(.rk-hud, .rk-chip, .rk-toast, .rk-alert, .rk-person)[data-tone="on"] { --rk-tick: var(--rk-accent); }
+:is(.rk-hud, .rk-chip, .rk-toast, .rk-alert, .rk-person)[data-tone="note"] { --rk-tick: var(--rk-note); }
+:is(.rk-hud, .rk-chip, .rk-toast, .rk-alert, .rk-person)[data-tone="alarm"] { --rk-tick: var(--rk-alarm); }
+.rk-hud::before, .rk-chip::before, .rk-toast::before, .rk-alert::before, .rk-person::before { content: ''; position: absolute; left: 5px; top: 50%; width: 2px; height: 44%; max-height: 26px; border-radius: 2px; background: var(--rk-tick); transform: translateY(-50%); }
+
+/* a floating face of any size: the header's pills, a callout */
+.rk-hud { display: inline-flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 14px 0 16px; border-radius: var(--rk-r-card); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); }
+.rk-hud--pill { border-radius: 9999px; }
+.rk-hud--bare::before { display: none; }
+.rk-hud--bare { padding-left: 14px; }
+.rk-hud--block { display: flex; align-items: flex-start; padding: 12px 16px 12px 20px; line-height: 1.5; color: var(--rk-text); }
+.rk-hud--block::before { left: 8px; height: 44%; max-height: 34px; }
+
+/* a state chip: 22 high. The word says the state; the tick and the word's colour repeat it. */
+.rk-chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px 0 14px; border-radius: 9999px; box-shadow: inset 0 0 0 1px var(--rk-chip-line); font-size: 11px; font-weight: var(--rk-w-strong); white-space: nowrap; }
+.rk-chip[data-tone="note"] { color: var(--rk-note); }
+.rk-chip[data-tone="alarm"] { color: var(--rk-alarm-text); }
+
+/* the toast is the log line: 36 high, 10px corners, at the corner of the screen */
+.rk-toast { display: flex; align-items: center; gap: 10px; min-height: 36px; max-width: min(420px, calc(100vw - 32px)); padding: 6px 10px 6px 16px; border-radius: var(--rk-r-toast); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); font-size: 13px; color: var(--rk-text); animation: rk-toast-in var(--rk-t-slow) var(--rk-ease) both; }
+.rk-toast::before { left: 6px; }
+.rk-toast > .rk-ico { color: var(--rk-tick); }
+.rk-toast > span { flex: 1; min-width: 0; }
+.rk-toasts { position: fixed; z-index: 100; right: 16px; bottom: 16px; display: grid; gap: 8px; justify-items: end; }
+@keyframes rk-toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* an alert is the alarm card: 14px corners, the first line white and heavy, the second in the tone */
+.rk-alert { display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 10px 20px; border-radius: var(--rk-r-win); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); }
+.rk-alert::before { left: 7px; }
+.rk-alert > .rk-ico { width: 20px; height: 20px; color: var(--rk-tick); }
+.rk-alert b { display: block; font-size: 15px; font-weight: 700; line-height: 19px; color: var(--rk-head); }
+.rk-alert em { display: block; font-size: 14px; font-style: normal; font-weight: 700; line-height: 18px; color: var(--rk-tick); }
+.rk-alert[data-tone="alarm"] em { color: var(--rk-alarm-text); }
+.rk-alert > .rk-btn { margin-left: auto; }
+
+/* the watermark: one 48px pill. A mark, then icon-and-value groups, then a round button. No tick. */
+.rk-watermark { display: inline-flex; align-items: center; gap: 16px; height: 48px; padding: 0 9px 0 18px; border-radius: 24px; background: var(--rk-hud); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); color: var(--rk-head); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-watermark > span { display: inline-flex; align-items: center; gap: 6px; }
+.rk-watermark .rk-ico { width: 14px; height: 14px; color: var(--rk-accent); }
+.rk-watermark__mark { font-size: 15px; font-weight: 900; text-shadow: 0 0 10px rgb(75 125 254 / 90%); }
+.rk-round { display: grid; place-items: center; flex: none; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: rgb(0 0 0 / 55%); color: var(--rk-soft); cursor: pointer; }
+[data-theme="light"] .rk-round { background: var(--rk-control); }
+.rk-round .rk-ico { width: 12px; height: 12px; color: currentColor; }
+
+/* the keys in use: a head, then value and name in two columns of 6px chips */
+.rk-keys { display: grid; gap: 8px; justify-items: start; }
+.rk-keys dl { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 8px 24px; margin: 0; }
+.rk-keys dt, .rk-keys dd { margin: 0; justify-self: start; height: 24px; padding: 0 7px; border-radius: var(--rk-r-chip); background: var(--rk-chip-face); font-size: 12px; line-height: 24px; white-space: nowrap; color: var(--rk-head); }
+.rk-keys dt { font-variant-numeric: tabular-nums; }
+
+/* a person: a 25px pill, the name and a small round button */
+.rk-person { display: inline-flex; align-items: center; gap: 9px; height: 25px; padding: 0 3px 0 14px; border-radius: 13px; box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.rk-person .rk-round { width: 19px; height: 19px; }
+
+/* the header of a page that has no side column: pills on nothing, the tabs one pill */
+.rk-header { display: flex; align-items: center; gap: 8px; height: 76px; padding: 16px 20px; }
+.rk-header > .rk-gap { flex: 1; }
+.rk-pilltabs { display: inline-flex; align-items: center; gap: 2px; min-width: 0; height: 44px; padding: 4px; overflow-x: auto; scrollbar-width: none; white-space: nowrap; border-radius: 22px; background: var(--rk-hud); box-shadow: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow); }
+.rk-pilltabs::-webkit-scrollbar { display: none; }
+.rk-pilltabs a { display: inline-flex; flex: none; align-items: center; height: 36px; padding: 0 18px; border-radius: 9999px; color: var(--rk-soft); text-decoration: none; transition: background-color var(--rk-t-fast) ease-out, color var(--rk-t-fast) ease-out; }
+.rk-pilltabs a:hover { color: var(--rk-text); }
+.rk-pilltabs a[aria-current="page"] { background: var(--rk-chosen); color: var(--rk-head); }
+
+/* waiting: a 3px line with a piece running across it */
+.rk-loading { position: relative; height: 3px; overflow: hidden; border-radius: 2px; background: var(--rk-accent-soft); }
+.rk-loading::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 32%; background: var(--rk-accent); animation: rk-slide 1.05s ease-in-out infinite; }
+@keyframes rk-slide { from { transform: translateX(-100%); } to { transform: translateX(333%); } }
+
+/* arriving: 4px up, once */
+.rk-in { animation: rk-in var(--rk-t-slow) var(--rk-ease) both; }
+@keyframes rk-in { from { opacity: 0; transform: translateY(4px); } }
+
+@media (max-width: 860px) {
+  .rk-window { grid-template-columns: minmax(0, 1fr); }
+  .rk-side { border-right: 0; border-bottom: 1px solid var(--rk-line-side); }
+  .rk-body--2 { grid-template-columns: minmax(0, 1fr); }
+  .rk-header { padding: 16px; }
+  .rk-pilltabs a { padding: 0 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rk-toast, .rk-in { animation: none; }
+  .rk-loading::after { width: 100%; animation: none; }
+  .rk-btn, .rk-nav, .rk-switch, .rk-switch::before, .rk-tab { transition: none; }
+  .rk-btn:active, .rk-nav:active { transform: none; }
+}
+
+/* =====================================================================
+   V5.1: THE FEEL (docs/brand.md "V5.1", 2026-11-26)
+   The faces, colours and corners above stay. What changes is how a part answers a hand:
+   - light is height: a floating face has a 1px light along its top edge inside, a card's
+     top line is a shade brighter than its sides (no new colour, no glow);
+   - a pressed part gives to 0.97 in 160ms and comes back; a row gives 1%;
+   - a hover band comes on in 90ms and goes in 160ms (measured from the game menu);
+   - a menu grows from the side it opened on, 0.97 to 1 with its opacity, 150ms; it leaves
+     in 100ms on opacity alone. A window over the page the same from its middle, 200ms;
+   - a switch's knob stretches while it is held, and lands where it was going.
+   Under reduced motion only the fades are left.
+   ===================================================================== */
+:root, [data-theme="dark"] {
+  --rk-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --rk-ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+  --rk-t-press: 160ms;
+  --rk-t-in: 90ms;
+  --rk-t-out: 160ms;
+  --rk-lift: rgb(255 255 255 / 5%);
+  --rk-card-top: #212428;
+}
+[data-theme="light"] {
+  --rk-lift: rgb(255 255 255 / 80%);
+  --rk-card-top: #e3e6eb;
+}
+
+/* light is height */
+.rk-card, .rk-tile { box-shadow: inset 0 1px 0 var(--rk-card-top), inset 0 0 0 1px var(--rk-line); }
+.rk-hud, .rk-toast, .rk-alert, .rk-person, .rk-menu, .rk-pilltabs, .rk-watermark { box-shadow: 0 0 0 1px var(--rk-hud-line), inset 0 1px 0 var(--rk-lift), var(--rk-hud-shadow); }
+.rk-chip { box-shadow: inset 0 0 0 1px var(--rk-chip-line), inset 0 1px 0 var(--rk-lift); }
+.rk-dialog { box-shadow: inset 0 1px 0 var(--rk-lift), var(--rk-window-shadow); }
+
+/* pressing: the part gives, then comes back */
+.rk-btn, .rk-tab, .rk-pick, .rk-pilltabs a, .rk-round { transition-property: background-color, box-shadow, color, transform; transition-duration: var(--rk-t-fast), var(--rk-t-fast), var(--rk-t-fast), 200ms; transition-timing-function: ease-out, ease-out, ease-out, var(--rk-ease-out); }
+.rk-btn:active, .rk-tab:active, .rk-pick:active, .rk-pilltabs a:active, .rk-round:active { transform: scale(0.97); transition-duration: var(--rk-t-fast), var(--rk-t-fast), var(--rk-t-fast), var(--rk-t-press); }
+.rk-btn:disabled:active, .rk-btn[aria-disabled="true"]:active { transform: none; }
+.rk-nav:active, a.rk-row:active, button.rk-row:active, .rk-menu__item:active { transform: scale(0.99); }
+
+/* pointing: on quickly, off slowly */
+.rk-nav, a.rk-row, button.rk-row, .rk-menu__item, .rk-table td { transition: background-color var(--rk-t-out) ease-out, color var(--rk-t-out) ease-out, transform var(--rk-t-press) var(--rk-ease-out); }
+.rk-nav:hover, a.rk-row:hover, button.rk-row:hover, .rk-menu__item:hover, .rk-table tbody tr:hover td { transition-duration: var(--rk-t-in), var(--rk-t-in), var(--rk-t-press); }
+/* a › at a row's end leans toward where it goes */
+a.rk-row > .rk-ico:last-child, button.rk-row > .rk-ico:last-child { transition: transform 200ms var(--rk-ease-out), color var(--rk-t-fast) ease-out; }
+@media (hover: hover) and (pointer: fine) {
+  a.rk-row:hover > .rk-ico:last-child, button.rk-row:hover > .rk-ico:last-child { transform: translateX(2px); color: var(--rk-head); }
+}
+
+/* opening: from the side it opened on. Set data-from="top|bottom" (and data-align="end")
+   on the menu, or --rk-origin. Add .is-leaving for the way out, then hide it on animationend. */
+.rk-menu { transform-origin: var(--rk-origin, top left); animation: rk-pop 150ms var(--rk-ease-out) both; }
+.rk-menu[data-from="bottom"] { --rk-origin: bottom left; }
+.rk-menu[data-align="end"] { --rk-origin: top right; }
+.rk-menu[data-from="bottom"][data-align="end"] { --rk-origin: bottom right; }
+.rk-menu.is-leaving { animation: rk-fade-out 100ms ease-out both; }
+.rk-dialog[open] { animation: rk-pop 200ms var(--rk-ease-out) both; }
+.rk-dialog[open]::backdrop { animation: rk-fade-in 200ms ease-out both; }
+.rk-toast.is-leaving { animation: rk-toast-out 160ms var(--rk-ease-out) both; }
+@keyframes rk-pop { from { opacity: 0; transform: scale(0.97); } }
+@keyframes rk-fade-in { from { opacity: 0; } }
+@keyframes rk-fade-out { to { opacity: 0; } }
+@keyframes rk-toast-out { to { opacity: 0; transform: translateY(6px); } }
+
+/* the switch: the knob stretches 4px while held; on, it stretches toward the left */
+.rk-switch::before { transition: transform 165ms ease-out, width 165ms ease-out, background-color 165ms ease-out; }
+.rk-switch:active:not(:disabled)::before { width: 18px; }
+.rk-switch[aria-checked="true"]:active:not(:disabled)::before { transform: translateX(11px); }
+.rk-switch:active:not(:disabled) { transform: none; }
+
+/* arriving in a group: the parts of one container come in 40ms apart (the first five) */
+.rk-stagger > * { animation: rk-in var(--rk-t-slow) var(--rk-ease) both; }
+.rk-stagger > :nth-child(2) { animation-delay: 40ms; }
+.rk-stagger > :nth-child(3) { animation-delay: 80ms; }
+.rk-stagger > :nth-child(4) { animation-delay: 120ms; }
+.rk-stagger > :nth-child(n + 5) { animation-delay: 160ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rk-btn:active, .rk-tab:active, .rk-pick:active, .rk-pilltabs a:active, .rk-round:active,
+  .rk-nav:active, a.rk-row:active, button.rk-row:active, .rk-menu__item:active { transform: none; }
+  a.rk-row:hover > .rk-ico:last-child, button.rk-row:hover > .rk-ico:last-child { transform: none; }
+  .rk-menu, .rk-dialog[open] { animation-name: rk-fade-in; }
+  .rk-toast.is-leaving { animation-name: rk-fade-out; }
+  .rk-stagger > * { animation: rk-fade-in 200ms ease-out both; }
+  .rk-switch::before { transition: background-color 165ms ease-out; }
+  .rk-switch:active:not(:disabled)::before { width: 14px; }
+  .rk-switch[aria-checked="true"]:active:not(:disabled)::before { transform: translateX(15px); }
+}

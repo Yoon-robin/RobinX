@@ -7,14 +7,15 @@ function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimi
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-control dark:data-[state=unchecked]:bg-input/80",
+        // 브랜드 V5: 34×19, 켬 파랑 + 흰 손잡이, 끔 어두운 홈 + 1px 선 + 회색 손잡이. 누르는 동안 손잡이가 4px 늘어난다(index.css)
+        "peer relative inline-flex h-[19px] w-[34px] shrink-0 items-center rounded-[10px] outline-none transition-[background-color,box-shadow] duration-[165ms] ease-out disabled:cursor-not-allowed disabled:opacity-45 data-[state=checked]:bg-rk-accent data-[state=unchecked]:bg-rk-switch-off data-[state=unchecked]:shadow-[inset_0_0_0_1px_var(--rk-control-line)]",
         className,
       )}
       {...props}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0 transition-transform duration-200 ease-(--ease-out-quint) data-[state=checked]:translate-x-[calc(100%+1px)] data-[state=unchecked]:translate-x-0.5 dark:data-[state=checked]:bg-primary-foreground dark:data-[state=unchecked]:bg-foreground"
+        className="pointer-events-none block h-[14px] w-[14px] rounded-full transition-[transform,width,background-color] duration-[165ms] ease-out data-[state=checked]:translate-x-[17.5px] data-[state=checked]:bg-rk-knob data-[state=unchecked]:translate-x-[2.5px] data-[state=unchecked]:bg-rk-switch-knob"
       />
     </SwitchPrimitive.Root>
   )

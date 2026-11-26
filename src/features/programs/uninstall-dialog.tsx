@@ -230,7 +230,7 @@ function ConfirmBody({
         <Button variant="outline" onClick={onCancel} data-autofocus>
           취소
         </Button>
-        <Button variant="destructive" onClick={onStart}>
+        <Button variant="destructiveFill" onClick={onStart}>
           <Trash2 />
           제거 시작
         </Button>

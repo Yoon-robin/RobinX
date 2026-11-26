@@ -91,7 +91,7 @@ export function ConfirmClean({
         <Button variant="outline" onClick={onCancel}>
           돌아가기
         </Button>
-        <Button variant="destructive" onClick={onConfirm}>
+        <Button variant="destructiveFill" onClick={onConfirm}>
           백업하고 정리
         </Button>
       </div>

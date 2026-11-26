@@ -4,19 +4,15 @@ import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import { IconTooltip } from "@/components/icon-tooltip"
-import { useTheme } from "@/components/theme"
 
 /**
  * 글자·아이콘에는 z-10을 준다: 바탕이 옆 칸으로 미끄러지는 동안 지나가는 칸의 글자를 덮지 않게 한다
  * (바탕은 새로 고른 칸 안에 그려져서, 그대로 두면 앞 칸의 글자 위로 지나갔다).
  *
- * 고른 칸을 따라 움직이는 바탕의 모서리. 움직이는 동안 모서리가 찌그러지지 않으려면 숫자로 줘야 해서
- * CSS(.terminal .rounded-full)와 따로 맞춘다: 터미널 모양은 각지게, 일반 모양은 알약.
+ * 고른 칸을 따라 움직이는 바탕의 모서리. 움직이는 동안 모서리가 찌그러지지 않으려면 숫자로 준다.
+ * 브랜드 V5의 고르는 묶음: 묶음 모서리 9, 안의 판 6, 고른 것은 회색 면(--rk-chosen) + 흰 글자.
  */
-function useIndicatorRadius() {
-  const terminal = useTheme().look === "terminal"
-  return { pill: terminal ? 3 : 9999, inner: terminal ? 2 : 6 }
-}
+const CHOSEN_RADIUS = 6
 
 /**
  * 라디오·탭 묶음의 키보드 이동: ←/→(↑/↓)로 앞뒤, Home/End로 처음·끝. 사용 못 하는 항목은 건너뛴다.
@@ -59,7 +55,6 @@ export function FilterChips<K extends string>({
   counts: Record<K, number>
   onChange: (key: K) => void
 }) {
-  const { pill } = useIndicatorRadius()
   return (
     <div
       className="flex flex-wrap gap-1.5"
@@ -88,21 +83,21 @@ export function FilterChips<K extends string>({
             disabled={empty}
             onClick={() => onChange(o.key)}
             className={cn(
-              "relative flex h-7 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors duration-150",
-              active ? "border-transparent text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              "relative flex h-7 items-center gap-1.5 rounded-rk-chip bg-rk-control px-2.5 text-xs font-medium shadow-[inset_0_0_0_1px_var(--rk-control-line)] transition-colors duration-150",
+              active ? "text-rk-head" : "text-rk-soft hover:bg-rk-control-hover hover:text-rk-head",
               empty && "opacity-40",
             )}
           >
             {active && (
               <motion.span
                 layoutId="filter-chip"
-                className="absolute inset-0 bg-primary"
-                style={{ borderRadius: pill }}
+                className="absolute inset-0 bg-rk-chosen"
+                style={{ borderRadius: CHOSEN_RADIUS }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}
             <span className="relative z-10">{o.label}</span>
-            <span className={cn("relative z-10 tabular-nums", active ? "opacity-80" : "opacity-60")}>
+            <span className={cn("relative z-10 tabular-nums", active ? "text-rk-soft" : "text-rk-faint")}>
               {counts[o.key]}
             </span>
           </button>
@@ -127,10 +122,9 @@ export function IconSegmented<K extends string>({
   /** 묶음 이름 (화면 읽기 프로그램용) */
   label: string
 }) {
-  const { inner } = useIndicatorRadius()
   return (
     <div
-      className="flex h-9 items-center rounded-lg border bg-background/60 p-0.5"
+      className="flex h-9 items-center rounded-[9px] bg-rk-control p-0.5 shadow-[inset_0_0_0_1px_var(--rk-control-line)]"
       role="radiogroup"
       aria-label={label}
       onKeyDown={(e) =>
@@ -153,15 +147,15 @@ export function IconSegmented<K extends string>({
             aria-label={o.label}
             onClick={() => onChange(o.key)}
             className={cn(
-              "relative flex h-full w-8 items-center justify-center rounded-md transition-colors",
-              value === o.key ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              "relative flex h-full w-8 items-center justify-center rounded-rk-chip transition-colors",
+              value === o.key ? "text-rk-accent" : "text-rk-soft hover:text-rk-head",
             )}
           >
             {value === o.key && (
               <motion.span
                 layoutId={layoutId}
-                className="absolute inset-0 bg-muted shadow-sm"
-                style={{ borderRadius: inner }}
+                className="absolute inset-0 bg-rk-chosen"
+                style={{ borderRadius: CHOSEN_RADIUS }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}
@@ -187,10 +181,9 @@ export function TextTabs<K extends string>({
   layoutId: string
   label: string
 }) {
-  const { pill } = useIndicatorRadius()
   return (
     <div
-      className="flex h-9 items-center rounded-full border bg-muted p-1"
+      className="flex h-9 items-center rounded-[9px] bg-rk-control p-[3px] shadow-[inset_0_0_0_1px_var(--rk-control-line)]"
       role="tablist"
       aria-label={label}
       onKeyDown={(e) =>
@@ -214,15 +207,15 @@ export function TextTabs<K extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(o.key)}
             className={cn(
-              "relative flex h-full items-center gap-1.5 rounded-full px-3 text-sm transition-colors",
-              active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+              "relative flex h-full items-center gap-1.5 rounded-rk-chip px-3 text-sm transition-colors",
+              active ? "font-medium text-rk-head" : "text-rk-soft hover:text-rk-head",
             )}
           >
             {active && (
               <motion.span
                 layoutId={layoutId}
-                className="absolute inset-0 bg-background shadow-sm"
-                style={{ borderRadius: pill }}
+                className="absolute inset-0 bg-rk-chosen"
+                style={{ borderRadius: CHOSEN_RADIUS }}
                 transition={{ type: "spring", duration: 0.2, bounce: 0 }}
               />
             )}

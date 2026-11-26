@@ -1,6 +1,7 @@
 # RobinX — Claude 작업 규칙
 
 Windows 프로그램 제거·정리 도구 (예전 이름 RobinUninstaller). 언인스톨러(Revo Uninstaller 같은)에서 출발해 남은 흔적 정리·저장공간·시작프로그램까지 다룬다. Tauri 2 + React + shadcn/ui 화면, Rust 엔진.
+화면은 Robin 브랜드 V5.1을 따른다: 값은 [src/brand-kit/](src/brand-kit/README.md)(yoonrobin.xyz `brand-kit/` 사본), 규칙은 [src/brand-kit/AGENTS.md](src/brand-kit/AGENTS.md), 요약은 [docs/BRAND.md](docs/BRAND.md). 색·모서리를 새로 짓지 않고 `--rk-*`·`bg-rk-*`를 쓴다.
 전체 계획과 단계별 구현 메모는 [PLAN.md](PLAN.md), 새 PC 설정과 현재 진행 상황은 [docs/HANDOFF.md](docs/HANDOFF.md), **할 일 목록과 루프 작업 방법은 [docs/LOOP.md](docs/LOOP.md)**.
 
 ## 사용자와 일하는 방식
@@ -56,6 +57,7 @@ cargo run -p robin-storage --example storage_scan            # 정리할 수 있
 cargo run -p robin-storage --example storage_clean_fixture   # 테스트 앱 캐시만 정리해 보기
 cargo run -p robin-storage --example storage_admin_fixture   # 관리자 항목 정리 (먼저 관리자로 robin-fixture install --machine)
 bash scripts/release.sh [--publish]                         # 서명된 설치 파일 + latest.json (--publish는 GitHub Release에 올림)
+node scripts/make-icon.mjs                                  # 앱 아이콘(V5 브랜드 표)을 그려 src-tauri/icons/ 다시 만들기
 bash ios/scripts/release.sh [--publish "바뀐 점"]           # iPhone ipa를 GitHub Release ios-v<버전>에 (Latest로 표시하지 않음, 올리기 전 사용자에게 묻기)
 ```
 

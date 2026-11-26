@@ -1,0 +1,57 @@
+/* tailwind.css — Tailwind v4: the kit's tokens as utilities (bg-rk-card, text-rk-soft,
+   border-rk-line, rounded-rk-control ...). Written by tokens.py from robin-ui.css; do not edit.
+
+     @import "tailwindcss";
+     @import "./brand-kit/robin-ui.css";
+     @import "./brand-kit/tailwind.css";
+
+   The utilities read the --rk- variables, so data-theme="light" turns them with the rest. */
+@theme inline {
+  --color-rk-side: var(--rk-side);
+  --color-rk-page: var(--rk-page);
+  --color-rk-card: var(--rk-card);
+  --color-rk-line: var(--rk-line);
+  --color-rk-line-side: var(--rk-line-side);
+  --color-rk-control: var(--rk-control);
+  --color-rk-control-line: var(--rk-control-line);
+  --color-rk-control-hover: var(--rk-control-hover);
+  --color-rk-control-line-hover: var(--rk-control-line-hover);
+  --color-rk-control-press: var(--rk-control-press);
+  --color-rk-chosen: var(--rk-chosen);
+  --color-rk-hover: var(--rk-hover);
+  --color-rk-track: var(--rk-track);
+  --color-rk-head: var(--rk-head);
+  --color-rk-text: var(--rk-text);
+  --color-rk-soft: var(--rk-soft);
+  --color-rk-faint: var(--rk-faint);
+  --color-rk-accent: var(--rk-accent);
+  --color-rk-accent-fill: var(--rk-accent-fill);
+  --color-rk-accent-fill-hover: var(--rk-accent-fill-hover);
+  --color-rk-accent-fill-press: var(--rk-accent-fill-press);
+  --color-rk-accent-soft: var(--rk-accent-soft);
+  --color-rk-ring: var(--rk-ring);
+  --color-rk-plain: var(--rk-plain);
+  --color-rk-note: var(--rk-note);
+  --color-rk-alarm: var(--rk-alarm);
+  --color-rk-alarm-text: var(--rk-alarm-text);
+  --color-rk-alarm-soft: var(--rk-alarm-soft);
+  --color-rk-switch-off: var(--rk-switch-off);
+  --color-rk-switch-knob: var(--rk-switch-knob);
+  --color-rk-knob: var(--rk-knob);
+  --color-rk-hud: var(--rk-hud);
+  --color-rk-hud-line: var(--rk-hud-line);
+  --color-rk-chip-line: var(--rk-chip-line);
+  --color-rk-chip-face: var(--rk-chip-face);
+  --color-rk-backdrop: var(--rk-backdrop);
+  --color-rk-tile: var(--rk-tile);
+  --color-rk-mark: var(--rk-mark);
+  --color-rk-scroll: var(--rk-scroll);
+  --radius-rk-chip: var(--rk-r-chip);
+  --radius-rk-control: var(--rk-r);
+  --radius-rk-toast: var(--rk-r-toast);
+  --radius-rk-card: var(--rk-r-card);
+  --radius-rk-window: var(--rk-r-win);
+  --font-rk: var(--rk-font);
+  --font-rk-mono: var(--rk-mono);
+  --ease-rk: var(--rk-ease);
+}

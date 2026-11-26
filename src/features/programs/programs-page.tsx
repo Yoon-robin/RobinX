@@ -420,12 +420,12 @@ export function ProgramsPage({ active = true }: { active?: boolean }) {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/8 px-5 py-4 text-sm">
-              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div data-tone="on" className="v5-note flex items-start gap-3 py-3.5 pr-4 text-sm">
+              <span className="v5-tile mt-0.5 size-7">
                 <MousePointerClick className="size-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-medium">프로그램 메뉴에서 제거해요</p>
+                <p className="font-[550] text-rk-head">프로그램 메뉴에서 제거해요</p>
                 <p className="mt-1 text-muted-foreground">
                   지울 프로그램을 오른쪽 클릭하거나 <b className="text-foreground">⋯</b>를 눌러{" "}
                   <b className="text-foreground">제거</b>를 고르면, 끝난 뒤 남은 흔적을 찾아 백업하고 정리할 수 있어요.

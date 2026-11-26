@@ -526,7 +526,7 @@ function UninstallFlow({ info }: { info: SetupInfo }) {
           <Button variant="outline" size="lg" onClick={() => setupApi.finish()}>
             취소
           </Button>
-          <Button variant="destructive" size="lg" onClick={run}>
+          <Button variant="destructiveFill" size="lg" onClick={run}>
             제거
           </Button>
         </div>

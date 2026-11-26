@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+/* 브랜드 키트 V5 (yoonrobin.xyz brand-kit/ 사본, src/brand-kit/README.md). 색·모서리 값은 여기에만 있다 */
+@import "./brand-kit/robin-ui.css";
+@import "./brand-kit/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -42,221 +45,61 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* 브랜드 V5 모서리: 칩·값 칸 5~6, 컨트롤 7, 카드 12, 창 14. 알약(full)은 표시기에만 */
+  --radius-sm: 5px;
+  --radius-md: var(--rk-r-chip);
+  --radius-lg: var(--rk-r);
+  --radius-xl: var(--rk-r-card);
+  --radius-2xl: var(--rk-r-card);
+  --radius-3xl: var(--rk-r-win);
+  --radius-4xl: var(--rk-r-win);
 }
 
 /* ── 색 ──────────────────────────────────────────────────
- * macOS처럼 거의 무채색인 바탕과 반투명한 구분선 위에, 로고의 청록색만 강조색으로 쓴다.
+ * 브랜드 V5(Recurrence): 푸른 검정 면 셋(옆 기둥 < 판 < 카드)과 1px 선, 파랑 하나, 초록·노랑 없음.
+ * shadcn 변수는 키트의 --rk-* 값을 가리키기만 한다. 밝기는 html의 data-theme(theme.tsx)이 키트 값을 바꾼다.
  */
 :root {
-  --background: oklch(0.975 0.0015 286);
-  --foreground: oklch(0.21 0.005 286);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.005 286);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.005 286);
-  /* 흰 바탕 글자·흰 글자 단추 모두 4.5:1 이상 (약 5:1) */
-  --primary: oklch(0.52 0.1 200);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.002 286);
-  --secondary-foreground: oklch(0.25 0.005 286);
-  --muted: oklch(0.955 0.002 286);
-  --muted-foreground: oklch(0.5 0.008 286);
-  --accent: oklch(0.945 0.003 286);
-  --accent-foreground: oklch(0.21 0.005 286);
-  --destructive: oklch(0.55 0.21 25);
-  --border: oklch(0 0 0 / 9%);
-  --input: oklch(0 0 0 / 13%);
-  /* 체크박스 테두리·꺼진 스위치: 바탕과 3:1 이상이어야 있는 줄 안다 */
-  --control: oklch(0 0 0 / 42%);
-  /* 글자로 쓰는 상태 색. 그래프 색(--chart-*)은 흰 바탕 글자로 쓰기엔 옅어서(2.2~2.7:1) 따로 둔다 */
-  --warning: oklch(0.52 0.15 65);
-  --success: oklch(0.52 0.13 150);
-  --ring: oklch(0.52 0.1 200);
-  --chart-1: oklch(0.72 0.12 195);
-  --chart-2: oklch(0.62 0.17 285);
-  --chart-3: oklch(0.76 0.15 70);
-  --chart-4: oklch(0.65 0.2 20);
-  --chart-5: oklch(0.68 0.15 150);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.955 0.002 286);
-  --sidebar-foreground: oklch(0.25 0.005 286);
-  --sidebar-primary: oklch(0.52 0.1 200);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0 0 0 / 7%);
-  --sidebar-accent-foreground: oklch(0.2 0.005 260);
-  --sidebar-border: oklch(0 0 0 / 8%);
-  --sidebar-ring: oklch(0.52 0.1 200);
-}
-
-.dark {
-  --background: oklch(0.205 0.002 286);
-  --foreground: oklch(0.96 0.002 286);
-  --card: oklch(0.24 0.002 286);
-  --card-foreground: oklch(0.96 0.002 286);
-  --popover: oklch(0.255 0.003 286);
-  --popover-foreground: oklch(0.96 0.002 286);
-  --primary: oklch(0.82 0.12 190);
-  --primary-foreground: oklch(0.2 0.04 200);
-  --secondary: oklch(0.27 0.003 286);
-  --secondary-foreground: oklch(0.94 0.002 260);
-  --muted: oklch(0.27 0.003 286);
-  --muted-foreground: oklch(0.72 0.005 286);
-  --accent: oklch(0.29 0.003 286);
-  --accent-foreground: oklch(0.96 0.002 260);
-  --destructive: oklch(0.7 0.19 22);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --control: oklch(1 0 0 / 40%);
-  --warning: oklch(0.83 0.14 75);
-  --success: oklch(0.75 0.14 150);
-  --ring: oklch(0.82 0.12 190);
-  --chart-1: oklch(0.82 0.12 190);
-  --chart-2: oklch(0.72 0.15 285);
-  --chart-3: oklch(0.83 0.14 75);
-  --chart-4: oklch(0.72 0.17 20);
-  --chart-5: oklch(0.75 0.14 150);
-  --sidebar: oklch(0.225 0.002 286);
-  --sidebar-foreground: oklch(0.92 0.003 260);
-  --sidebar-primary: oklch(0.82 0.12 190);
-  --sidebar-primary-foreground: oklch(0.2 0.04 200);
-  --sidebar-accent: oklch(1 0 0 / 9%);
-  --sidebar-accent-foreground: oklch(0.97 0.002 260);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.82 0.12 190);
-}
-
-/* ── 터미널 모양 (설정 › 화면 › 모양) ─────────────────────────
- * 고정폭 글꼴, 각진 모서리, 흑백. 시작 화면(index.html .tty)과 같은 느낌을 앱 전체에 준다.
- * 강조색도 색을 넣지 않고 흰색(밝은 테마에서는 검은색)으로 쓴다. 경고·성공 같은 상태 색만 그대로 둔다.
- * 한글은 고정폭 글꼴에 없어서 Pretendard로 그린다.
- */
-.terminal {
-  --font-term: "Cascadia Mono", "Cascadia Code", Consolas, "D2Coding", "Pretendard Variable", Pretendard, monospace;
-  --radius: 0.2rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.15 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.95 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.93 0 0);
-  --accent-foreground: oklch(0.15 0 0);
-  --border: oklch(0 0 0 / 14%);
-  --input: oklch(0 0 0 / 22%);
-  --control: oklch(0 0 0 / 50%);
-  --ring: oklch(0.15 0 0);
-  --chart-1: oklch(0.35 0 0);
-  /* 크기 막대·아이콘 칸의 보라·초록도 회색으로 (노랑·빨강은 경고 뜻이라 둔다) */
-  --chart-2: oklch(0.5 0 0);
-  --chart-5: oklch(0.6 0 0);
-  --sidebar: oklch(0.96 0 0);
-  --sidebar-foreground: oklch(0.2 0 0);
-  --sidebar-primary: oklch(0.15 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0 0 0 / 8%);
-  --sidebar-accent-foreground: oklch(0.12 0 0);
-  --sidebar-border: oklch(0 0 0 / 12%);
-  --sidebar-ring: oklch(0.15 0 0);
-}
-
-.terminal.dark {
-  --background: oklch(0.13 0 0);
-  --foreground: oklch(0.93 0 0);
-  --card: oklch(0.165 0 0);
-  --card-foreground: oklch(0.93 0 0);
-  --popover: oklch(0.185 0 0);
-  --popover-foreground: oklch(0.93 0 0);
-  --primary: oklch(0.96 0 0);
-  --primary-foreground: oklch(0.13 0 0);
-  --secondary: oklch(0.22 0 0);
-  --secondary-foreground: oklch(0.92 0 0);
-  --muted: oklch(0.22 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.24 0 0);
-  --accent-foreground: oklch(0.96 0 0);
-  --border: oklch(1 0 0 / 14%);
-  --input: oklch(1 0 0 / 22%);
-  --control: oklch(1 0 0 / 45%);
-  --ring: oklch(0.96 0 0);
-  --chart-1: oklch(0.85 0 0);
-  --chart-2: oklch(0.72 0 0);
-  --chart-5: oklch(0.6 0 0);
-  --sidebar: oklch(0.11 0 0);
-  --sidebar-foreground: oklch(0.88 0 0);
-  --sidebar-primary: oklch(0.96 0 0);
-  --sidebar-primary-foreground: oklch(0.13 0 0);
-  --sidebar-accent: oklch(1 0 0 / 10%);
-  --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(1 0 0 / 11%);
-  --sidebar-ring: oklch(0.96 0 0);
-}
-
-@layer base {
-  .terminal body,
-  .terminal button,
-  .terminal input,
-  .terminal textarea,
-  .terminal [data-slot] {
-    font-family: var(--font-term);
-  }
-  /* 고정폭 글꼴은 이미 넓어서 좁힌 자간이 글자를 붙여 버린다 */
-  .terminal [class*="tracking-"] {
-    letter-spacing: 0;
-  }
-  /* 페이지 제목은 프롬프트처럼: 앞에 >, 뒤에 깜빡이는 커서 */
-  .terminal main h1::before {
-    content: "> ";
-    color: var(--primary);
-  }
-  .terminal main h1::after {
-    content: "";
-    display: inline-block;
-    width: 0.5em;
-    height: 0.95em;
-    margin-left: 0.25em;
-    vertical-align: -0.08em;
-    background: var(--primary);
-    animation: term-blink 1.1s steps(1) infinite;
-  }
-  .terminal ::selection {
-    background: color-mix(in oklch, var(--primary) 35%, transparent);
-  }
-}
-
-@keyframes term-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-/* 터미널 모양에서는 글꼴과 모서리가 한 가지다. 층(@layer) 밖에 두어 컴포넌트에 적힌 유틸리티 클래스보다 앞선다.
- * - 대화상자·시트 제목(font-heading), 단축키·값 표시(font-sans), 경로(font-mono)도 같은 고정폭 글꼴로.
- * - 알약·원 모양(필터 칩, 탭, 배지, 막대, 스위치, 상태 아이콘 칸)도 각지게.
- */
-.terminal .font-heading,
-.terminal .font-sans,
-.terminal .font-mono {
-  font-family: var(--font-term);
-}
-.terminal .rounded-full,
-.terminal .rounded-4xl {
-  border-radius: var(--radius);
-}
-.terminal ::-webkit-scrollbar-thumb {
-  border-radius: 0;
+  --background: var(--rk-page);
+  --foreground: var(--rk-text);
+  --card: var(--rk-card);
+  --card-foreground: var(--rk-text);
+  /* 떠 있는 면(메뉴·팝오버·알림)은 표시기 면. 대화창은 아래에서 카드 면으로 */
+  --popover: var(--rk-hud);
+  --popover-foreground: var(--rk-text);
+  /* 글자·아이콘·스위치의 파랑. 흰 글자가 올라가는 채움은 한 단계 깊은 --rk-accent-fill (button.tsx) */
+  --primary: var(--rk-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--rk-control);
+  --secondary-foreground: var(--rk-text);
+  --muted: var(--rk-control);
+  --muted-foreground: var(--rk-soft);
+  --accent: var(--rk-hover);
+  --accent-foreground: var(--rk-head);
+  --destructive: var(--rk-alarm-text);
+  --border: var(--rk-line);
+  --input: var(--rk-control-line);
+  /* 체크박스 테두리·꺼진 스위치 */
+  --control: var(--rk-control-line);
+  /* 상태 색: 성공은 파랑, 주의는 살구색, 실패는 빨강 */
+  --warning: var(--rk-note);
+  --success: var(--rk-accent);
+  --ring: var(--rk-ring);
+  /* 막대·아이콘 칸: 파랑, 보통(회청), 주의, 실패, 흐림 */
+  --chart-1: var(--rk-accent);
+  --chart-2: var(--rk-plain);
+  --chart-3: var(--rk-note);
+  --chart-4: var(--rk-alarm);
+  --chart-5: var(--rk-faint);
+  --radius: var(--rk-r);
+  --sidebar: var(--rk-side);
+  --sidebar-foreground: var(--rk-soft);
+  --sidebar-primary: var(--rk-accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--rk-chosen);
+  --sidebar-accent-foreground: var(--rk-head);
+  --sidebar-border: var(--rk-line-side);
+  --sidebar-ring: var(--rk-ring);
 }
 
 @layer base {
@@ -265,6 +108,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-weight: var(--rk-w);
   }
   html {
     @apply font-sans;
@@ -298,13 +142,20 @@
     height: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.5 0.01 260 / 35%);
+    background: var(--rk-scroll);
     border: 3px solid transparent;
     border-radius: 999px;
     background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: oklch(0.6 0.01 260 / 55%);
+    background-color: var(--rk-soft);
+  }
+  ::selection {
+    background: rgb(75 125 254 / 28%);
+  }
+  input,
+  textarea {
+    caret-color: #4e7dff;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -349,14 +200,22 @@
     animation-delay: calc(var(--i, 0) * 22ms + 160ms);
   }
 
-  /* 눌렀을 때의 작은 반응 */
+  /* 누름 (브랜드 V5.1): 0.97배로 160ms에 줄고 200ms에 돌아온다 */
   [data-slot="button"] {
     transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-    transition-duration: 160ms;
-    transition-timing-function: var(--ease-out-quint);
+    transition-duration: 150ms, 150ms, 150ms, 150ms, 150ms, 200ms;
+    transition-timing-function: ease-out, ease-out, ease-out, ease-out, ease-out, var(--rk-ease-out);
   }
   [data-slot="button"]:active:not(:disabled) {
     transform: scale(0.97);
+    transition-duration: 150ms, 150ms, 150ms, 150ms, 150ms, 160ms;
+  }
+  /* 스위치: 누르는 동안 손잡이가 4px 늘어나고, 켜져 있으면 왼쪽으로 늘어난다 */
+  [data-slot="switch"]:active:not(:disabled) [data-slot="switch-thumb"] {
+    width: 18px;
+  }
+  [data-slot="switch"][data-state="checked"]:active:not(:disabled) [data-slot="switch-thumb"] {
+    transform: translateX(13.5px);
   }
 }
 
@@ -437,60 +296,91 @@
 }
 
 /* ── 떠 있는 면 ───────────────────────────────────────────
- * 투명·흐림 효과는 쓰지 않는다 (2026-10-20 사용자 결정: 고정 헤더 뒤로 목록이 비쳐 겹쳐 보였다).
- * 대화상자·메뉴·알림은 shadcn처럼 불투명한 면 + 1px 테두리 + 옅은 그림자로 띄운다.
+ * 흐림 없음(2026-10-20 사용자 결정, 브랜드 V5도 같음). 메뉴·팝오버·알림은 표시기 면(--rk-hud) + 1px 선 + 둘레 그림자,
+ * 대화창·시트는 카드 면 + 창 그림자. 떠 있는 것은 안쪽 윗변에 1px 흰 5%가 높이다(브랜드 V5.1 "빛이 높이").
  */
 :root {
-  /* 예전 유리 효과 변수 이름을 쓰는 곳이 남아 있어도 테두리로 보이게 */
   --glass-edge: var(--border);
-  --shadow-floating: 0 1px 2px oklch(0 0 0 / 5%), 0 8px 24px -6px oklch(0 0 0 / 14%);
-}
-.dark {
-  --shadow-floating: 0 1px 2px oklch(0 0 0 / 40%), 0 12px 32px -8px oklch(0 0 0 / 55%);
+  --shadow-floating: 0 0 0 1px var(--rk-hud-line), var(--rk-hud-shadow);
 }
 
-/* 레이어 안에 두어, 컴포넌트에 적은 클래스(반경·그림자)가 필요하면 이 기본값을 이길 수 있다 */
 @layer components {
-  [data-slot="dialog-content"],
-  [data-slot="alert-dialog-content"],
-  [data-slot="sheet-content"],
   [data-slot="dropdown-menu-content"],
   [data-slot="dropdown-menu-sub-content"],
   [data-slot="context-menu-content"],
   [data-slot="context-menu-sub-content"],
   [data-slot="popover-content"],
   [data-slot="select-content"] {
-    background-color: var(--popover);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-floating);
-  }
-  /* 모서리는 --radius에서 계산한다: 일반 모양은 1rem·0.75rem, 터미널 모양은 다른 면처럼 거의 각지게 */
-  [data-slot="dialog-content"],
-  [data-slot="alert-dialog-content"] {
-    border-radius: calc(var(--radius) * 1.6);
+    background-color: var(--rk-hud);
+    border: 0;
+    border-radius: var(--rk-r-card);
+    box-shadow:
+      inset 0 1px 0 var(--rk-lift),
+      0 0 0 1px var(--rk-hud-line),
+      var(--rk-hud-shadow);
   }
   [data-slot="dropdown-menu-content"],
   [data-slot="context-menu-content"] {
-    border-radius: calc(var(--radius) * 1.2);
-    padding: 0.25rem;
+    padding: 6px;
   }
-  /* 대화상자 뒤를 어둡게: 밝은 테마는 옅게, 어두운 테마는 진하게 (macOS처럼) */
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="sheet-content"] {
+    background-color: var(--rk-card);
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 var(--rk-lift),
+      var(--rk-window-shadow);
+  }
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"] {
+    border-radius: var(--rk-r-win);
+  }
+  /* 대화상자 뒤를 어둡게 (흐림 없이) */
   [data-slot="dialog-overlay"],
   [data-slot="alert-dialog-overlay"],
   [data-slot="sheet-overlay"] {
-    background-color: oklch(0 0 0 / 18%);
-  }
-  .dark [data-slot="dialog-overlay"],
-  .dark [data-slot="alert-dialog-overlay"],
-  .dark [data-slot="sheet-overlay"] {
-    background-color: oklch(0 0 0 / 50%);
+    background-color: var(--rk-backdrop);
   }
 }
+/* 토스트 = 기록 줄(표시기): 짙은 면, 모서리 10, 왼쪽 안의 짧은 색 막대가 뜻이다 */
 [data-sonner-toast][data-styled="true"] {
-  background-color: var(--popover) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: calc(var(--radius) * 1.4) !important;
-  box-shadow: var(--shadow-floating) !important;
+  --tick: var(--rk-plain);
+  background-color: var(--rk-hud) !important;
+  border: 0 !important;
+  border-radius: var(--rk-r-toast) !important;
+  box-shadow:
+    inset 0 1px 0 var(--rk-lift),
+    0 0 0 1px var(--rk-hud-line),
+    var(--rk-hud-shadow) !important;
+  padding-left: 18px !important;
+  color: var(--rk-text) !important;
+}
+[data-sonner-toast][data-styled="true"]::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 28%;
+  width: 2px;
+  height: 44%;
+  border-radius: 1px;
+  background: var(--tick);
+}
+[data-sonner-toast][data-type="success"],
+[data-sonner-toast][data-type="loading"] {
+  --tick: var(--rk-accent);
+}
+[data-sonner-toast][data-type="warning"] {
+  --tick: var(--rk-note);
+}
+[data-sonner-toast][data-type="error"] {
+  --tick: var(--rk-alarm);
+}
+[data-sonner-toast][data-styled="true"] [data-icon] {
+  color: var(--tick);
+}
+[data-sonner-toast][data-styled="true"] [data-description] {
+  color: var(--rk-soft) !important;
 }
 /* 페이지를 옮길 때 제목으로 옮긴 포커스는 테두리로 보이지 않게 (스크린리더는 제목을 읽는다) */
 h1[tabindex="-1"]:focus {
@@ -554,4 +444,189 @@ h1[tabindex="-1"]:focus {
     forced-color-adjust: none;
     background: GrayText !important;
   }
+}
+
+/* ── 브랜드 V5 부품 ───────────────────────────────────────
+ * 값은 src/brand-kit/robin-ui.css의 --rk-*. 새 색·모서리를 짓지 않는다.
+ */
+/* 쪽 안의 안내 상자 = 표시기: 짙은 면 + 1px 선 + 왼쪽의 짧은 색 막대 (data-tone: on·note·alarm, 없으면 보통) */
+.v5-note {
+  --tick: var(--rk-plain);
+  position: relative;
+  padding: 11px 12px 11px 18px;
+  border-radius: var(--rk-r-toast);
+  background: var(--rk-hud);
+  box-shadow:
+    inset 0 1px 0 var(--rk-lift),
+    0 0 0 1px var(--rk-hud-line);
+}
+.v5-note::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 14px;
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--tick);
+}
+.v5-note[data-tone="on"] {
+  --tick: var(--rk-accent);
+}
+.v5-note[data-tone="note"] {
+  --tick: var(--rk-note);
+}
+.v5-note[data-tone="alarm"] {
+  --tick: var(--rk-alarm);
+}
+[data-theme="light"] .v5-note {
+  background: var(--rk-card);
+}
+
+/* 아이콘 타일: 컨트롤 면 + 1px 선, 흰 선 그림 (모서리 7) */
+.v5-tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rk-r);
+  background: var(--rk-tile);
+  box-shadow: inset 0 0 0 1px var(--rk-control-line);
+  color: var(--rk-head);
+}
+/* 키트의 --rk-tile은 어두운 값뿐이라 밝은 테마에서는 컨트롤 면으로 (문법만 거울로) */
+[data-theme="light"] .v5-tile {
+  background: var(--rk-control);
+}
+/* 카드: 카드 면 + 1px 선, 윗선만 한 단계 밝게 (빛이 높이) */
+.v5-card,
+.rounded-2xl.border.bg-card,
+.rounded-xl.border.bg-card {
+  border-radius: var(--rk-r-card);
+  background-color: var(--rk-card);
+  border-color: transparent;
+  box-shadow:
+    inset 0 0 0 1px var(--rk-line),
+    inset 0 1px 0 var(--rk-card-top);
+}
+
+/* 입력 칸: 컨트롤 면 + 1px 선, 초점은 선이 파랑으로 */
+[data-slot="input"] {
+  background-color: var(--rk-control);
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--rk-control-line);
+}
+[data-slot="input"]:hover {
+  box-shadow: inset 0 0 0 1px var(--rk-control-line-hover);
+}
+[data-slot="input"]::placeholder {
+  color: var(--rk-faint);
+}
+
+/* 체크박스: 16, 모서리 4, 켜면 파란 채움 */
+[data-slot="checkbox"] {
+  border-radius: 4px;
+  border-color: transparent;
+  background-color: var(--rk-control);
+  box-shadow: inset 0 0 0 1px var(--rk-control-line);
+}
+[data-slot="checkbox"][data-state="checked"],
+[data-slot="checkbox"][data-state="indeterminate"] {
+  background-color: var(--rk-accent-fill);
+  box-shadow: none;
+  color: #fff;
+}
+
+/* 툴팁도 표시기 */
+[data-slot="tooltip-content"] {
+  background-color: var(--rk-hud) !important;
+  color: var(--rk-head) !important;
+  border-radius: var(--rk-r-chip);
+  box-shadow:
+    inset 0 1px 0 var(--rk-lift),
+    0 0 0 1px var(--rk-hud-line),
+    var(--rk-hud-shadow);
+}
+
+/* 메뉴 줄: 모서리 7, 가리킴 띠는 90ms에 켜지고 160ms에 꺼진다 */
+[data-slot="dropdown-menu-item"],
+[data-slot="context-menu-item"] {
+  border-radius: var(--rk-r);
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="context-menu-item"]:hover,
+[data-slot="dropdown-menu-item"][data-highlighted],
+[data-slot="context-menu-item"][data-highlighted] {
+  background-color: var(--rk-hover);
+  color: var(--rk-head);
+  transition-duration: 90ms;
+}
+
+/* 열림 (V5.1): 메뉴·팝오버는 0.97→1배 + 투명도 150ms, 대화창은 200ms. 나갈 땐 투명도만 */
+[data-slot="dropdown-menu-content"][data-state="open"],
+[data-slot="context-menu-content"][data-state="open"],
+[data-slot="popover-content"][data-state="open"],
+[data-slot="select-content"][data-state="open"] {
+  animation: v5-pop 150ms var(--rk-ease-out) both;
+}
+[data-slot="dialog-content"][data-state="open"],
+[data-slot="alert-dialog-content"][data-state="open"] {
+  animation: v5-pop-center 200ms var(--rk-ease-out) both;
+}
+[data-slot="dropdown-menu-content"][data-state="closed"],
+[data-slot="context-menu-content"][data-state="closed"],
+[data-slot="popover-content"][data-state="closed"],
+[data-slot="select-content"][data-state="closed"],
+[data-slot="dialog-content"][data-state="closed"],
+[data-slot="alert-dialog-content"][data-state="closed"] {
+  animation: v5-fade-out 100ms ease-out both;
+}
+@keyframes v5-pop {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+/* 대화창은 가운데 놓으려고 translate를 쓰므로 scale 속성만 움직인다 */
+@keyframes v5-pop-center {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+@keyframes v5-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="dropdown-menu-content"],
+  [data-slot="context-menu-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"] {
+    animation-name: v5-fade-in !important;
+  }
+}
+@keyframes v5-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 표 머리: 흐린 글자 */
+[data-slot="table-head"] {
+  color: var(--rk-faint);
+  font-weight: var(--rk-w-strong);
+}
+
+/* 열릴 때 초점을 받는 창 자체에는 테를 그리지 않는다 (안의 컨트롤이 각자 테를 그린다) */
+[data-slot="sheet-content"]:focus-visible,
+[data-slot="dialog-content"]:focus-visible,
+[data-slot="alert-dialog-content"]:focus-visible {
+  outline: none !important;
 }

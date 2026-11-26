@@ -277,7 +277,7 @@ export function BatchUninstallDialog({
               <Button variant="outline" className="ml-auto" onClick={close} data-autofocus>
                 취소
               </Button>
-              <Button variant="destructive" onClick={run} disabled={runnable.length === 0}>
+              <Button variant="destructiveFill" onClick={run} disabled={runnable.length === 0}>
                 <Trash2 />
                 {runnable.length}개 제거 시작
               </Button>

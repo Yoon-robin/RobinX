@@ -64,7 +64,7 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
           // 옮겨 가는 동안 보이지 않다가 도착해서야 아래에서 차올랐다. 그래서 버튼 밖(항목 칸)에 둔다.
           <motion.span
             layoutId="sidebar-active"
-            className="absolute inset-0 rounded-lg bg-sidebar-accent"
+            className="absolute inset-0 rounded-lg bg-rk-chosen"
             transition={{ type: "spring", duration: 0.22, bounce: 0 }}
           />
         )}
@@ -74,10 +74,10 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
           aria-keyshortcuts={shortcut(item.page).replace("Ctrl", "Control")}
           onClick={() => onNavigate(item.page)}
           tooltip={`${item.label} (${shortcut(item.page)})`}
-          // 마우스를 올린 항목은 선택된 항목보다 옅게
-          className="relative h-9 rounded-lg hover:bg-sidebar-accent/45 data-[active=true]:bg-transparent data-[active=true]:font-semibold data-[active=true]:hover:bg-transparent"
+          // 브랜드 V5 옆 줄: 높이 33, 가리킨 줄은 옅은 띠, 고른 줄은 회색 면 + 흰 글자 + 파란 아이콘
+          className="relative mb-1.5 h-[33px] gap-[11px] rounded-lg px-3 text-rk-soft transition-[background-color,color] duration-[160ms] ease-out hover:bg-rk-hover hover:text-rk-text hover:duration-[90ms] active:scale-[0.99] data-[active=true]:bg-transparent data-[active=true]:font-[550] data-[active=true]:text-rk-head data-[active=true]:hover:bg-transparent [&_svg]:size-[15px]!"
         >
-          <item.icon className={page === item.page ? "text-sidebar-primary" : undefined} />
+          <item.icon className={page === item.page ? "text-rk-accent" : "text-rk-faint"} />
           <span>{item.label}</span>
         </SidebarMenuButton>
         {item.page === "leftovers" && unscanned > 0 && (
@@ -98,7 +98,7 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
     ))
 
   return (
-    // 창 가장자리에서 떨어져 떠 있는 유리 사이드바 (macOS 스타일)
+    // 브랜드 V5: 옆 기둥은 창에 붙는다 (끝까지, 오른쪽 1px 선)
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader data-tauri-drag-region className="h-[4.5rem] justify-center">
         {/* 로고와 글자 위에서도 창이 끌리도록 마우스를 아래 끌기 영역으로 넘긴다. 접히면 로고를 아이콘과 같은 선에 둔다. */}
@@ -106,10 +106,10 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
           data-tauri-drag-region
           className="flex items-center gap-2.5 px-1 group-data-[collapsible=icon]:px-0 [&>*]:pointer-events-none"
         >
-          <Logo className="size-8 shrink-0" />
+          <Logo className="size-[30px] shrink-0" />
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold tracking-tight">RobinX</span>
-            <span className="text-xs text-muted-foreground">{version ? `v${version} · ` : ""}베타</span>
+            <span className="text-base leading-[19px] font-[650] text-rk-head">RobinX</span>
+            <span className="text-[10px] text-rk-faint">{version ? `v${version} · ` : ""}베타</span>
           </div>
         </div>
       </SidebarHeader>
@@ -156,21 +156,22 @@ export function AppSidebar({ page, onNavigate }: { page: Page; onNavigate: (page
               <button
                 type="button"
                 onClick={openUpdate}
-                className="flex items-start gap-2.5 rounded-xl bg-primary/10 p-3 text-left border transition-colors hover:bg-primary/15"
+                data-tone="on"
+                className="v5-note flex items-start gap-2.5 text-left transition-colors hover:bg-rk-hover"
               >
-                <ArrowDownCircle className="mt-0.5 size-4 shrink-0 text-primary" />
+                <ArrowDownCircle className="mt-0.5 size-4 shrink-0 text-rk-accent" />
                 <span className="text-xs leading-relaxed">
-                  <span className="block font-medium">새 버전이 나왔어요 ({available})</span>
+                  <span className="block font-[550] text-rk-head">새 버전이 나왔어요 ({available})</span>
                   <span className="block text-muted-foreground">
                     눌러서 설치할 수 있어요. 설정과 백업은 그대로예요.
                   </span>
                 </span>
               </button>
             )}
-            <div className="flex items-start gap-2.5 rounded-xl bg-sidebar-accent/60 p-3 border">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+            <div className="v5-note flex items-start gap-2.5">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-rk-soft" />
               <div className="text-xs leading-relaxed">
-                <p className="font-medium">남은 흔적 정리는 되돌릴 수 있어요</p>
+                <p className="font-[550] text-rk-head">남은 흔적 정리는 되돌릴 수 있어요</p>
                 <p className="text-muted-foreground">
                   백업해 두고 지워요. 프로그램 제거와 저장공간 정리는 되돌릴 수 없어요.
                 </p>

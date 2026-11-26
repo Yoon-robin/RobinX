@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 import { api, scanApi, settingsApi, startupApi, storeApi, type BootInfo } from "@/lib/api"
 import { formatBytes } from "@/lib/format"
@@ -12,15 +12,6 @@ import {
   type CheckResult,
 } from "@/features/updates/updates"
 
-/** index.html의 #boot와 같은 로고 (한 글자를 바꾸면 두 곳 다 바꾼다) */
-const LOGO = [
-  "████████              ██        ██            ██      ██",
-  "██      ██    ████    ██████        ██████      ██  ██",
-  "████████    ██    ██  ██    ██  ██  ██    ██      ██",
-  "██    ██    ██    ██  ██    ██  ██  ██    ██    ██  ██",
-  "██      ██    ████    ██████    ██  ██    ██  ██      ██",
-]
-const COMMAND = "robinx"
 const VERSION = import.meta.env.VITE_APP_VERSION
 
 /** 무언가 멈춰 이보다 오래 걸리면 시작 화면을 걷고 목록 화면(스켈레톤)으로 넘어간다 */
@@ -29,17 +20,12 @@ const MAX_MS = 20000
 const UPDATE_WAIT_MS = 8000
 /** 점검 한 줄을 적어도 이만큼은 보여 준다 (빨리 끝나도 돌아가는 표시가 보이게) */
 const CHECK_MIN_MS = 260
-/** 진행 막대 칸 수 */
-const BAR = 24
-
 type Tone = "ok" | "run" | "new" | "warn" | "dim"
 type CheckLine = { tag: string; tone: Tone; text: string }
 type Line =
   | { kind: "head"; text: string }
-  | { kind: "rule"; width: number }
   | { kind: "kv"; key: string; value: string; shown: number }
   | { kind: "blank" }
-  | { kind: "prompt"; prompt: string; command: string }
   | ({ kind: "check" } & CheckLine)
   /** y/n 질문. 답하기 전에는 `answer`가 빈 문자열 */
   | { kind: "ask"; text: string; answer: string }
@@ -96,42 +82,37 @@ function useBootOpened() {
   return opened
 }
 
-/** 업데이트 받기 막대. 전체 크기를 모르면 받은 크기만 */
-function DownloadBar({ done, total }: { done: number; total: number | null }) {
-  const ratio = total ? Math.min(1, done / total) : 0
-  const filled = Math.round(ratio * BAR)
+/** 상태 칩의 낱말과 뜻(막대 색). 상태는 색만이 아니라 낱말로도 말한다 */
+const CHIP: Record<string, { word: string; tone?: "on" | "note" | "alarm" }> = {
+  run: { word: "하는 중", tone: "on" },
+  OK: { word: "확인", tone: "on" },
+  NEW: { word: "새 버전", tone: "note" },
+  NOTE: { word: "알림", tone: "note" },
+  FAIL: { word: "실패", tone: "alarm" },
+  SKIP: { word: "건너뜀" },
+  "..": { word: "늦음" },
+  // 업데이트 묻기에 고른 답
+  y: { word: "업데이트", tone: "on" },
+  n: { word: "나중에" },
+}
+
+function StatusChip({ tag }: { tag: string }) {
+  const chip = CHIP[tag] ?? { word: tag }
   return (
-    // 위 줄의 글자와 같은 칸에서 시작한다 ([ 태그 ] 다음)
-    <span className="tty-dim pl-[9ch]">
-      [<span className="tty-bar">{"█".repeat(filled)}</span>
-      {"░".repeat(BAR - filled)}]{" "}
-      {total ? `${Math.round(ratio * 100)}% · ${formatBytes(done)} / ${formatBytes(total)}` : formatBytes(done)}
+    <span className="tty-chip" data-tone={chip.tone}>
+      {tag === "run" && <span className="tty-spin" aria-hidden />}
+      {chip.word}
     </span>
   )
 }
 
-function Spinner() {
-  const frames = "|/-\\"
-  const [i, setI] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setI((n) => (n + 1) % frames.length), 90)
-    return () => clearInterval(t)
-  }, [])
-  return <>{frames[i]}</>
-}
-
-// 꺼지는 브라운관처럼: 세로로 접혀 밝은 한 줄이 됐다가 가로로 사라진다
-const CRT: Variants = {
-  exit: {
-    scaleY: [1, 0.006, 0.006],
-    scaleX: [1, 1, 0],
-    opacity: [1, 1, 0],
-    transition: { duration: 0.42, times: [0, 0.55, 1], ease: [0.6, 0, 0.4, 1] },
-  },
-}
-const FLASH: Variants = {
-  // 다 접힐 무렵에만 밝아진다 (일찍 밝아지면 화면 전체가 하얗게 번쩍인다)
-  exit: { opacity: [0, 0.2, 1, 1], transition: { duration: 0.42, times: [0, 0.4, 0.55, 1] } },
+/** 막대 (두께 3). 비율을 모르면 빈 막대 */
+function Bar({ ratio }: { ratio: number }) {
+  return (
+    <span className="tty-bar">
+      <i style={{ transform: `scaleX(${Math.min(1, Math.max(0, ratio))})` }} />
+    </span>
+  )
 }
 
 /** 늦게 오면 기다리지 않고 `null`(뒤에서 계속 읽는다), 실패하면 `undefined` */
@@ -368,11 +349,10 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
       // 1. 이 PC 정보: 값을 빠르게 쳐 내려간다
       const rows = info ? systemLines(info) : []
       if (rows.length > 0) {
-        // 터미널의 시스템 정보 도구처럼 사용자@PC 이름과 밑줄로 시작한다
+        // 사용자@PC 이름이 카드의 이름표다
         const who = info?.user ? (info.computer ? `${info.user}@${info.computer}` : info.user) : null
         if (who) {
           push({ kind: "head", text: who })
-          push({ kind: "rule", width: who.length })
           await wait(140)
         }
         for (const [key, value] of rows) {
@@ -389,16 +369,6 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
         push({ kind: "blank" })
         await wait(180)
       }
-
-      // 2. 프롬프트에 robinx를 친다
-      push({ kind: "prompt", prompt: `${info?.home ?? "C:"}>`, command: "" })
-      await wait(360)
-      for (let i = 1; i <= COMMAND.length && alive; i++) {
-        const command = COMMAND.slice(0, i)
-        updateLast((l) => (l.kind === "prompt" ? { ...l, command } : l))
-        await wait(55 + Math.random() * 45)
-      }
-      await wait(240)
 
       // 3. 점검
       if (alive) setProgress({ done: 0, total: checks.length })
@@ -436,14 +406,11 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
     onDone?.()
   }, [visible, onDone])
 
-  const cursor = (
-    <>
-      {" "}
-      <span className="tty-cursor" />
-    </>
-  )
-  const last = lines.length - 1
-  const filled = progress ? Math.round((progress.done / progress.total) * BAR) : 0
+  // 줄을 카드로 묶는다: 이름표(head) 다음의 PC 정보 줄, 그다음 점검 줄
+  const head = lines.find((l) => l.kind === "head")
+  const facts = lines.filter((l) => l.kind === "kv")
+  const steps = lines.filter((l) => l.kind === "check" || l.kind === "ask" || l.kind === "download")
+  const ratio = progress ? progress.done / progress.total : 0
   return (
     <AnimatePresence>
       {visible && (
@@ -453,88 +420,90 @@ export function StartupSplash({ onDone }: { onDone?: () => void }) {
           aria-live="polite"
           aria-label="RobinX를 준비하는 중이에요"
           className="tty"
-          variants={reduce ? { exit: { opacity: 0, transition: { duration: 0 } } } : CRT}
-          exit="exit"
+          // 나갈 때는 투명도만 (브랜드 V5.1)
+          exit={{ opacity: 0, transition: { duration: reduce ? 0 : 0.2, ease: "easeOut" } }}
         >
           {/* 시작 화면에서도 창을 옮기고 닫을 수 있게. 화면은 늘 어두우므로 단추도 어두운 테마 색으로 */}
           <div data-tauri-drag-region className="dark absolute inset-x-0 top-0 z-10 flex h-12 items-center justify-end">
             <WindowControls />
           </div>
           <div data-tauri-drag-region className="tty-body">
-            <pre className="tty-logo" aria-hidden="true">
-              {LOGO.map((row, i) => (
-                <span key={i}>{row}</span>
-              ))}
-            </pre>
-            <div className="tty-line tty-dim">RobinX {import.meta.env.VITE_APP_VERSION} · Windows x64</div>
-            {lines.length === 0 && <div className="tty-line">{cursor}</div>}
-            {lines.map((line, i) => (
-              <div key={i} className="tty-line">
-                {line.kind === "head" && <span className="tty-strong">{line.text}</span>}
-                {line.kind === "rule" && <span className="tty-dim">{"-".repeat(line.width)}</span>}
-                {line.kind === "kv" && (
-                  <>
-                    <span className="tty-key">{line.key}</span>
-                    {line.value.slice(0, line.shown)}
-                  </>
-                )}
-                {line.kind === "prompt" && (
-                  <>
-                    <span className="tty-prompt">{line.prompt}</span>
-                    {line.command}
-                  </>
-                )}
-                {line.kind === "check" && (
-                  <>
-                    <span className="tty-tag">
-                      [<b className={`tty-${line.tone}`}>{line.tag === "run" ? <Spinner /> : line.tag}</b>]
-                    </span>{" "}
-                    <span className={line.tone === "dim" ? "tty-dim" : undefined}>{line.text}</span>
-                  </>
-                )}
-                {line.kind === "ask" && (
-                  <>
-                    <span className="tty-tag">
-                      [<b className="tty-new">?</b>]
-                    </span>{" "}
-                    <span className="tty-strong">{line.text}</span>{" "}
-                    {line.answer ? (
-                      <span className="tty-dim">(y/n)</span>
-                    ) : (
-                      // 마우스로도 고를 수 있게
-                      <span className="tty-dim">
-                        (
-                        <button type="button" className="tty-key-button" onClick={() => answer(true)}>
-                          y
-                        </button>
-                        /
-                        <button type="button" className="tty-key-button" onClick={() => answer(false)}>
-                          n
-                        </button>
-                        )
-                      </span>
-                    )}{" "}
-                    {line.answer}
-                  </>
-                )}
-                {line.kind === "download" && <DownloadBar done={line.done} total={line.total} />}
-                {i === last && line.kind !== "blank" && line.kind !== "rule" && line.kind !== "download" && cursor}
+            <div className="tty-brand" aria-hidden="true">
+              <span className="tty-mark">R</span>
+              <span>
+                <b>RobinX</b>
+                <small>v{VERSION} · Windows x64</small>
+              </span>
+            </div>
+            {facts.length > 0 && (
+              <div className="tty-in">
+                {head?.kind === "head" && <p className="tty-label">{head.text}</p>}
+                <div className="tty-card">
+                  {facts.map(
+                    (line, i) =>
+                      line.kind === "kv" && (
+                        <div key={i} className="tty-row">
+                          <span className="tty-key">{line.key}</span>
+                          <span className="tty-text">{line.value.slice(0, line.shown)}</span>
+                        </div>
+                      ),
+                  )}
+                </div>
               </div>
-            ))}
+            )}
+            {steps.length > 0 && (
+              <div className="tty-in">
+                <p className="tty-label">점검</p>
+                <div className="tty-card">
+                  {steps.map((line, i) => (
+                    <div key={i} className="tty-row tty-in">
+                      {line.kind === "check" && (
+                        <>
+                          <span className={line.tone === "dim" ? "tty-text tty-dim" : "tty-text"}>{line.text}</span>
+                          <StatusChip tag={line.tag} />
+                        </>
+                      )}
+                      {line.kind === "ask" && (
+                        <>
+                          <span className="tty-text tty-strong">{line.text}</span>
+                          {line.answer ? (
+                            <StatusChip tag={line.answer} />
+                          ) : (
+                            <>
+                              <button type="button" className="tty-btn" onClick={() => answer(false)}>
+                                나중에<kbd>N</kbd>
+                              </button>
+                              <button type="button" className="tty-btn tty-btn--primary" onClick={() => answer(true)}>
+                                업데이트<kbd>Y</kbd>
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+                      {line.kind === "download" && (
+                        <>
+                          <Bar ratio={line.total ? line.done / line.total : 0} />
+                          <span className="tty-dim">
+                            {line.total
+                              ? `${Math.round(Math.min(1, line.done / line.total) * 100)}% · ${formatBytes(line.done)} / ${formatBytes(line.total)}`
+                              : formatBytes(line.done)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {progress && progress.done < progress.total && (
-              <div className="tty-line tty-dim">
-                [<span className="tty-bar">{"█".repeat(filled)}</span>
-                {"░".repeat(BAR - filled)}] {progress.done}/{progress.total}
+              <div className="tty-progress">
+                <Bar ratio={ratio} />
+                <span>
+                  {progress.done}/{progress.total}
+                </span>
               </div>
             )}
           </div>
-          {!reduce && (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-20 bg-white opacity-0"
-              variants={FLASH}
-            />
-          )}
         </motion.div>
       )}
     </AnimatePresence>

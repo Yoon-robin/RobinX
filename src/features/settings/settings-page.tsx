@@ -11,9 +11,7 @@ import {
   Loader2,
   Monitor,
   Moon,
-  LayoutGrid,
   Palette,
-  SquareTerminal,
   Sun,
   Trash2,
   TriangleAlert,
@@ -53,7 +51,7 @@ function Section({
   return (
     <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
       <div className="flex items-start gap-3 border-b px-5 py-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+        <div className="v5-tile size-9">
           <Icon className="size-4.5" />
         </div>
         <div className="min-w-0">
@@ -144,7 +142,7 @@ function Choice<T extends string | number | null>({
 
 export function SettingsPage() {
   const queryClient = useQueryClient()
-  const { theme, setTheme, look, setLook } = useTheme()
+  const { theme, setTheme } = useTheme()
   const settings = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get })
   const usage = useQuery({ queryKey: ["backup-usage"], queryFn: settingsApi.backupUsage })
   const [pendingRetention, setPendingRetention] = useState<number | null | undefined>(undefined)
@@ -232,11 +230,7 @@ export function SettingsPage() {
       </FadeUp>
 
       <FadeUp>
-        <Section
-          icon={Palette}
-          title="화면"
-          description="밝기 테마와 모양을 고르세요. 테마에서 시스템을 고르면 Windows 설정을 따라가요."
-        >
+        <Section icon={Palette} title="화면" description="시스템을 고르면 Windows 설정을 따라가요.">
           <div className="grid gap-4">
             <div>
               <p className="mb-2 text-sm font-medium">테마</p>
@@ -248,18 +242,6 @@ export function SettingsPage() {
                   { value: "dark", label: "어둡게", icon: Moon },
                   { value: "light", label: "밝게", icon: Sun },
                   { value: "system", label: "시스템", icon: Monitor },
-                ]}
-              />
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium">모양</p>
-              <Choice
-                label="모양"
-                value={look}
-                onChange={setLook}
-                options={[
-                  { value: "default", label: "일반", icon: LayoutGrid },
-                  { value: "terminal", label: "터미널", icon: SquareTerminal },
                 ]}
               />
             </div>
@@ -437,7 +419,7 @@ export function SettingsPage() {
             <Button variant="outline" onClick={() => setConfirmPrune(false)} disabled={busy}>
               취소
             </Button>
-            <Button variant="destructive" onClick={prune} disabled={busy}>
+            <Button variant="destructiveFill" onClick={prune} disabled={busy}>
               {busy ? <Loader2 className="animate-spin" /> : <Trash2 />}
               영구 삭제
             </Button>

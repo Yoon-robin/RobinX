@@ -9,25 +9,17 @@ import { EASE_OUT_QUINT } from "@/components/motion"
 
 type Theme = "dark" | "light" | "system"
 type Resolved = "dark" | "light"
-/** 화면 모양: 기본 또는 터미널(고정폭 글꼴, 각진 모서리, 흑백). 밝기 테마와 따로 고른다.
- * 처음에는 터미널이다. 사용자가 "일반"을 고르면 그 선택을 저장해 그대로 둔다. */
-export type Look = "default" | "terminal"
 
 const STORAGE_KEY = "robin.theme"
-const LOOK_KEY = "robin.look"
 
 const ThemeContext = createContext<{
   theme: Theme
   resolvedTheme: Resolved
   setTheme: (theme: Theme) => void
-  look: Look
-  setLook: (look: Look) => void
 }>({
   theme: "dark",
   resolvedTheme: "dark",
   setTheme: () => {},
-  look: "terminal",
-  setLook: () => {},
 })
 
 export const useTheme = () => useContext(ThemeContext)
@@ -41,23 +33,14 @@ function loadTheme(): Theme {
   }
 }
 
-function loadLook(): Look {
-  try {
-    return localStorage.getItem(LOOK_KEY) === "default" ? "default" : "terminal"
-  } catch {
-    return "terminal"
-  }
-}
-
 function systemTheme(): Resolved {
   return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
 }
 
-/** 다크/라이트 테마 상태. html의 class와 color-scheme을 맞추고 선택을 저장한다. */
+/** 다크/라이트 테마 상태. html의 class·data-theme(브랜드 키트 --rk-* 값이 이걸 본다)·color-scheme을 맞추고 선택을 저장한다. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const [system, setSystem] = useState<Resolved>(systemTheme)
-  const [look, setLookState] = useState<Look>(loadLook)
   const resolvedTheme = theme === "system" ? system : theme
 
   useEffect(() => {
@@ -78,12 +61,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement
     root.classList.toggle("dark", resolvedTheme === "dark")
     root.classList.toggle("light", resolvedTheme === "light")
+    root.dataset.theme = resolvedTheme
     root.style.colorScheme = resolvedTheme
   }, [resolvedTheme])
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("terminal", look === "terminal")
-  }, [look])
 
   const value = useMemo(
     () => ({
@@ -97,17 +77,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           // 저장이 막혀 있어도 이번 실행 동안은 테마가 바뀐다.
         }
       },
-      look,
-      setLook: (next: Look) => {
-        setLookState(next)
-        try {
-          localStorage.setItem(LOOK_KEY, next)
-        } catch {
-          // 저장이 막혀 있어도 이번 실행 동안은 모양이 바뀐다.
-        }
-      },
     }),
-    [theme, resolvedTheme, look],
+    [theme, resolvedTheme],
   )
 
   return (
@@ -147,6 +118,7 @@ export function ThemeToggle() {
       // 뷰 전환 캡처 전에 DOM이 바뀌어 있어야 하므로 class를 바로 바꾼다.
       document.documentElement.classList.toggle("dark", next === "dark")
       document.documentElement.classList.toggle("light", next === "light")
+      document.documentElement.dataset.theme = next
       setTheme(next)
     }
 
