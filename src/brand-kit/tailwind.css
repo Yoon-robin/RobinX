@@ -46,6 +46,8 @@
   --color-rk-tile: var(--rk-tile);
   --color-rk-mark: var(--rk-mark);
   --color-rk-scroll: var(--rk-scroll);
+  --color-rk-lift: var(--rk-lift);
+  --color-rk-card-top: var(--rk-card-top);
   --radius-rk-chip: var(--rk-r-chip);
   --radius-rk-control: var(--rk-r);
   --radius-rk-toast: var(--rk-r-toast);

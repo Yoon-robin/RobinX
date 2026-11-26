@@ -459,7 +459,7 @@ a.rk-row > .rk-ico:last-child, button.rk-row > .rk-ico:last-child { transition: 
 .rk-dialog[open] { animation: rk-pop 200ms var(--rk-ease-out) both; }
 .rk-dialog[open]::backdrop { animation: rk-fade-in 200ms ease-out both; }
 .rk-toast.is-leaving { animation: rk-toast-out 160ms var(--rk-ease-out) both; }
-@keyframes rk-pop { from { opacity: 0; transform: scale(0.97); } }
+@keyframes rk-pop { from { opacity: 0; scale: 0.97; } }  /* `scale`: a part centred with transform keeps its place */
 @keyframes rk-fade-in { from { opacity: 0; } }
 @keyframes rk-fade-out { to { opacity: 0; } }
 @keyframes rk-toast-out { to { opacity: 0; transform: translateY(6px); } }
