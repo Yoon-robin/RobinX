@@ -1,11 +1,11 @@
 {
-  "version": "0.1.17",
-  "publishedAt": "2026-11-17T02:10:06Z",
-  "pageUrl": "https://github.com/Yoon-robin/RobinX/releases/tag/v0.1.17",
-  "file": "RobinX_0.1.17_x64-setup.exe",
-  "url": "https://github.com/Yoon-robin/RobinX/releases/download/v0.1.17/RobinX_0.1.17_x64-setup.exe",
-  "size": 11465216,
-  "sha256": "be3151ad6d11ce483c84b32ac332a460e7bbcbc750de4f68296a63c071d8dc25",
+  "version": "0.1.18",
+  "publishedAt": "2026-11-26T07:42:44Z",
+  "pageUrl": "https://github.com/Yoon-robin/RobinX/releases/tag/v0.1.18",
+  "file": "RobinX_0.1.18_x64-setup.exe",
+  "url": "https://github.com/Yoon-robin/RobinX/releases/download/v0.1.18/RobinX_0.1.18_x64-setup.exe",
+  "size": 11491840,
+  "sha256": "e0af5623209e4915e7b6b2fc61af154ebe70e7844d67fe04cbd5c91c027df960",
   "ios": {
     "version": "0.2.1",
     "publishedAt": "2026-11-02T09:49:36Z",
