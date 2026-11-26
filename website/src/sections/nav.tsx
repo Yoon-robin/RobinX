@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { Download, Menu } from "lucide-react"
 
-import { LOGO, RELEASE, REPO_URL } from "@/lib/site"
+import { RELEASE, REPO_URL } from "@/lib/site"
+import { Logo } from "@/components/logo"
 import { GithubIcon } from "@/components/github-icon"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
@@ -24,7 +25,7 @@ function goTo(href: string) {
 }
 
 /**
- * 위에 붙는 막대: 왼쪽 이름과 링크, 오른쪽 GitHub 아이콘과 다운로드. 지금 보는 구역의 링크 앞에는 > 가 붙는다.
+ * 위에 붙는 막대: 왼쪽 이름과 링크, 오른쪽 GitHub 아이콘과 다운로드. 지금 보는 구역의 링크는 고른 줄 면(--rk-chosen).
  * 맨 위에서는 투명하고, 내려가면 불투명한 바탕과 아래 선을 깔아 글자 위에서도 읽힌다.
  */
 export function Nav() {
@@ -84,14 +85,14 @@ export function Nav() {
   return (
     <div
       className={
-        "fixed inset-x-0 top-0 z-30 border-b transition-colors duration-200 " + // taste-skill-ignore: 내려가면 본문과 막대를 나누는 선
+        "fixed inset-x-0 top-0 z-30 border-b transition-colors duration-200 " +
         // 내려가면 불투명하게: 반투명이면 뒤로 지나가는 글자가 메뉴 글자에 겹쳐 비쳤다
-        (scrolled ? "border-white/10 bg-background" : "border-transparent bg-background/0")
+        (scrolled ? "border-rk-line bg-rk-page" : "border-transparent bg-rk-page/0")
       }
     >
       <header className="frame relative flex h-14 items-center gap-3 sm:h-16 sm:gap-6">
-        <a href="#top" className="flex items-center gap-2.5 text-body font-bold">
-          <img src={LOGO} alt="" width={24} height={24} className="size-6" />
+        <a href="#top" className="flex items-center gap-2.5 text-body font-[650] text-rk-head">
+          <Logo className="size-7" />
           RobinX
         </a>
         <nav aria-label="페이지 메뉴" className="ml-6 hidden items-center gap-1 lg:flex">
@@ -100,7 +101,7 @@ export function Nav() {
               key={l.href}
               href={l.href}
               aria-current={current === l.href ? "true" : undefined}
-              className="rounded-sm px-3 py-1.5 text-fine text-muted-foreground transition-colors before:text-foreground before:opacity-0 before:content-['>_'] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-[current]:text-foreground aria-[current]:before:opacity-100"
+              className="inline-flex h-8 items-center rounded-md px-3 text-[14px] font-[550] text-rk-soft transition-colors duration-150 hover:bg-rk-hover hover:text-rk-text aria-[current]:bg-rk-chosen aria-[current]:text-rk-head"
             >
               {l.label}
             </a>
@@ -111,13 +112,14 @@ export function Nav() {
           target="_blank"
           rel="noreferrer"
           aria-label="GitHub에서 소스 보기"
-          className="ml-auto hidden size-11 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:inline-flex"
+          className="ml-auto hidden size-10 items-center justify-center rounded-md text-rk-soft transition-colors duration-150 hover:bg-rk-hover hover:text-rk-head sm:inline-flex"
         >
           <GithubIcon className="size-5" />
         </a>
         <a
           href={RELEASE.downloadUrl}
-          className="ml-auto inline-flex h-9 items-center gap-2 rounded-sm bg-primary px-3.5 text-fine font-semibold text-primary-foreground transition-[transform,background-color] hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98] sm:ml-0 sm:h-10 sm:px-4"
+          // 파란 채움은 첫 화면의 받기 단추 하나라, 막대의 받기는 보통 단추
+          className="rk-btn press ml-auto h-9 gap-2 px-3.5 text-[14px] sm:ml-0"
         >
           <Download className="size-4" aria-hidden />
           {/* 휴대폰에서 누르면 Windows 설치 파일을 받으므로 그걸 밝힌다 */}
@@ -131,14 +133,14 @@ export function Nav() {
             <button
               type="button"
               aria-label="메뉴 열기"
-              className="-mr-2 inline-flex size-11 items-center justify-center rounded-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:hidden"
+              className="-mr-2 inline-flex size-11 items-center justify-center rounded-md text-rk-text transition-colors duration-150 hover:bg-rk-hover lg:hidden"
             >
               <Menu className="size-5" />
             </button>
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-72 border-none bg-background p-6"
+            className="w-72 border-l border-rk-line bg-rk-side p-5"
             onCloseAutoFocus={(e) => {
               const href = pendingTarget.current
               if (!href) return
@@ -147,9 +149,12 @@ export function Nav() {
               goTo(href)
             }}
           >
-            <SheetTitle className="text-lead font-bold">RobinX</SheetTitle>
+            <SheetTitle className="flex items-center gap-2.5 text-body font-[650] text-rk-head">
+              <Logo className="size-7" />
+              RobinX
+            </SheetTitle>
             <SheetDescription className="sr-only">페이지 안의 다른 부분으로 이동해요</SheetDescription>
-            <nav aria-label="페이지 메뉴" className="mt-6 flex flex-col">
+            <nav aria-label="페이지 메뉴" className="mt-5 flex flex-col gap-1">
               {links.map((l) => (
                 <a
                   key={l.href}
@@ -160,7 +165,8 @@ export function Nav() {
                     setMenuOpen(false)
                     pendingTarget.current = l.href
                   }}
-                  className="rounded-sm px-3 py-3 text-lead transition-colors before:text-muted-foreground before:content-['>_'] hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  aria-current={current === l.href ? "true" : undefined}
+                  className="flex h-11 items-center rounded-md px-3 text-body font-[550] text-rk-soft transition-colors duration-150 hover:bg-rk-hover hover:text-rk-text aria-[current]:bg-rk-chosen aria-[current]:text-rk-head"
                 >
                   {l.label}
                 </a>
@@ -169,7 +175,7 @@ export function Nav() {
                 href={REPO_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 flex items-center gap-2.5 rounded-sm px-3 py-3 text-lead transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="mt-3 flex h-11 items-center gap-2.5 border-t border-rk-line px-3 pt-1 text-body font-[550] text-rk-soft transition-colors duration-150 hover:text-rk-head"
               >
                 <GithubIcon className="size-5" />
                 GitHub

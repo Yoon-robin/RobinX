@@ -3,10 +3,9 @@ import { m, useReducedMotion } from "motion/react"
 
 import { shot, shotSrcSet } from "@/lib/site"
 import { easeOutQuint } from "@/components/motion"
-import { Typed } from "@/components/typed"
 
 /**
- * 남은 흔적 말고 앱에 있는 도구. 칸끼리 가는 선을 같이 쓰는 격자 (터미널 창을 나눈 것처럼).
+ * 남은 흔적 말고 앱에 있는 도구. 카드 하나를 1px 선으로 나눈 격자 (앱의 카드 안 줄 선과 같은 말).
  * 칸마다 이름과 한 줄만. 앱 화면은 보일 때 아래에서 위로 열리듯 나타난다.
  */
 type Tile = {
@@ -71,7 +70,7 @@ function Shot({ t, i }: { t: Tile; i: number }) {
       data-ui
       variants={frameIn}
       transition={{ duration: 0.9, ...ease }}
-      className="mt-auto ml-6 h-56 overflow-hidden border-t border-l border-white/15 sm:ml-8 sm:h-72" // taste-skill-ignore: 앱 화면 창의 모서리
+      className="mt-auto ml-6 h-56 overflow-hidden rounded-tl-[10px] border-t border-l border-rk-control-line sm:ml-8 sm:h-72"
     >
       <m.img
         src={shot(t.shot)}
@@ -96,28 +95,28 @@ export function Features() {
     // 위 여백은 작게: 바로 위 정리 과정 장면이 창 아래에 빈 곳을 남기고 끝나서, 여백을 다 주면 화면 하나가 거의 비었다
     <section id="features" className="pt-10 pb-20 sm:pt-12 sm:pb-28">
       <div className="frame">
-        <Typed lines={["그 밖의 기능"]} className="section-title" />
+        <h2 className="section-title">그 밖의 기능</h2>
 
-        <div className="mt-10 grid gap-px overflow-hidden border border-white/15 bg-white/15 sm:mt-12 lg:grid-cols-2">
+        <div className="mt-10 grid gap-px overflow-hidden rounded-xl bg-rk-line shadow-[0_0_0_1px_var(--rk-line)] sm:mt-12 lg:grid-cols-2">
           {tiles.map((t, i) => (
             <m.article
               key={t.name}
               initial={reduce ? false : "off"}
               whileInView="on"
               viewport={{ once: true, amount: 0.35 }}
-              className="flex flex-col bg-background"
+              className="flex flex-col bg-rk-card"
             >
               <div className="p-6 sm:p-8">
-                <h3 className="text-lead leading-snug font-bold">{t.name}</h3>
-                <p className="mt-1.5 text-body text-muted-foreground">{t.text}</p>
+                <h3 className="text-lead leading-snug font-[650]">{t.name}</h3>
+                <p className="mt-1.5 text-body text-rk-soft">{t.text}</p>
               </div>
               <Shot t={t} i={i} />
             </m.article>
           ))}
           {pairs.map((p) => (
-            <article key={p.name} className="bg-background p-6 sm:p-8">
-              <h3 className="text-lead leading-snug font-bold">{p.name}</h3>
-              <p className="mt-1.5 text-body text-muted-foreground">{p.text}</p>
+            <article key={p.name} className="bg-rk-card p-6 sm:p-8">
+              <h3 className="text-lead leading-snug font-[650]">{p.name}</h3>
+              <p className="mt-1.5 text-body text-rk-soft">{p.text}</p>
             </article>
           ))}
         </div>

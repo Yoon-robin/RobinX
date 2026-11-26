@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
+import { ChevronDown } from "lucide-react"
 
 import { REPO_URL } from "@/lib/site"
-import { Typed } from "@/components/typed"
 
 type Faq = { q: string; a: ReactNode }
 
@@ -40,34 +40,29 @@ const faqs: Faq[] = [
   { q: "소스 코드를 볼 수 있나요?", a: "네, GitHub에 공개돼 있어요 (Apache 2.0)." },
 ]
 
-/** 질문만 보여 주고 누르면 답이 열린다. 여는 움직임은 index.css의 details 규칙 (지원하는 브라우저에서만). */
+/** 질문만 보여 주고 누르면 답이 열린다 (카드 줄). 여는 움직임은 index.css의 details 규칙 (지원하는 브라우저에서만). */
 export function Faq() {
   return (
     <section id="faq" className="frame py-20 sm:py-28">
       <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
-        <Typed lines={["자주 묻는 질문"]} className="section-title" />
-        <a
-          href={`${REPO_URL}/issues`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-fine text-muted-foreground underline decoration-white/30 underline-offset-4 hover:text-foreground hover:decoration-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <h2 className="section-title">자주 묻는 질문</h2>
+        <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" className="fact-link text-fine">
           다른 질문은 GitHub에
         </a>
       </div>
 
-      {/* 질문 글자가 제목 글자와 같은 줄에서 시작하도록 칸 안쪽 여백만큼 당긴다 */}
-      <div className="-mx-4 mt-8 flex max-w-4xl flex-col sm:mt-10">
+      {/* 질문마다 카드 안의 한 줄. 열면 꺾쇠가 돌고 답이 그 아래에 열린다 */}
+      <div className="mt-8 max-w-4xl overflow-hidden rounded-xl bg-rk-card shadow-[0_0_0_1px_var(--rk-line)] sm:mt-10">
         {faqs.map((f) => (
-          <details key={f.q} className="faq group rounded-sm open:bg-white/[0.03]">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-sm px-4 py-3 text-body font-semibold transition-colors hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-lead [&::-webkit-details-marker]:hidden">
-              <span aria-hidden className="w-[3ch] shrink-0 font-normal text-muted-foreground">
-                <span className="group-open:hidden">[+]</span>
-                <span className="hidden group-open:inline">[-]</span>
-              </span>
-              {f.q}
+          <details key={f.q} className="faq group [&+&]:border-t [&+&]:border-rk-line">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 px-5 py-3 text-body font-[550] text-rk-head transition-colors duration-150 hover:bg-rk-hover focus-visible:outline-rk-ring focus-visible:-outline-offset-2 sm:px-6 sm:text-lead [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0 flex-1">{f.q}</span>
+              <ChevronDown
+                aria-hidden
+                className="size-4 shrink-0 text-rk-faint transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+              />
             </summary>
-            <div className="max-w-[calc(64ch+1rem+3ch+0.75rem)] px-4 pb-5 pl-[calc(1rem+3ch+0.75rem)] text-body leading-relaxed text-pretty text-muted-foreground">
+            <div className="max-w-[64ch] px-5 pb-5 text-body leading-relaxed text-pretty text-rk-soft sm:px-6">
               {f.a}
             </div>
           </details>

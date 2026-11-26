@@ -1,7 +1,6 @@
 import { REPO_URL } from "@/lib/site"
 import { DownloadButton, DownloadFacts, LineButton } from "@/components/download"
 import { GithubIcon } from "@/components/github-icon"
-import { Typed } from "@/components/typed"
 
 /** 마지막 구역: 치듯 나오는 제목 아래에 내려받기와 소스 보기, 받기 전에 알아야 할 것. */
 export function Cta() {
@@ -9,7 +8,7 @@ export function Cta() {
     // 위 여백은 작게: FAQ의 아래 여백과 겹쳐 화면 하나가 거의 비었다
     <section className="pt-8 pb-24 sm:pt-12 sm:pb-36">
       <div className="frame">
-        <Typed lines={["이제 직접 써 보세요"]} className="display" />
+        <h2 className="display">이제 직접 써 보세요</h2>
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <DownloadButton />
           <LineButton href={REPO_URL} external>

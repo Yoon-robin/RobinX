@@ -84,7 +84,7 @@ export function AppDemo() {
   return (
     <div
       ref={box}
-      className="term relative aspect-[4/5] overflow-hidden sm:aspect-[16/10]"
+      className="window relative aspect-[4/5] overflow-hidden sm:aspect-[16/10]"
       role="img"
       aria-label="RobinX 실제 화면: 남은 흔적을 찾아 백업하고 정리한 뒤 저장공간, 시작프로그램, 복구 기록을 차례로 보여 줘요"
     >

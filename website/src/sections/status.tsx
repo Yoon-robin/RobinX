@@ -2,11 +2,10 @@ import type { ReactNode } from "react"
 import { m, useReducedMotion } from "motion/react"
 
 import { RELEASE, REPO_URL } from "@/lib/site"
-import { TermWindow } from "@/components/term"
-import { Typed } from "@/components/typed"
+import { AppWindow } from "@/components/app-window"
 
 /**
- * 최신 릴리스와 어디까지 확인했는지를 앱 시작 화면 같은 "이름 값" 줄로. 보일 때 한 줄씩 찍힌다.
+ * 최신 릴리스와 어디까지 확인했는지를 앱의 카드 줄처럼 "이름 값" 줄로. 보일 때 한 줄씩 찍힌다.
  * 버전과 날짜는 빌드할 때 GitHub 릴리스에서 가져온다 (scripts/release-info.mjs).
  */
 const released = RELEASE.publishedAt.toLocaleDateString("ko-KR", {
@@ -22,7 +21,7 @@ const rows: { k: string; v: ReactNode }[] = [
     k: "버전",
     v: (
       <>
-        <span className="font-bold">v{RELEASE.version}</span> 미리보기
+        <span className="font-[650] text-rk-head">v{RELEASE.version}</span> 미리보기
       </>
     ),
   },
@@ -39,26 +38,24 @@ const rows: { k: string; v: ReactNode }[] = [
   { k: "확인", v: "테스트 앱으로 확인함 · 실제 프로그램은 확인하는 중" },
   {
     k: "서명",
-    v: <span className="text-review">게시자 서명 전 · 처음 실행할 때 Windows 경고 창이 뜰 수 있어요</span>,
+    v: <span className="text-rk-note">게시자 서명 전 · 처음 실행할 때 Windows 경고 창이 뜰 수 있어요</span>,
   },
 ]
-
-const link = "underline decoration-white/40 underline-offset-4 hover:decoration-white"
 
 export function Status() {
   const reduce = useReducedMotion()
   return (
-    <section id="status" className="bg-white/[0.02] py-20 sm:py-28">
+    <section id="status" className="border-y border-rk-line bg-rk-side py-20 sm:py-28">
       <div className="frame grid gap-10 lg:grid-cols-12 lg:gap-8">
-        <Typed lines={["최신 버전"]} className="section-title lg:col-span-4" />
+        <h2 className="section-title lg:col-span-4">최신 버전</h2>
 
-        <TermWindow
-          title="robinx --version"
+        <AppWindow
+          title={`RobinX ${RELEASE.version}`}
           className="lg:col-span-8"
-          bodyClassName="p-5 text-fine sm:p-7 sm:text-body"
+          bodyClassName="text-fine sm:text-[14px]"
         >
           <m.dl
-            className="flex flex-col gap-1.5"
+            className="flex flex-col px-2 py-1 sm:px-3"
             initial={reduce ? false : "off"}
             whileInView="on"
             viewport={{ once: true, amount: 0.5 }}
@@ -69,22 +66,27 @@ export function Status() {
                 key={k}
                 variants={{ off: { opacity: 0 }, on: { opacity: 1 } }}
                 transition={{ duration: 0.01 }}
-                className="grid grid-cols-[5.5rem_1fr] gap-x-3 sm:grid-cols-[7rem_1fr]"
+                className="grid grid-cols-[5rem_1fr] gap-x-3 px-2 py-2.5 [&+&]:border-t [&+&]:border-rk-line sm:grid-cols-[7rem_1fr] sm:px-3"
               >
-                <dt className="text-muted-foreground">{k}</dt>
-                <dd className="min-w-0">{v}</dd>
+                <dt className="text-rk-faint">{k}</dt>
+                <dd className="min-w-0 text-rk-text">{v}</dd>
               </m.div>
             ))}
           </m.dl>
-          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-medium">
-            <a href={RELEASE.pageUrl} target="_blank" rel="noreferrer" className={link}>
+          <div className="flex flex-wrap gap-2 border-t border-rk-line px-4 py-3.5 sm:px-5">
+            <a href={RELEASE.pageUrl} target="_blank" rel="noreferrer" className="rk-btn press h-8 px-3 text-fine">
               릴리스 노트
             </a>
-            <a href={`${REPO_URL}/commits/main`} target="_blank" rel="noreferrer" className={link}>
+            <a
+              href={`${REPO_URL}/commits/main`}
+              target="_blank"
+              rel="noreferrer"
+              className="rk-btn press h-8 px-3 text-fine"
+            >
               변경 기록
             </a>
           </div>
-        </TermWindow>
+        </AppWindow>
       </div>
     </section>
   )

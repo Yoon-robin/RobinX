@@ -4,12 +4,11 @@ import { Download, Plus } from "lucide-react"
 import { IOS_RELEASE, IOS_SOURCE_ADD, IOS_SOURCE_LABEL } from "@/lib/site"
 import { easeOutQuint } from "@/components/motion"
 import { LineButton } from "@/components/download"
-import { Typed } from "@/components/typed"
 
 /**
  * iPhone 앱: 왼쪽에 하는 일 네 줄과 ipa 받기, 오른쪽에 앱 화면 세 장 (CI가 시뮬레이터에서 가짜 자료로 찍은 것,
  * scripts/ios-shots.py). 화면은 기능 칸처럼 보일 때 아래에서 열린다.
- * 흰 내려받기 단추는 Windows 설치 파일 하나뿐이라 여기는 테두리 단추를 쓴다.
+ * 파란 내려받기 단추는 Windows 설치 파일 하나뿐이라 여기는 보통 단추를 쓴다.
  * 소스 추가가 먼저다: 한 번 추가하면 새 버전마다 ipa를 받아 고를 필요가 없다.
  */
 const rows = [
@@ -31,21 +30,19 @@ const srcSet = (name: string) => `${src(name)} 1x, ${import.meta.env.BASE_URL}sh
 const frameIn = { off: { clipPath: "inset(100% 0 0 0)" }, on: { clipPath: "inset(0% 0 0 0)" } }
 const imageIn = { off: { y: 32 }, on: { y: 0 } }
 
-const link = "text-foreground underline decoration-white/40 underline-offset-4 hover:decoration-white"
-
 export function Iphone() {
   const reduce = useReducedMotion()
   return (
     <section id="iphone" className="py-20 sm:py-28">
       <div className="frame grid gap-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-5">
-          <Typed lines={["iPhone 앱"]} className="section-title" />
+          <h2 className="section-title">iPhone 앱</h2>
 
           <dl className="mt-8 flex flex-col gap-5 sm:mt-10">
             {rows.map((r) => (
               <div key={r.k}>
-                <dt className="text-lead leading-snug font-bold">{r.k}</dt>
-                <dd className="mt-1 text-body text-muted-foreground">{r.v}</dd>
+                <dt className="text-lead leading-snug font-[650] text-rk-head">{r.k}</dt>
+                <dd className="mt-1 text-body text-rk-soft">{r.v}</dd>
               </div>
             ))}
           </dl>
@@ -60,20 +57,22 @@ export function Iphone() {
               ipa 받기
             </LineButton>
           </div>
-          <p className="mt-5 max-w-[60ch] text-fine text-muted-foreground">
+          <p className="mt-5 max-w-[60ch] text-fine text-rk-soft">
             <span className="block">
               {IOS_RELEASE.version && <>v{IOS_RELEASE.version} · </>}
               {IOS_RELEASE.sizeMb != null && <>{IOS_RELEASE.sizeMb} MB · </>}
               iOS 16 이상
             </span>
-            <span className="block">App Store에는 없어요. 서명 없는 ipa라 LiveContainer 같은 설치 앱으로 설치해요.</span>
+            <span className="block">
+              App Store에는 없어요. 서명 없는 ipa라 LiveContainer 같은 설치 앱으로 설치해요.
+            </span>
             <span className="block">소스를 추가하면 새 버전도 LiveContainer의 소스 탭에서 바로 설치해요.</span>
             {/* 주소는 줄이 바뀌지 않게 따로 한 줄에, https:// 없이 적는다 (휴대폰 폭에 들어가고, LiveContainer가 https로 읽는다) */}
             <span className="block">
-              소스 주소 <code className="block whitespace-nowrap text-foreground">{IOS_SOURCE_LABEL}</code>
+              소스 주소 <code className="block whitespace-nowrap text-rk-text">{IOS_SOURCE_LABEL}</code>
             </span>
             <span className="block">시뮬레이터에서 확인함 · 실제 iPhone은 확인하는 중</span>
-            <a href={IOS_RELEASE.pageUrl} target="_blank" rel="noreferrer" className={"mt-1 inline-block " + link}>
+            <a href={IOS_RELEASE.pageUrl} target="_blank" rel="noreferrer" className="fact-link mt-1 inline-block">
               릴리스 노트와 SHA-256
             </a>
           </p>
@@ -93,8 +92,7 @@ export function Iphone() {
                 variants={frameIn}
                 transition={{ duration: 0.9, delay: i * 0.1, ease: easeOutQuint }}
                 className={
-                  "overflow-hidden border border-white/15 " + // taste-skill-ignore: 앱 화면의 테두리
-                  (i === 2 ? "hidden sm:block" : "")
+                  "overflow-hidden rounded-xl shadow-[0_0_0_1px_var(--rk-line)] " + (i === 2 ? "hidden sm:block" : "")
                 }
               >
                 <m.img
@@ -112,7 +110,7 @@ export function Iphone() {
               </m.div>
             ))}
           </m.div>
-          <figcaption className="mt-3 text-fine text-muted-foreground">화면 속 사진과 숫자는 예시예요</figcaption>
+          <figcaption className="mt-3 text-fine text-rk-faint">화면 속 사진과 숫자는 예시예요</figcaption>
         </figure>
       </div>
     </section>
